@@ -1,0 +1,97 @@
+# Default values for chainforge-node
+replicaCount: 1
+
+image:
+  repository: chainforge/chainforge-node
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 65534
+  runAsNonRoot: true
+  runAsUser: 65534
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65534
+
+service:
+  type: ClusterIP
+  port: 8545
+  metricsPort: 8080
+  p2pPort: 30303
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 100Gi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# ChainForge specific configuration
+config:
+  network:
+    chainId: 1337
+    genesis: "0x0000000000000000000000000000000000000000000000000000000000000000"
+  
+  p2p:
+    maxPeers: 50
+    discoveryPort: 30303
+    rpcPort: 8545
+    
+  consensus:
+    engine: "pow"
+    difficulty: "0x400"
+    
+  storage:
+    database: "rocksdb"
+    dataDir: "/app/data"
+    
+  rpc:
+    enabled: true
+    port: 8545
+    cors: ["*"]
+    
+  metrics:
+    enabled: true
+    port: 8080
+    path: "/metrics"

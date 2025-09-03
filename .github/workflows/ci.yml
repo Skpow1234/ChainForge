@@ -1,0 +1,203 @@
+name: ChainForge CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  CONAN_VERSION: "2.0.0"
+  CMAKE_VERSION: "3.28.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc-11, gcc-12, clang-14, clang-15]
+        build_type: [Debug, Release]
+        exclude:
+          - compiler: clang-14
+            build_type: Release
+          - compiler: clang-15
+            build_type: Debug
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libssl-dev \
+          libboost-all-dev \
+          libprotobuf-dev \
+          protobuf-compiler \
+          librocksdb-dev \
+          libgtest-dev \
+          clang-tidy \
+          valgrind
+
+    - name: Install Conan
+      run: |
+        pip install conan==${{ env.CONAN_VERSION }}
+
+    - name: Setup compiler
+      run: |
+        if [[ "${{ matrix.compiler }}" == gcc-* ]]; then
+          sudo apt-get install -y ${{ matrix.compiler }}
+          export CC=${{ matrix.compiler }}
+          export CXX=${{ matrix.compiler }}-g++
+        elif [[ "${{ matrix.compiler }}" == clang-* ]]; then
+          sudo apt-get install -y ${{ matrix.compiler }}
+          export CC=${{ matrix.compiler }}
+          export CXX=${{ matrix.compiler }}++
+        fi
+
+    - name: Configure Conan
+      run: |
+        conan profile detect --force
+        conan profile show
+
+    - name: Install dependencies
+      run: |
+        conan install . --output-folder=build --build=missing
+
+    - name: Build project
+      run: |
+        cd build
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        cmake --build . --parallel
+
+    - name: Run tests
+      run: |
+        cd build
+        ctest --output-on-failure --parallel
+
+    - name: Run clang-tidy
+      if: matrix.compiler == 'clang-14' && matrix.build_type == 'Debug'
+      run: |
+        cd build
+        python3 /usr/share/clang/run-clang-tidy.py -j$(nproc)
+
+  security:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libssl-dev \
+          libboost-all-dev \
+          libprotobuf-dev \
+          protobuf-compiler \
+          librocksdb-dev \
+          libgtest-dev
+
+    - name: Install Conan
+      run: |
+        pip install conan==${{ env.CONAN_VERSION }}
+
+    - name: Build with sanitizers
+      run: |
+        conan install . --output-folder=build --build=missing
+        cd build
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,thread"
+        cmake --build . --parallel
+
+    - name: Run fuzz tests
+      run: |
+        cd build
+        # Run fuzz targets with limited iterations
+        for fuzz_target in bin/*_fuzz; do
+          if [ -f "$fuzz_target" ]; then
+            timeout 60s "$fuzz_target" -max_total_time=30 || true
+          fi
+        done
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build and test Docker images
+      run: |
+        docker-compose build
+        docker-compose up -d postgres redis prometheus grafana jaeger
+        sleep 30
+        docker-compose ps
+        docker-compose logs
+
+    - name: Test Docker images
+      run: |
+        # Test node image
+        docker run --rm --network host chainforge-node:latest --help || true
+        
+        # Test explorer image
+        docker run --rm --network host chainforge-explorer:latest --help || true
+
+  sbom:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate SBOM
+      run: |
+        # Install Syft
+        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+        
+        # Generate SBOM for built binaries
+        syft packages build/bin/ -o json > sbom.json
+        syft packages build/bin/ -o spdx-json > sbom.spdx.json
+
+    - name: Upload SBOM
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: |
+          sbom.json
+          sbom.spdx.json
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, security, docker, sbom]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add deployment logic here

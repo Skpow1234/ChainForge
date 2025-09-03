@@ -1,0 +1,79 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "ChainForge Overview",
+    "tags": ["blockchain", "chainforge"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Block Height",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "chainforge_block_height",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "displayMode": "auto"
+            }
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Transaction Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(chainforge_transactions_total[5m])",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 6,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Active Peers",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "chainforge_p2p_active_peers",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 18,
+          "y": 0
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s",
+    "schemaVersion": 30,
+    "version": 1
+  }
+}

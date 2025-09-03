@@ -1,0 +1,16 @@
+apiVersion: v2
+name: chainforge-node
+description: ChainForge blockchain node
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - blockchain
+  - chainforge
+  - node
+home: https://github.com/Skpow1234/ChainForge
+sources:
+  - https://github.com/Skpow1234/ChainForge
+maintainers:
+  - name: Juan Hurtado
+    email: jfhvjfhv0015@gmail.com

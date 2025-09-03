@@ -1,0 +1,125 @@
+# ChainForge Development Configuration
+
+# Network configuration
+network:
+  chain_id: 1337
+  genesis_hash: "0x0000000000000000000000000000000000000000000000000000000000000000"
+  network_id: 1337
+
+# P2P configuration
+p2p:
+  enabled: true
+  max_peers: 50
+  discovery_port: 30303
+  rpc_port: 8545
+  bootstrap_nodes:
+    - "enode://1234567890abcdef@127.0.0.1:30303"
+  nat: "any"
+  max_inbound_peers: 30
+  max_outbound_peers: 20
+
+# Consensus configuration
+consensus:
+  engine: "pow"  # pow, pos, bft
+  difficulty: "0x400"
+  block_time: 15
+  block_reward: "1000000000000000000"  # 1 ETH in wei
+  uncle_reward: "750000000000000000"   # 0.75 ETH in wei
+
+# Storage configuration
+storage:
+  database: "rocksdb"
+  data_dir: "./data"
+  max_open_files: 1000
+  block_cache_size: "256MB"
+  write_buffer_size: "64MB"
+  max_write_buffer_number: 4
+  target_file_size_base: "64MB"
+  max_bytes_for_level_base: "256MB"
+
+# RPC configuration
+rpc:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8545
+  cors: ["*"]
+  apis: ["eth", "net", "web3", "personal", "txpool"]
+  max_requests_per_second: 100
+  max_connections: 100
+
+# WebSocket configuration
+websocket:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8546
+  cors: ["*"]
+  max_connections: 100
+
+# Metrics configuration
+metrics:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8080
+  path: "/metrics"
+  interval: 15
+
+# Logging configuration
+logging:
+  level: "debug"
+  format: "json"
+  output: "stdout"
+  file: null
+  max_size: "100MB"
+  max_files: 5
+  max_age: "7d"
+
+# Database configuration
+database:
+  postgres:
+    host: "localhost"
+    port: 5432
+    database: "chainforge"
+    user: "chainforge"
+    password: "chainforge_pass"
+    ssl_mode: "disable"
+    max_connections: 20
+    idle_timeout: "300s"
+    connection_lifetime: "1h"
+
+# Cache configuration
+cache:
+  redis:
+    host: "localhost"
+    port: 6379
+    password: "chainforge_redis_pass"
+    database: 0
+    max_connections: 20
+    connection_timeout: "5s"
+    read_timeout: "3s"
+    write_timeout: "3s"
+
+# Tracing configuration
+tracing:
+  enabled: true
+  jaeger:
+    endpoint: "http://localhost:14268/api/traces"
+    service_name: "chainforge-node"
+    environment: "development"
+
+# Security configuration
+security:
+  enable_https: false
+  tls_cert: null
+  tls_key: null
+  allowed_hosts: ["*"]
+  rate_limit:
+    enabled: true
+    requests_per_minute: 1000
+    burst_size: 100
+
+# Development configuration
+development:
+  enable_mock_data: true
+  enable_debug_endpoints: true
+  enable_profiling: true
+  enable_coverage: false

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: chainforge-explorer
+description: ChainForge blockchain explorer
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - blockchain
+  - chainforge
+  - explorer
+  - api
+home: https://github.com/Skpow1234/ChainForge
+sources:
+  - https://github.com/Skpow1234/ChainForge
+maintainers:
+  - name: Juan Hurtado
+    email: jfhvjfhv0015@gmail.com

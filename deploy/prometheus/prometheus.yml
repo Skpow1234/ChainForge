@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ChainForge Node
+  - job_name: 'chainforge-node'
+    static_configs:
+      - targets: ['chainforge-node:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # ChainForge Explorer
+  - job_name: 'chainforge-explorer'
+    static_configs:
+      - targets: ['chainforge-explorer:8081']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # PostgreSQL (if using postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    scrape_interval: 30s
+
+  # Redis (if using redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 30s

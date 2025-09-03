@@ -1,0 +1,115 @@
+# Build artifacts
+build/
+bin/
+lib/
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!cmake/*.cmake
+
+# Conan
+conan_toolchain.cmake
+conan_paths.cmake
+conanbuildinfo.cmake
+graph_info.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.cproject
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+log/
+
+# Test artifacts
+test-results/
+coverage/
+*.gcov
+*.gcda
+*.gcno
+*.prof
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Dependencies
+node_modules/
+vendor/
+third_party/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Local configuration
+config/local/
+*.local.yaml
+*.local.yml
+
+# Docker volumes
+docker-volumes/
+data/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Archives
+*.tar.gz
+*.zip
+*.rar
+
+# Documentation build
+docs/build/
+docs/_build/
+
+# Coverage reports
+coverage/
+*.lcov
+*.info
+
+# Profiling data
+*.prof
+*.perf
+
+# Memory check files
+*.memcheck
+*.massif
+
+# Fuzzing artifacts
+corpus/
+crashes/
+leaks/
+.cursorrules

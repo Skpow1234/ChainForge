@@ -1,0 +1,57 @@
+# Multi-stage build for ChainForge Node
+# Stage 1: Build environment with Conan and CMake
+FROM conanio/gcc11:latest AS builder
+
+# Install additional build dependencies
+RUN apt-get update && apt-get install -y \
+    cmake \
+    ninja-build \
+    pkg-config \
+    libssl-dev \
+    libboost-all-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    librocksdb-dev \
+    libgtest-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy conan files
+COPY conanfile.txt ./
+COPY cmake/ ./cmake/
+
+# Install dependencies
+RUN conan profile detect --force && \
+    conan install . --output-folder=build --build=missing
+
+# Copy source code
+COPY . .
+
+# Build the project
+RUN cd build && \
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build . --target cppchain-node --parallel
+
+# Stage 2: Runtime environment (distroless)
+FROM gcr.io/distroless/cc-debian12:latest AS runtime
+
+# Copy the binary
+COPY --from=builder /app/build/bin/cppchain-node /usr/local/bin/
+
+# Copy runtime dependencies
+COPY --from=builder /app/build/lib/ /usr/local/lib/
+
+# Create non-root user
+USER 65534:65534
+
+# Expose ports
+EXPOSE 8080 8545 8546 30303
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD ["/usr/local/bin/cppchain-node", "--health-check"] || exit 1
+
+# Default command
+CMD ["/usr/local/bin/cppchain-node"]

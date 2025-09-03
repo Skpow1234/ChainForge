@@ -1,0 +1,65 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Build artifacts
+build/
+bin/
+lib/
+*.o
+*.a
+*.so
+*.dylib
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test artifacts
+test-results/
+coverage/
+*.gcov
+*.gcda
+*.gcno
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Dependencies (will be installed in container)
+node_modules/
+vendor/
+
+# Docker files (except Dockerfile)
+docker-compose.override.yml
+.dockerignore
+
+# Helm charts (for deployment, not building)
+deploy/helm/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Local configuration
+.env
+.env.local
+config/local/

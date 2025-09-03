@@ -1,0 +1,45 @@
+# ChainForge Development Tools Container
+FROM conanio/gcc11:latest
+
+# Install additional development tools
+RUN apt-get update && apt-get install -y \
+    cmake \
+    ninja-build \
+    pkg-config \
+    libssl-dev \
+    libboost-all-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    librocksdb-dev \
+    libgtest-dev \
+    clang-tidy \
+    valgrind \
+    gdb \
+    strace \
+    lsof \
+    netcat \
+    curl \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install additional tools
+RUN pip install conan
+
+# Set working directory
+WORKDIR /app
+
+# Copy conan files
+COPY conanfile.txt ./
+
+# Install dependencies
+RUN conan profile detect --force && \
+    conan install . --output-folder=build --build=missing
+
+# Copy source code
+COPY . .
+
+# Create symlinks for tools
+RUN ln -sf /app/build/bin/* /usr/local/bin/ || true
+
+# Default command
+CMD ["/bin/bash"]

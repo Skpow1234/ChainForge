@@ -1,0 +1,25 @@
+# Grafana Dashboard Provisioning Configuration
+# This file configures how dashboards are loaded into Grafana
+
+apiVersion: 1
+
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      
+  - name: 'chainforge'
+    orgId: 1
+    folder: 'ChainForge'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/chainforge
