@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Database layer
   postgres:
@@ -160,7 +158,6 @@ services:
     build:
       context: .
       dockerfile: deploy/docker/Dockerfile.tools
-      target: runtime
     container_name: chainforge-tools
     volumes:
       - ./tools:/app/tools

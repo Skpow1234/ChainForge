@@ -1,44 +1,13 @@
 [requires]
-# Core libraries
-openssl/3.2.0
-boost/1.84.0
-protobuf/4.25.1
-flatbuffers/23.5.26
-spdlog/1.12.0
+# Core libraries - essential and well-supported
 fmt/10.2.1
-
-# Database
-rocksdb/8.9.1
-
-# Networking
-asio/1.29.0
-libp2p/0.1.0
-
-# Crypto
-libsecp256k1/0.3.0
-libsodium/1.0.19
-blst/0.3.11
 
 # Testing
 gtest/1.14.0
-catch2/3.5.2
-
-# Metrics and tracing
-prometheus-cpp/1.2.4
-opentelemetry-cpp/1.13.0
-
-# Build tools
-cmake/3.28.1
 
 [generators]
 CMakeDeps
 CMakeToolchain
-
-[options]
-boost:shared=False
-openssl:shared=False
-protobuf:shared=False
-rocksdb:shared=False
 
 [imports]
 bin, *.dll -> ./bin

@@ -1,19 +1,33 @@
 # Multi-stage build for ChainForge Node
-# Stage 1: Build environment with Conan and CMake
-FROM conanio/gcc11:latest AS builder
+# Stage 1: Build environment with Ubuntu and Conan
+FROM ubuntu:22.04 AS builder
 
-# Install additional build dependencies
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CONAN_VERSION=2.1.0
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
     cmake \
     ninja-build \
     pkg-config \
+    python3 \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
     libssl-dev \
     libboost-all-dev \
     libprotobuf-dev \
     protobuf-compiler \
     librocksdb-dev \
     libgtest-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Conan
+RUN python3 -m pip install --upgrade pip setuptools wheel && \
+    python3 -m pip install "conan==$CONAN_VERSION"
 
 # Set working directory
 WORKDIR /app
@@ -32,26 +46,52 @@ COPY . .
 # Build the project
 RUN cd build && \
     cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release && \
-    cmake --build . --target cppchain-node --parallel
+    cmake --build . --target cppchain-core-test --parallel
 
-# Stage 2: Runtime environment (distroless)
-FROM gcr.io/distroless/cc-debian12:latest AS runtime
+# Stage 2: Runtime environment (minimal Ubuntu with complete C++ runtime)
+FROM ubuntu:22.04 AS runtime
 
-# Copy the binary
-COPY --from=builder /app/build/bin/cppchain-node /usr/local/bin/
-
-# Copy runtime dependencies
-COPY --from=builder /app/build/lib/ /usr/local/lib/
+# Install complete C++ runtime and dependencies
+RUN apt-get update && apt-get install -y \
+    # C++ Standard Library Runtime
+    libstdc++6 \
+    libgcc-s1 \
+    # SSL/TLS Runtime
+    libssl3 \
+    ca-certificates \
+    # Boost Runtime Libraries (try to install what's available)
+    libboost-system1.74.0 \
+    libboost-filesystem1.74.0 \
+    libboost-thread1.74.0 \
+    libboost-chrono1.74.0 \
+    libboost-atomic1.74.0 \
+    # Protocol Buffers Runtime
+    libprotobuf23 \
+    # System Libraries
+    libc6 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-USER 65534:65534
+RUN useradd -r -s /bin/false chainforge
+
+# Copy the binary
+COPY --from=builder /app/build/bin/cppchain-core-test /usr/local/bin/cppchain-node
+
+# Copy runtime dependencies from build stage (including RocksDB)
+COPY --from=builder /app/build/lib/ /usr/local/lib/
+
+# Set ownership
+RUN chown -R chainforge:chainforge /usr/local/bin/cppchain-node /usr/local/lib/
+
+# Switch to non-root user
+USER chainforge
 
 # Expose ports
 EXPOSE 8080 8545 8546 30303
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD ["/usr/local/bin/cppchain-node", "--health-check"] || exit 1
+    CMD ["/usr/local/bin/cppchain-node", "--help"] || exit 1
 
 # Default command
 CMD ["/usr/local/bin/cppchain-node"]

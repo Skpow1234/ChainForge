@@ -7,7 +7,7 @@ on:
     branches: [ main, develop ]
 
 env:
-  CONAN_VERSION: "2.0.0"
+  CONAN_VERSION: "2.1.0"
   CMAKE_VERSION: "3.28.0"
 
 jobs:
@@ -27,26 +27,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install system dependencies
+    - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          cmake \
-          ninja-build \
-          pkg-config \
-          libssl-dev \
-          libboost-all-dev \
-          libprotobuf-dev \
-          protobuf-compiler \
-          librocksdb-dev \
-          libgtest-dev \
-          clang-tidy \
-          valgrind
-
-    - name: Install Conan
-      run: |
-        pip install conan==${{ env.CONAN_VERSION }}
+        chmod +x .github/scripts/install-dependencies.sh
+        .github/scripts/install-dependencies.sh
 
     - name: Setup compiler
       run: |
@@ -59,15 +43,6 @@ jobs:
           export CC=${{ matrix.compiler }}
           export CXX=${{ matrix.compiler }}++
         fi
-
-    - name: Configure Conan
-      run: |
-        conan profile detect --force
-        conan profile show
-
-    - name: Install dependencies
-      run: |
-        conan install . --output-folder=build --build=missing
 
     - name: Build project
       run: |
@@ -99,26 +74,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          cmake \
-          ninja-build \
-          pkg-config \
-          libssl-dev \
-          libboost-all-dev \
-          libprotobuf-dev \
-          protobuf-compiler \
-          librocksdb-dev \
-          libgtest-dev
-
-    - name: Install Conan
-      run: |
-        pip install conan==${{ env.CONAN_VERSION }}
+        chmod +x .github/scripts/install-dependencies.sh
+        .github/scripts/install-dependencies.sh
 
     - name: Build with sanitizers
       run: |
-        conan install . --output-folder=build --build=missing
         cd build
         cmake .. \
           -DCMAKE_BUILD_TYPE=Debug \

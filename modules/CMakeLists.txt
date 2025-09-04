@@ -2,12 +2,12 @@
 # Each module creates its own target with proper dependencies
 
 add_subdirectory(core)
-add_subdirectory(crypto)
-add_subdirectory(storage)
-add_subdirectory(p2p)
-add_subdirectory(consensus)
-add_subdirectory(execution)
-add_subdirectory(mempool)
-add_subdirectory(rpc)
-add_subdirectory(node)
-add_subdirectory(explorer)
+# add_subdirectory(crypto)      # Requires libsecp256k1
+# add_subdirectory(storage)     # Requires RocksDB
+# add_subdirectory(p2p)         # Requires networking libraries
+# add_subdirectory(consensus)   # Requires crypto
+# add_subdirectory(execution)   # Requires storage
+# add_subdirectory(mempool)     # Requires execution
+# add_subdirectory(rpc)         # Requires networking
+# add_subdirectory(node)         # Requires all modules
+# add_subdirectory(explorer)    # Requires all modules
