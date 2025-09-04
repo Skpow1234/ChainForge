@@ -29,9 +29,20 @@ jobs:
         export CC=gcc-11
         export CXX=gcc-11-g++
 
+    - name: Generate Conan toolchain
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing current directory:"
+        ls -la
+        echo "Running conan install..."
+        conan install . --output-folder=build-gcc11-debug --build=missing
+        echo "Conan install completed. Listing build directory:"
+        ls -la build-gcc11-debug/
+        echo "Checking for conan_toolchain.cmake:"
+        ls -la build-gcc11-debug/conan_toolchain.cmake || echo "conan_toolchain.cmake not found"
+
     - name: Build project (GCC 11 Debug)
       run: |
-        mkdir -p build-gcc11-debug
         cd build-gcc11-debug
         cmake .. \
           -DCMAKE_BUILD_TYPE=Debug \
@@ -77,9 +88,20 @@ jobs:
         export CC=gcc-11
         export CXX=gcc-11-g++
 
+    - name: Generate Conan toolchain
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing current directory:"
+        ls -la
+        echo "Running conan install..."
+        conan install . --output-folder=build-gcc11-release --build=missing
+        echo "Conan install completed. Listing build directory:"
+        ls -la build-gcc11-release/
+        echo "Checking for conan_toolchain.cmake:"
+        ls -la build-gcc11-release/conan_toolchain.cmake || echo "conan_toolchain.cmake not found"
+
     - name: Build project (GCC 11 Release)
       run: |
-        mkdir -p build-gcc11-release
         cd build-gcc11-release
         cmake .. \
           -DCMAKE_BUILD_TYPE=Release \
@@ -124,9 +146,20 @@ jobs:
         export CC=gcc-12
         export CXX=gcc-12-g++
 
+    - name: Generate Conan toolchain
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing current directory:"
+        ls -la
+        echo "Running conan install..."
+        conan install . --output-folder=build-gcc12-debug --build=missing
+        echo "Conan install completed. Listing build directory:"
+        ls -la build-gcc12-debug/
+        echo "Checking for conan_toolchain.cmake:"
+        ls -la build-gcc12-debug/conan_toolchain.cmake || echo "conan_toolchain.cmake not found"
+
     - name: Build project (GCC 12 Debug)
       run: |
-        mkdir -p build-gcc12-debug
         cd build-gcc12-debug
         cmake .. \
           -DCMAKE_BUILD_TYPE=Debug \
@@ -171,9 +204,20 @@ jobs:
         export CC=gcc-12
         export CXX=gcc-12-g++
 
+    - name: Generate Conan toolchain
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing current directory:"
+        ls -la
+        echo "Running conan install..."
+        conan install . --output-folder=build-gcc12-release --build=missing
+        echo "Conan install completed. Listing build directory:"
+        ls -la build-gcc12-release/
+        echo "Checking for conan_toolchain.cmake:"
+        ls -la build-gcc12-release/conan_toolchain.cmake || echo "conan_toolchain.cmake not found"
+
     - name: Build project (GCC 12 Release)
       run: |
-        mkdir -p build-gcc12-release
         cd build-gcc12-release
         cmake .. \
           -DCMAKE_BUILD_TYPE=Release \
@@ -218,9 +262,20 @@ jobs:
         export CC=clang-14
         export CXX=clang-14++
 
+    - name: Generate Conan toolchain
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing current directory:"
+        ls -la
+        echo "Running conan install..."
+        conan install . --output-folder=build-clang14-debug --build=missing
+        echo "Conan install completed. Listing build directory:"
+        ls -la build-clang14-debug/
+        echo "Checking for conan_toolchain.cmake:"
+        ls -la build-clang14-debug/conan_toolchain.cmake || echo "conan_toolchain.cmake not found"
+
     - name: Build project (Clang 14 Debug)
       run: |
-        mkdir -p build-clang14-debug
         cd build-clang14-debug
         cmake .. \
           -DCMAKE_BUILD_TYPE=Debug \
@@ -271,9 +326,20 @@ jobs:
         export CC=clang-15
         export CXX=clang-15++
 
+    - name: Generate Conan toolchain
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing current directory:"
+        ls -la
+        echo "Running conan install..."
+        conan install . --output-folder=build-clang15-release --build=missing
+        echo "Conan install completed. Listing build directory:"
+        ls -la build-clang15-release/
+        echo "Checking for conan_toolchain.cmake:"
+        ls -la build-clang15-release/conan_toolchain.cmake || echo "conan_toolchain.cmake not found"
+
     - name: Build project (Clang 15 Release)
       run: |
-        mkdir -p build-clang15-release
         cd build-clang15-release
         cmake .. \
           -DCMAKE_BUILD_TYPE=Release \
@@ -312,9 +378,20 @@ jobs:
         chmod +x .github/scripts/install-dependencies.sh
         .github/scripts/install-dependencies.sh
 
+    - name: Generate Conan toolchain
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Listing current directory:"
+        ls -la
+        echo "Running conan install..."
+        conan install . --output-folder=build-security --build=missing
+        echo "Conan install completed. Listing build directory:"
+        ls -la build-security/
+        echo "Checking for conan_toolchain.cmake:"
+        ls -la build-security/conan_toolchain.cmake || echo "conan_toolchain.cmake not found"
+
     - name: Build with sanitizers
       run: |
-        mkdir -p build-security
         cd build-security
         cmake .. \
           -DCMAKE_BUILD_TYPE=Debug \

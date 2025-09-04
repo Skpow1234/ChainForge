@@ -139,8 +139,8 @@ main() {
     conan profile detect --force || true
     conan profile show || true
     
-    # Install Conan dependencies
-    install_conan_deps
+    # Note: Conan dependencies will be installed by the CI pipeline
+    print_status "Conan dependencies will be installed by the CI pipeline"
     
     print_success "Dependency installation completed!"
     print_status "You can now proceed with building the project"
