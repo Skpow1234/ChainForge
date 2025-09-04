@@ -419,6 +419,20 @@ jobs:
         fi
         echo "✅ Security build verified successfully"
 
+    - name: Build with thread sanitizer
+      run: |
+        cd build-security
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
+          -DCMAKE_CXX_FLAGS="-fsanitize=thread"
+        cmake --build . --parallel
+
+    - name: Verify thread sanitizer build
+      run: |
+        cd build-security
+        echo "✅ Thread sanitizer build completed successfully"
+
   # Stage 8: Docker verification - only after security passes
   docker:
     runs-on: ubuntu-latest
