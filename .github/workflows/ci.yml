@@ -393,10 +393,13 @@ jobs:
     - name: Build with sanitizers
       run: |
         cd build-security
+        # Note: USE_SANITIZERS=OFF prevents CompilerFlags.cmake from applying conflicting sanitizer flags
+        # We explicitly set CMAKE_CXX_FLAGS for sanitizer testing
         cmake .. \
           -DCMAKE_BUILD_TYPE=Debug \
           -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined,thread"
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined" \
+          -DUSE_SANITIZERS=OFF
         cmake --build . --parallel
 
     - name: Run fuzz tests
@@ -425,7 +428,8 @@ jobs:
         cmake .. \
           -DCMAKE_BUILD_TYPE=Debug \
           -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-          -DCMAKE_CXX_FLAGS="-fsanitize=thread"
+          -DCMAKE_CXX_FLAGS="-fsanitize=thread" \
+          -DUSE_SANITIZERS=OFF
         cmake --build . --parallel
 
     - name: Verify thread sanitizer build

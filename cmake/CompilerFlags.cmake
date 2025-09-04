@@ -47,9 +47,18 @@ endif()
 
 # Sanitizer support
 if(USE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    set(SANITIZER_FLAGS "-fsanitize=address,undefined,thread")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANITIZER_FLAGS}")
-    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} ${SANITIZER_FLAGS}")
+    # Use compatible sanitizer combinations
+    # Address + Undefined Behavior are compatible
+    set(SANITIZER_FLAGS_ADDRESS_UB "-fsanitize=address,undefined")
+    # Thread sanitizer must be used separately
+    set(SANITIZER_FLAGS_THREAD "-fsanitize=thread")
+    
+    # Default to address + undefined behavior for debug builds
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${SANITIZER_FLAGS_ADDRESS_UB}")
+    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} ${SANITIZER_FLAGS_ADDRESS_UB}")
+    
+    # Note: Thread sanitizer builds should be configured separately
+    # to avoid conflicts with address sanitizer
 endif()
 
 # Treat warnings as errors in CI
