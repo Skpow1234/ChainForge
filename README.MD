@@ -49,7 +49,7 @@
 
 ```bash
 # Start all services
-docker-compose up -d
+docker compose up -d
 
 # Build the project
 mkdir build && cd build

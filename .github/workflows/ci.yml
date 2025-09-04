@@ -452,11 +452,11 @@ jobs:
 
     - name: Build and test Docker images
       run: |
-        docker-compose build
-        docker-compose up -d postgres redis prometheus grafana jaeger
+        docker compose build
+        docker compose up -d postgres redis prometheus grafana jaeger
         sleep 30
-        docker-compose ps
-        docker-compose logs
+        docker compose ps
+        docker compose logs
 
     - name: Test Docker images
       run: |
@@ -468,9 +468,9 @@ jobs:
 
     - name: Verify Docker services
       run: |
-        docker-compose ps
+        docker compose ps
         # Verify all services are running
-        docker-compose ps | grep -q "Up" || exit 1
+        docker compose ps | grep -q "Up" || exit 1
         echo "✅ Docker services verified successfully"
 
   # Stage 9: SBOM generation - only after Docker verification
