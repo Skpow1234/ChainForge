@@ -71,6 +71,13 @@ install_system_deps() {
         python3-setuptools \
         python3-wheel
     
+    # Clang tools for static analysis
+    sudo apt-get install -y \
+        clang \
+        clang-tidy \
+        clang-format \
+        clang-tools
+    
     # Try to install optional dependencies
     for dep in "libssl-dev" "libboost-all-dev" "libprotobuf-dev" "protobuf-compiler" "librocksdb-dev" "libgtest-dev"; do
         if sudo apt-get install -y "$dep" 2>/dev/null; then
