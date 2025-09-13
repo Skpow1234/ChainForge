@@ -104,7 +104,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Consensus module, mining, validation
 **Tests**: Mining tests, difficulty adjustment, validation
 
-### Milestone 8: Basic RPC Server
+### Milestone 8: Basic RPC Server ✅
 
 **Problem**: Need interface for external communication
 **Solution**: Implement JSON-RPC server

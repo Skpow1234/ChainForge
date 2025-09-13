@@ -8,6 +8,6 @@ add_subdirectory(storage)
 add_subdirectory(consensus)
 # add_subdirectory(execution)   # Requires storage
 add_subdirectory(mempool)
-# add_subdirectory(rpc)         # Requires networking
+add_subdirectory(rpc)
 # add_subdirectory(node)         # Requires all modules
 # add_subdirectory(explorer)    # Requires all modules

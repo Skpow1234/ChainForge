@@ -8,6 +8,7 @@
 #include "chainforge/storage/database.hpp"
 #include "chainforge/mempool/mempool.hpp"
 #include "chainforge/consensus/consensus.hpp"
+#include "chainforge/rpc/rpc_server.hpp"
 
 int main() {
     std::cout << "ChainForge Core Test" << std::endl;
@@ -180,6 +181,51 @@ int main() {
 
         } else {
             std::cout << "Failed to create consensus instance" << std::endl;
+        }
+
+        // Test RPC (basic functionality)
+        std::cout << "\n=== Testing RPC ===" << std::endl;
+        auto rpc_server = chainforge::rpc::create_rpc_server();
+        auto blockchain_methods = chainforge::rpc::create_blockchain_rpc_methods();
+
+        if (rpc_server && blockchain_methods) {
+            std::cout << "RPC server and methods created successfully" << std::endl;
+
+            // Register some blockchain methods
+            rpc_server->register_method("eth_blockNumber",
+                [blockchain_methods](const nlohmann::json& params) {
+                    return blockchain_methods->eth_blockNumber(params);
+                });
+
+            rpc_server->register_method("eth_getBalance",
+                [blockchain_methods](const nlohmann::json& params) {
+                    return blockchain_methods->eth_getBalance(params);
+                });
+
+            rpc_server->register_method("net_version",
+                [blockchain_methods](const nlohmann::json& params) {
+                    return blockchain_methods->net_version(params);
+                });
+
+            rpc_server->register_method("web3_clientVersion",
+                [blockchain_methods](const nlohmann::json& params) {
+                    return blockchain_methods->web3_clientVersion(params);
+                });
+
+            std::cout << "RPC methods registered: " << (rpc_server->has_method("eth_blockNumber") ? "yes" : "no") << std::endl;
+
+            // Test RPC server configuration
+            chainforge::rpc::RpcServerConfig config;
+            config.host = "127.0.0.1";
+            config.port = 8545;
+
+            std::cout << "RPC server info: " << rpc_server->get_server_info() << std::endl;
+
+            // Note: We don't start the server in tests to avoid conflicts
+            std::cout << "RPC server configured but not started (for testing)" << std::endl;
+
+        } else {
+            std::cout << "Failed to create RPC server or methods" << std::endl;
         }
 
         std::cout << "\n✅ All core tests completed successfully!" << std::endl;
