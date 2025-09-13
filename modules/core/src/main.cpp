@@ -6,6 +6,7 @@
 #include "chainforge/core/transaction.hpp"
 #include "chainforge/core/block.hpp"
 #include "chainforge/storage/database.hpp"
+#include "chainforge/mempool/mempool.hpp"
 
 int main() {
     std::cout << "ChainForge Core Test" << std::endl;
@@ -84,6 +85,55 @@ int main() {
             }
         } else {
             std::cout << "Failed to create database instance" << std::endl;
+        }
+
+        // Test Mempool (basic functionality)
+        std::cout << "\n=== Testing Mempool ===" << std::endl;
+        chainforge::mempool::MempoolConfig mempool_config;
+        mempool_config.max_transactions = 100;
+        mempool_config.min_fee_per_gas = 1;
+
+        auto mempool = chainforge::mempool::create_mempool(mempool_config);
+        if (mempool) {
+            std::cout << "Mempool created successfully" << std::endl;
+
+            // Create a test transaction
+            chainforge::core::Address from = chainforge::core::Address::random();
+            chainforge::core::Address to = chainforge::core::Address::random();
+            chainforge::core::Amount amount = chainforge::core::Amount::from_ether(0.01);
+            chainforge::core::Transaction tx(from, to, amount);
+            tx.set_gas_price(10);  // Set gas price above minimum
+
+            // Add transaction to mempool
+            auto add_result = mempool->add_transaction(tx);
+            if (add_result == chainforge::mempool::MempoolError::SUCCESS) {
+                std::cout << "Transaction added to mempool successfully" << std::endl;
+
+                // Check if transaction exists
+                auto tx_hash = tx.calculate_hash();
+                if (mempool->has_transaction(tx_hash)) {
+                    std::cout << "Transaction found in mempool" << std::endl;
+                }
+
+                // Get transaction from mempool
+                auto retrieved_tx = mempool->get_transaction(tx_hash);
+                if (retrieved_tx.has_value()) {
+                    std::cout << "Transaction retrieved from mempool successfully" << std::endl;
+                }
+
+                // Get mempool stats
+                auto stats = mempool->get_stats();
+                std::cout << "Mempool stats: " << stats.transaction_count << " transactions" << std::endl;
+
+            } else {
+                std::cout << "Failed to add transaction to mempool: "
+                         << chainforge::mempool::mempool_error_to_string(add_result) << std::endl;
+            }
+
+            mempool->clear();
+            std::cout << "Mempool cleared successfully" << std::endl;
+        } else {
+            std::cout << "Failed to create mempool instance" << std::endl;
         }
 
         std::cout << "\n✅ All core tests completed successfully!" << std::endl;

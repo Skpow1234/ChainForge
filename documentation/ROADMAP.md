@@ -76,7 +76,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Core module, storage, validation
 **Tests**: Block creation, validation, linking tests
 
-### Milestone 6: Transaction Pool (Mempool)
+### Milestone 6: Transaction Pool (Mempool) ✅
 
 **Problem**: Need to manage pending transactions before inclusion in blocks
 **Solution**: Implement transaction mempool with validation
