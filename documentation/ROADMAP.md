@@ -20,7 +20,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Build system, CI/CD, development environment
 **Tests**: Build verification, dependency resolution, cross-platform compilation
 
-### Milestone 2: Core Domain Models
+### Milestone 2: Core Domain Models ✅
 
 **Problem**: Need fundamental blockchain data structures
 **Solution**: Implement core domain models for blocks, transactions, addresses
@@ -62,7 +62,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Storage module, database, performance
 **Tests**: Storage operations, performance benchmarks, data integrity
 
-### Milestone 5: Basic Block Structure
+### Milestone 5: Basic Block Structure ✅
 
 **Problem**: Need to represent blockchain blocks with proper linking
 **Solution**: Implement block structure with parent hash linking
@@ -90,7 +90,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Mempool module, validation, performance
 **Tests**: Transaction management, validation, performance tests
 
-### Milestone 7: Simple Proof of Work
+### Milestone 7: Simple Proof of Work ✅
 
 **Problem**: Need basic consensus mechanism for block creation
 **Solution**: Implement simple PoW consensus

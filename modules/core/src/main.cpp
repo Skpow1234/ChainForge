@@ -7,6 +7,7 @@
 #include "chainforge/core/block.hpp"
 #include "chainforge/storage/database.hpp"
 #include "chainforge/mempool/mempool.hpp"
+#include "chainforge/consensus/consensus.hpp"
 
 int main() {
     std::cout << "ChainForge Core Test" << std::endl;
@@ -134,6 +135,51 @@ int main() {
             std::cout << "Mempool cleared successfully" << std::endl;
         } else {
             std::cout << "Failed to create mempool instance" << std::endl;
+        }
+
+        // Test Consensus (PoW mining simulation)
+        std::cout << "\n=== Testing Consensus (PoW) ===" << std::endl;
+        auto consensus = chainforge::consensus::create_pow_consensus(1); // Low difficulty for testing
+        if (consensus) {
+            std::cout << "PoW consensus created successfully" << std::endl;
+
+            // Create a block template for mining
+            chainforge::core::Block block_template(1, genesis.calculate_hash(),
+                                                 chainforge::core::Timestamp::now());
+            block_template.add_transaction(tx);
+
+            std::cout << "Starting PoW mining simulation..." << std::endl;
+
+            // Mine the block
+            auto mining_result = consensus->mine_block(block_template);
+
+            if (mining_result.success) {
+                std::cout << "✅ Block mined successfully!" << std::endl;
+                std::cout << "Nonce: " << mining_result.nonce << std::endl;
+                std::cout << "Block hash: " << mining_result.block_hash.to_hex() << std::endl;
+                std::cout << "Mining time: " << mining_result.mining_time.count() << "ms" << std::endl;
+                std::cout << "Attempts: " << mining_result.attempts << std::endl;
+
+                // Validate the proof of work
+                bool is_valid_pow = consensus->validate_proof_of_work(
+                    mining_result.block_hash,
+                    mining_result.nonce,
+                    consensus->get_difficulty()
+                );
+                std::cout << "PoW validation: " << (is_valid_pow ? "valid" : "invalid") << std::endl;
+
+            } else {
+                std::cout << "❌ Mining failed after " << mining_result.attempts << " attempts" << std::endl;
+            }
+
+            // Get mining statistics
+            auto stats = consensus->get_mining_stats();
+            std::cout << "Mining stats - Total attempts: " << stats.total_attempts
+                     << ", Success rate: " << stats.successful_mines << "/"
+                     << (stats.total_attempts > 0 ? 1 : 0) << std::endl;
+
+        } else {
+            std::cout << "Failed to create consensus instance" << std::endl;
         }
 
         std::cout << "\n✅ All core tests completed successfully!" << std::endl;

@@ -5,7 +5,7 @@ add_subdirectory(core)
 add_subdirectory(crypto)
 add_subdirectory(storage)
 # add_subdirectory(p2p)         # Requires networking libraries
-# add_subdirectory(consensus)   # Requires crypto
+add_subdirectory(consensus)
 # add_subdirectory(execution)   # Requires storage
 add_subdirectory(mempool)
 # add_subdirectory(rpc)         # Requires networking
