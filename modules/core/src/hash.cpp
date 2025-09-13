@@ -4,6 +4,9 @@
 #include <random>
 #include <algorithm>
 
+// TODO: Include crypto module when available
+// #include "chainforge/crypto/hash.hpp"
+
 namespace chainforge::core {
 
 Hash::Hash(const Hash256& data) : data_(data) {}

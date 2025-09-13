@@ -17,7 +17,11 @@ RUN apt-get update && apt-get install -y \
     python3-setuptools \
     python3-wheel \
     libssl-dev \
-    libboost-all-dev \
+    libboost-system-dev \
+    libboost-filesystem-dev \
+    libboost-thread-dev \
+    libboost-chrono-dev \
+    libboost-atomic-dev \
     libprotobuf-dev \
     protobuf-compiler \
     librocksdb-dev \

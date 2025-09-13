@@ -3,7 +3,11 @@
 
 set(CORE_SOURCES
     src/hash.cpp
-    src/main.cpp
+    src/address.cpp
+    src/amount.cpp
+    src/timestamp.cpp
+    src/transaction.cpp
+    src/block.cpp
 )
 
 set(CORE_HEADERS
@@ -28,13 +32,16 @@ target_include_directories(chainforge-core
 
 target_compile_features(chainforge-core PRIVATE cxx_std_20)
 
-# Link dependencies - only essential ones for now
+# Link dependencies
 find_conan_package(fmt)
-target_link_libraries(chainforge-core PUBLIC fmt::fmt)
+find_conan_package(spdlog)
+find_conan_package(nlohmann_json)
+target_link_libraries(chainforge-core PUBLIC fmt::fmt spdlog::spdlog nlohmann_json::nlohmann_json
+                                      PRIVATE chainforge-crypto)
 
 # Add test binary
 add_executable(cppchain-core-test src/main.cpp)
-target_link_libraries(cppchain-core-test PRIVATE chainforge-core)
+target_link_libraries(cppchain-core-test PRIVATE chainforge-core chainforge-storage)
 
 # Install
 install(TARGETS chainforge-core cppchain-core-test

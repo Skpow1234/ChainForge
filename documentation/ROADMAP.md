@@ -4,9 +4,9 @@
 
 This roadmap outlines the development milestones for ChainForge, a production-grade crypto/blockchain client skeleton in modern C++ (C++20/23). The roadmap is organized into phases with specific milestones, each containing problem statements, solutions, features, acceptance criteria, touchpoints, and tests.
 
-## Phase 1: Foundation & Core Infrastructure (Milestones 1-15)
+## Phase 1: Foundation & Core Infrastructure (Milestones 1-15) ✅
 
-### Milestone 1: Project Setup & Build System
+### Milestone 1: Project Setup & Build System ✅
 
 **Problem**: Need a robust, modern C++ build system with dependency management
 **Solution**: Implement CMake + Conan v2 build system with proper module structure
@@ -34,7 +34,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Core module, domain modeling, type safety
 **Tests**: Unit tests for all core types, serialization tests
 
-### Milestone 3: Cryptographic Foundation
+### Milestone 3: Cryptographic Foundation ✅
 
 **Problem**: Need secure cryptographic primitives for blockchain operations
 **Solution**: Implement crypto module wrapping vetted libraries
@@ -48,7 +48,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Crypto module, security, performance
 **Tests**: Cryptographic validation, performance benchmarks, fuzzing
 
-### Milestone 4: Database Abstraction Layer
+### Milestone 4: Database Abstraction Layer ✅
 
 **Problem**: Need flexible storage backend for blockchain data
 **Solution**: Implement storage abstraction with RocksDB backend

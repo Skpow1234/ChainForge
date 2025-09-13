@@ -32,9 +32,9 @@ using Address160 = std::array<uint8_t, 20>;
 // Block header structure
 struct BlockHeader {
     BlockHeight height;
-    Hash256 parent_hash;
-    Hash256 merkle_root;
-    uint64_t timestamp;  // Use uint64_t instead of Timestamp class
+    Hash parent_hash;
+    Hash merkle_root;
+    Timestamp timestamp;
     BlockNonce nonce;
     GasLimit gas_limit;
     GasPrice gas_price;
@@ -43,9 +43,9 @@ struct BlockHeader {
 
 // Transaction structure
 struct TransactionData {
-    Address160 from;
-    Address160 to;
-    uint64_t value;  // Use uint64_t instead of Amount class
+    Address from;
+    Address to;
+    Amount value;
     GasLimit gas_limit;
     GasPrice gas_price;
     std::vector<uint8_t> data;

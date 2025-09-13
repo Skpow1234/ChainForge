@@ -33,18 +33,15 @@ target_include_directories(chainforge-crypto
 target_compile_features(chainforge-crypto PRIVATE cxx_std_20)
 
 # Link dependencies
-find_package(OpenSSL REQUIRED)
-find_package(libsecp256k1 REQUIRED)
-find_package(libsodium REQUIRED)
-find_package(blst REQUIRED)
+find_conan_package(fmt)
+find_conan_package(spdlog)
+find_conan_package(nlohmann_json)
 
 target_link_libraries(chainforge-crypto
     PUBLIC
-        OpenSSL::SSL
-        OpenSSL::Crypto
-        libsecp256k1::libsecp256k1
-        libsodium::libsodium
-        blst::blst
+        fmt::fmt
+        spdlog::spdlog
+        nlohmann_json::nlohmann_json
     PRIVATE
         chainforge-core
 )
