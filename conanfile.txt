@@ -9,12 +9,7 @@ gtest/1.14.0
 
 # Crypto (comprehensive set for blockchain)
 openssl/3.2.0
-libsecp256k1/0.3.2
 libsodium/1.0.19
-blst/0.3.11
-
-# Storage
-rocksdb/8.9.1
 
 # Build system and development
 cmake/3.28.0

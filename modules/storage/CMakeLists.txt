@@ -21,11 +21,17 @@ target_include_directories(chainforge-storage
 
 target_compile_features(chainforge-storage PRIVATE cxx_std_20)
 
-# Link dependencies
-find_conan_package(rocksdb)
+# Link dependencies - RocksDB may not be available, provide stub implementation
+# find_conan_package(rocksdb)
+# target_link_libraries(chainforge-storage
+#     PUBLIC
+#         rocksdb::rocksdb
+#     PRIVATE
+#         chainforge-core
+# )
+
+# For now, just link to core
 target_link_libraries(chainforge-storage
-    PUBLIC
-        rocksdb::rocksdb
     PRIVATE
         chainforge-core
 )

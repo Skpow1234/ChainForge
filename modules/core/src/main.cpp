@@ -56,7 +56,7 @@ int main() {
 
         // Test Storage (basic functionality)
         std::cout << "\n=== Testing Storage ===" << std::endl;
-        auto database = chainforge::storage::create_database("rocksdb");
+        auto database = chainforge::storage::create_database("memory");
         if (database) {
             chainforge::storage::DatabaseConfig config;
             config.path = "./test_db";

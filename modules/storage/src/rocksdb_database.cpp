@@ -1,353 +1,303 @@
 #include "chainforge/storage/database.hpp"
-#include <rocksdb/db.h>
-#include <rocksdb/options.h>
-#include <rocksdb/write_batch.h>
-#include <rocksdb/iterator.h>
 #include <memory>
 #include <mutex>
+#include <unordered_map>
+#include <shared_mutex>
+#include <algorithm>
+#include <vector>
 
 namespace chainforge::storage {
 
-// RocksDB iterator implementation
-class RocksDBIterator : public Iterator {
+// In-memory iterator implementation
+class MemoryIterator : public Iterator {
 public:
-    explicit RocksDBIterator(rocksdb::DB* db, const ReadOptions& options) {
-        rocksdb::ReadOptions rocksdb_options;
-        rocksdb_options.verify_checksums = options.verify_checksums;
-        iterator_ = db->NewIterator(rocksdb_options);
+    explicit MemoryIterator(const std::unordered_map<Key, Value>& data, const ReadOptions& options)
+        : data_(data), options_(options) {
+        // Create a sorted vector of keys for iteration
+        keys_.reserve(data.size());
+        for (const auto& [key, value] : data) {
+            keys_.push_back(key);
+        }
+        std::sort(keys_.begin(), keys_.end());
+        current_index_ = -1;
     }
 
-    ~RocksDBIterator() override = default;
+    ~MemoryIterator() override = default;
 
     bool valid() const override {
-        return iterator_->Valid();
+        return current_index_ >= 0 && static_cast<size_t>(current_index_) < keys_.size();
     }
 
     void seek_to_first() override {
-        iterator_->SeekToFirst();
+        current_index_ = keys_.empty() ? -1 : 0;
     }
 
     void seek_to_last() override {
-        iterator_->SeekToLast();
+        current_index_ = keys_.empty() ? -1 : static_cast<int>(keys_.size() - 1);
     }
 
     void seek(const Key& key) override {
-        rocksdb::Slice key_slice(reinterpret_cast<const char*>(key.data()), key.size());
-        iterator_->Seek(key_slice);
+        // Binary search for the key
+        auto it = std::lower_bound(keys_.begin(), keys_.end(), key);
+        if (it != keys_.end() && *it == key) {
+            current_index_ = static_cast<int>(it - keys_.begin());
+        } else {
+            current_index_ = -1;
+        }
     }
 
     void next() override {
-        iterator_->Next();
+        if (current_index_ >= 0 && static_cast<size_t>(current_index_) < keys_.size() - 1) {
+            ++current_index_;
+        } else {
+            current_index_ = -1;
+        }
     }
 
     void prev() override {
-        iterator_->Prev();
+        if (current_index_ > 0) {
+            --current_index_;
+        } else {
+            current_index_ = -1;
+        }
     }
 
     const Key& key() const override {
-        const rocksdb::Slice& slice = iterator_->key();
-        // Create a temporary Key from the slice
-        static thread_local Key temp_key;
-        temp_key.assign(slice.data(), slice.data() + slice.size());
-        return temp_key;
+        static const Key empty_key;
+        if (!valid()) return empty_key;
+        return keys_[current_index_];
     }
 
     const Value& value() const override {
-        const rocksdb::Slice& slice = iterator_->value();
-        // Create a temporary Value from the slice
-        static thread_local Value temp_value;
-        temp_value.assign(slice.data(), slice.data() + slice.size());
-        return temp_value;
+        static const Value empty_value;
+        if (!valid()) return empty_value;
+        auto it = data_.find(keys_[current_index_]);
+        if (it != data_.end()) {
+            return it->second;
+        }
+        return empty_value;
     }
 
     StorageError status() const override {
-        if (!iterator_->status().ok()) {
-            if (iterator_->status().IsNotFound()) {
-                return StorageError::NOT_FOUND;
-            } else if (iterator_->status().IsIOError()) {
-                return StorageError::IO_ERROR;
-            } else if (iterator_->status().IsCorruption()) {
-                return StorageError::CORRUPTION;
-            } else {
-                return StorageError::IO_ERROR;
-            }
-        }
         return StorageError::SUCCESS;
     }
 
 private:
-    std::unique_ptr<rocksdb::Iterator> iterator_;
+    const std::unordered_map<Key, Value>& data_;
+    ReadOptions options_;
+    std::vector<Key> keys_;
+    int current_index_;
 };
 
-// RocksDB write batch implementation
-class RocksDBWriteBatch : public WriteBatch {
+// In-memory write batch implementation
+class MemoryWriteBatch : public WriteBatch {
 public:
-    RocksDBWriteBatch() : batch_(std::make_unique<rocksdb::WriteBatch>()) {}
+    MemoryWriteBatch() = default;
 
     void put(const Key& key, const Value& value) override {
-        rocksdb::Slice key_slice(reinterpret_cast<const char*>(key.data()), key.size());
-        rocksdb::Slice value_slice(reinterpret_cast<const char*>(value.data()), value.size());
-        batch_->Put(key_slice, value_slice);
+        operations_.emplace_back(OperationType::PUT, key, value);
     }
 
     void remove(const Key& key) override {
-        rocksdb::Slice key_slice(reinterpret_cast<const char*>(key.data()), key.size());
-        batch_->Delete(key_slice);
+        operations_.emplace_back(OperationType::REMOVE, key, Value{});
     }
 
     void clear() override {
-        batch_ = std::make_unique<rocksdb::WriteBatch>();
+        operations_.clear();
     }
 
     size_t size() const override {
-        return batch_->Count();
+        return operations_.size();
     }
 
-    rocksdb::WriteBatch* get_batch() {
-        return batch_.get();
+    const std::vector<Operation>& get_operations() const {
+        return operations_;
     }
 
 private:
-    std::unique_ptr<rocksdb::WriteBatch> batch_;
+    enum class OperationType { PUT, REMOVE };
+
+    struct Operation {
+        OperationType type;
+        Key key;
+        Value value;
+
+        Operation(OperationType t, const Key& k, const Value& v)
+            : type(t), key(k), value(v) {}
+    };
+
+    std::vector<Operation> operations_;
 };
 
-// RocksDB database implementation
-class RocksDBDatabase : public Database {
+// In-memory database implementation
+class MemoryDatabase : public Database {
 public:
-    RocksDBDatabase() = default;
-    ~RocksDBDatabase() override {
-        if (db_) {
-            close();
-        }
-    }
+    MemoryDatabase() = default;
+    ~MemoryDatabase() override = default;
 
     StorageResult<void> open(const DatabaseConfig& config) override {
-        if (db_) {
+        if (is_open_) {
             return StorageResult<void>{StorageError::ALREADY_EXISTS};
         }
 
-        rocksdb::Options options;
-        options.create_if_missing = config.create_if_missing;
-        options.error_if_exists = config.error_if_exists;
-        options.write_buffer_size = config.write_buffer_size;
-        options.max_open_files = config.max_open_files;
-        options.max_background_jobs = config.max_background_jobs;
-
-        if (config.compression) {
-            options.compression = rocksdb::CompressionType::kLZ4Compression;
-            options.compression_opts.level = config.compression_level;
-        }
-
-        // Block cache
-        rocksdb::BlockBasedTableOptions table_options;
-        table_options.block_cache = rocksdb::NewLRUCache(config.block_cache_size);
-        options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
-
-        rocksdb::Status status = rocksdb::DB::Open(options, config.path, &db_);
-        if (!status.ok()) {
-            return StorageResult<void>{StorageError::IO_ERROR};
+        if (config.error_if_exists && !data_.empty()) {
+            return StorageResult<void>{StorageError::ALREADY_EXISTS};
         }
 
         config_ = config;
+        is_open_ = true;
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
     StorageResult<void> close() override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<void>{StorageError::SUCCESS};
         }
 
-        rocksdb::Status status = db_->Close();
-        delete db_;
-        db_ = nullptr;
-
-        if (!status.ok()) {
-            return StorageResult<void>{StorageError::IO_ERROR};
-        }
-
+        data_.clear();
+        is_open_ = false;
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
     bool is_open() const override {
-        return db_ != nullptr;
+        return is_open_;
     }
 
     StorageResult<Value> get(const Key& key, const ReadOptions& options) override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<Value>{Value{}, StorageError::IO_ERROR};
         }
 
-        rocksdb::ReadOptions rocksdb_options;
-        rocksdb_options.verify_checksums = options.verify_checksums;
-
-        rocksdb::Slice key_slice(reinterpret_cast<const char*>(key.data()), key.size());
-        std::string value_str;
-
-        rocksdb::Status status = db_->Get(rocksdb_options, key_slice, &value_str);
-        if (status.IsNotFound()) {
+        std::shared_lock lock(mutex_);
+        auto it = data_.find(key);
+        if (it == data_.end()) {
             return StorageResult<Value>{Value{}, StorageError::NOT_FOUND};
-        } else if (!status.ok()) {
-            return StorageResult<Value>{Value{}, StorageError::IO_ERROR};
         }
 
-        Value value(value_str.begin(), value_str.end());
-        return StorageResult<Value>{value, StorageError::SUCCESS};
+        return StorageResult<Value>{it->second, StorageError::SUCCESS};
     }
 
     StorageResult<void> put(const Key& key, const Value& value, const WriteOptions& options) override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
 
-        rocksdb::WriteOptions rocksdb_options;
-        rocksdb_options.sync = options.sync;
-
-        rocksdb::Slice key_slice(reinterpret_cast<const char*>(key.data()), key.size());
-        rocksdb::Slice value_slice(reinterpret_cast<const char*>(value.data()), value.size());
-
-        rocksdb::Status status = db_->Put(rocksdb_options, key_slice, value_slice);
-        if (!status.ok()) {
-            return StorageResult<void>{StorageError::IO_ERROR};
-        }
-
+        std::unique_lock lock(mutex_);
+        data_[key] = value;
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
     StorageResult<void> remove(const Key& key, const WriteOptions& options) override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
 
-        rocksdb::WriteOptions rocksdb_options;
-        rocksdb_options.sync = options.sync;
-
-        rocksdb::Slice key_slice(reinterpret_cast<const char*>(key.data()), key.size());
-
-        rocksdb::Status status = db_->Delete(rocksdb_options, key_slice);
-        if (status.IsNotFound()) {
+        std::unique_lock lock(mutex_);
+        auto it = data_.find(key);
+        if (it == data_.end()) {
             return StorageResult<void>{StorageError::NOT_FOUND};
-        } else if (!status.ok()) {
-            return StorageResult<void>{StorageError::IO_ERROR};
         }
 
+        data_.erase(it);
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
     StorageResult<void> write(WriteBatch& batch, const WriteOptions& options) override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
 
-        auto* rocksdb_batch = dynamic_cast<RocksDBWriteBatch*>(&batch);
-        if (!rocksdb_batch) {
+        auto* memory_batch = dynamic_cast<MemoryWriteBatch*>(&batch);
+        if (!memory_batch) {
             return StorageResult<void>{StorageError::INVALID_ARGUMENT};
         }
 
-        rocksdb::WriteOptions rocksdb_options;
-        rocksdb_options.sync = options.sync;
-
-        rocksdb::Status status = db_->Write(rocksdb_options, rocksdb_batch->get_batch());
-        if (!status.ok()) {
-            return StorageResult<void>{StorageError::IO_ERROR};
+        std::unique_lock lock(mutex_);
+        for (const auto& op : memory_batch->get_operations()) {
+            if (op.type == MemoryWriteBatch::OperationType::PUT) {
+                data_[op.key] = op.value;
+            } else if (op.type == MemoryWriteBatch::OperationType::REMOVE) {
+                data_.erase(op.key);
+            }
         }
 
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
     std::unique_ptr<Iterator> new_iterator(const ReadOptions& options) override {
-        if (!db_) {
+        if (!is_open_) {
             return nullptr;
         }
-        return std::make_unique<RocksDBIterator>(db_, options);
+
+        std::shared_lock lock(mutex_);
+        return std::make_unique<MemoryIterator>(data_, options);
     }
 
     StorageResult<void> flush(const WriteOptions& options) override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
-
-        rocksdb::FlushOptions flush_options;
-        flush_options.wait = options.sync;
-
-        rocksdb::Status status = db_->Flush(flush_options);
-        if (!status.ok()) {
-            return StorageResult<void>{StorageError::IO_ERROR};
-        }
-
+        // In-memory database, nothing to flush
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
     StorageResult<void> compact_range(const Key* begin, const Key* end) override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
-
-        rocksdb::CompactRangeOptions options;
-        rocksdb::Slice* begin_slice = nullptr;
-        rocksdb::Slice* end_slice = nullptr;
-
-        rocksdb::Slice begin_slice_storage, end_slice_storage;
-        if (begin) {
-            begin_slice_storage = rocksdb::Slice(reinterpret_cast<const char*>(begin->data()), begin->size());
-            begin_slice = &begin_slice_storage;
-        }
-        if (end) {
-            end_slice_storage = rocksdb::Slice(reinterpret_cast<const char*>(end->data()), end->size());
-            end_slice = &end_slice_storage;
-        }
-
-        rocksdb::Status status = db_->CompactRange(options, begin_slice, end_slice);
-        if (!status.ok()) {
-            return StorageResult<void>{StorageError::IO_ERROR};
-        }
-
+        // In-memory database, nothing to compact
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
     StorageResult<std::string> get_property(const std::string& property) override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<std::string>{"", StorageError::IO_ERROR};
         }
 
-        std::string value;
-        bool found = db_->GetProperty(property, &value);
-        if (!found) {
-            return StorageResult<std::string>{"", StorageError::NOT_FOUND};
+        if (property == "rocksdb.stats") {
+            std::string stats = "In-memory database stats:\n";
+            stats += "Keys: " + std::to_string(data_.size()) + "\n";
+            return StorageResult<std::string>{stats, StorageError::SUCCESS};
         }
 
-        return StorageResult<std::string>{value, StorageError::SUCCESS};
+        return StorageResult<std::string>{"", StorageError::NOT_FOUND};
     }
 
     StorageResult<uint64_t> get_approximate_size(const Key& start, const Key& limit) override {
-        if (!db_) {
+        if (!is_open_) {
             return StorageResult<uint64_t>{0, StorageError::IO_ERROR};
         }
 
-        rocksdb::Range range;
-        range.start = rocksdb::Slice(reinterpret_cast<const char*>(start.data()), start.size());
-        range.limit = rocksdb::Slice(reinterpret_cast<const char*>(limit.data()), limit.size());
-
+        std::shared_lock lock(mutex_);
         uint64_t size = 0;
-        db_->GetApproximateSizes(&range, 1, &size);
+
+        for (const auto& [key, value] : data_) {
+            if (key >= start && key <= limit) {
+                size += key.size() + value.size();
+            }
+        }
 
         return StorageResult<uint64_t>{size, StorageError::SUCCESS};
     }
 
 private:
-    rocksdb::DB* db_ = nullptr;
+    mutable std::shared_mutex mutex_;
+    std::unordered_map<Key, Value> data_;
     DatabaseConfig config_;
+    bool is_open_ = false;
 };
 
 // Factory functions
 std::unique_ptr<Database> create_database(const std::string& backend) {
-    if (backend == "rocksdb") {
-        return std::make_unique<RocksDBDatabase>();
+    if (backend == "memory" || backend == "rocksdb") {
+        // Provide in-memory implementation for both backends for now
+        return std::make_unique<MemoryDatabase>();
     }
     return nullptr;  // Unknown backend
 }
 
 std::unique_ptr<WriteBatch> create_write_batch() {
-    return std::make_unique<RocksDBWriteBatch>();
+    return std::make_unique<MemoryWriteBatch>();
 }
 
 } // namespace chainforge::storage

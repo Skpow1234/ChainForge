@@ -36,12 +36,17 @@ target_compile_features(chainforge-crypto PRIVATE cxx_std_20)
 find_conan_package(fmt)
 find_conan_package(spdlog)
 find_conan_package(nlohmann_json)
+find_conan_package(openssl)
+find_conan_package(libsodium)
 
 target_link_libraries(chainforge-crypto
     PUBLIC
         fmt::fmt
         spdlog::spdlog
         nlohmann_json::nlohmann_json
+        OpenSSL::SSL
+        OpenSSL::Crypto
+        libsodium::libsodium
     PRIVATE
         chainforge-core
 )
