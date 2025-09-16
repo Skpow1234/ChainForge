@@ -4,6 +4,7 @@
 add_subdirectory(core)
 add_subdirectory(crypto)
 add_subdirectory(logging)
+add_subdirectory(metrics)
 add_subdirectory(storage)
 # add_subdirectory(p2p)         # Requires networking libraries
 add_subdirectory(consensus)
