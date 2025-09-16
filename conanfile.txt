@@ -12,8 +12,8 @@ openssl/3.2.0
 libsodium/1.0.19
 
 # Build system and development
-cmake/3.28.0
-boost/1.83.0
+# Note: cmake is a system dependency and should be installed separately
+# Note: boost will be added when needed for p2p/networking modules
 
 [generators]
 CMakeDeps

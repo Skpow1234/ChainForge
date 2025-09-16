@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cctype>
 #include <regex>
+#include <iostream>
+#include <stdexcept>
 
 namespace chainforge::logging {
 

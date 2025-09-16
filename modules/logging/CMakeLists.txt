@@ -2,9 +2,9 @@
 # Structured logging with spdlog for ChainForge
 
 # Find required packages
-find_package(spdlog REQUIRED)
-find_package(nlohmann_json REQUIRED)
-find_package(fmt REQUIRED)
+find_conan_package(spdlog)
+find_conan_package(nlohmann_json)
+find_conan_package(fmt)
 
 # Create the logging library
 add_library(chainforge_logging

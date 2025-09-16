@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <thread>
+#include <chrono>
 
 using namespace chainforge::logging;
 

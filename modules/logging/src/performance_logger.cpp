@@ -1,5 +1,6 @@
 #include "chainforge/logging/performance_logger.hpp"
 #include <fmt/format.h>
+#include <thread>
 
 namespace chainforge::logging {
 
