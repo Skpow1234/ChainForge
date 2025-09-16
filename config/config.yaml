@@ -65,13 +65,23 @@ metrics:
 
 # Logging configuration
 logging:
-  level: "debug"
+  console:
+    enabled: true
+    level: "info"
+    pretty_print: false
+  file:
+    enabled: true
+    level: "debug"
+    directory: "logs"
+    filename: "chainforge.log"
+    max_size: "100MB"
+    max_files: 5
+    pretty_print: false
   format: "json"
-  output: "stdout"
-  file: null
-  max_size: "100MB"
-  max_files: 5
-  max_age: "7d"
+  global_fields:
+    service: "chainforge-node"
+    version: "1.0.0"
+    environment: "development"
 
 # Database configuration
 database:
