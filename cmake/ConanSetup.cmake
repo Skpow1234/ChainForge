@@ -25,6 +25,19 @@ function(find_conan_package PACKAGE_NAME)
     endif()
 endfunction()
 
+# Special handling for OpenSSL Conan package
+function(find_openssl_conan)
+    if(EXISTS "${CMAKE_BINARY_DIR}/conan_toolchain.cmake")
+        # Try different OpenSSL target names that Conan might provide
+        find_package(OpenSSL QUIET)
+        if(NOT OpenSSL_FOUND)
+            find_package(openssl REQUIRED)
+        endif()
+    else()
+        message(FATAL_ERROR "Conan toolchain not available. Please run 'conan install' first.")
+    endif()
+endfunction()
+
 # Function to link Conan targets
 function(link_conan_targets TARGET_NAME)
     if(EXISTS "${CMAKE_BINARY_DIR}/conan_toolchain.cmake")

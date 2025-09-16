@@ -36,16 +36,27 @@ target_compile_features(chainforge-crypto PRIVATE cxx_std_20)
 find_conan_package(fmt)
 find_conan_package(spdlog)
 find_conan_package(nlohmann_json)
-find_conan_package(openssl)
+find_openssl_conan()
 find_conan_package(libsodium)
+
+# Determine OpenSSL targets based on what was found
+# Conan's OpenSSL package typically provides these targets
+if(TARGET openssl::ssl AND TARGET openssl::crypto)
+    set(OPENSSL_TARGETS openssl::ssl openssl::crypto)
+elseif(TARGET OpenSSL::SSL AND TARGET OpenSSL::Crypto)
+    set(OPENSSL_TARGETS OpenSSL::SSL OpenSSL::Crypto)
+elseif(TARGET openssl::openssl)
+    set(OPENSSL_TARGETS openssl::openssl)
+else()
+    message(FATAL_ERROR "OpenSSL targets not found. Available targets: ${CMAKE_FIND_PACKAGE_NAME}. Check Conan configuration.")
+endif()
 
 target_link_libraries(chainforge-crypto
     PUBLIC
         fmt::fmt
         spdlog::spdlog
         nlohmann_json::nlohmann_json
-        OpenSSL::SSL
-        OpenSSL::Crypto
+        ${OPENSSL_TARGETS}
         libsodium::libsodium
     PRIVATE
         chainforge-core
