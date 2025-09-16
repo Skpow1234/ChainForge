@@ -46,9 +46,8 @@ find_conan_package(nlohmann_json)
 find_openssl_conan()
 find_conan_package(libsodium)
 
-# Find system libsecp256k1
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(SECP256K1 REQUIRED libsecp256k1)
+# Find secp256k1 using our custom module
+find_package(Secp256k1 REQUIRED)
 
 # Determine OpenSSL targets based on what was found
 # Conan's OpenSSL package typically provides these targets
@@ -62,8 +61,7 @@ else()
     message(FATAL_ERROR "OpenSSL targets not found. Available targets: ${CMAKE_FIND_PACKAGE_NAME}. Check Conan configuration.")
 endif()
 
-# Add secp256k1 include directories
-target_include_directories(chainforge-crypto PRIVATE ${SECP256K1_INCLUDE_DIRS})
+# secp256k1 include directories are handled by the imported target
 
 target_link_libraries(chainforge-crypto
     PUBLIC
@@ -72,7 +70,7 @@ target_link_libraries(chainforge-crypto
         nlohmann_json::nlohmann_json
         ${OPENSSL_TARGETS}
         libsodium::libsodium
-        ${SECP256K1_LIBRARIES}
+        secp256k1::secp256k1
     PRIVATE
         chainforge-core
 )

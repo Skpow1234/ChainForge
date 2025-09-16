@@ -6,6 +6,9 @@ set(ChainForge_VERSION_MAJOR 0)
 set(ChainForge_VERSION_MINOR 1)
 set(ChainForge_VERSION_PATCH 0)
 
+# Add cmake module path
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # Include cmake modules
 include(cmake/CompilerFlags.cmake)
 include(cmake/ConanSetup.cmake)
