@@ -4,7 +4,7 @@
 #include <string>
 #include <thread>
 #include <atomic>
-#include <prometheus/exposer.h>
+// Note: HTTP server temporarily disabled due to prometheus-cpp dependency issues
 
 namespace chainforge::metrics {
 
@@ -57,7 +57,6 @@ public:
 
 private:
     MetricsServerConfig config_;
-    std::unique_ptr<prometheus::Exposer> exposer_;
     std::atomic<bool> running_;
     
     /// Initialize exposer

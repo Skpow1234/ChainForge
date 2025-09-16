@@ -4,10 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <mutex>
-#include <prometheus/registry.h>
-#include <prometheus/counter.h>
-#include <prometheus/gauge.h>
-#include <prometheus/histogram.h>
+#include "internal/simple_metrics.hpp"
 
 namespace chainforge::metrics {
 
@@ -53,10 +50,13 @@ public:
         const std::map<std::string, std::string>& labels = {}
     );
     
-    /// Get underlying Prometheus registry
-    std::shared_ptr<prometheus::Registry> prometheus_registry() const {
-        return registry_;
+    /// Get underlying simple registry
+    internal::SimpleRegistry& simple_registry() const {
+        return internal::SimpleRegistry::instance();
     }
+    
+    /// Export metrics in Prometheus format
+    std::string export_metrics() const;
     
     /// Clear all metrics (for testing)
     void clear();
@@ -68,12 +68,6 @@ private:
     MetricsRegistry();
     
     mutable std::mutex mutex_;
-    std::shared_ptr<prometheus::Registry> registry_;
-    
-    // Metric families
-    std::unordered_map<std::string, prometheus::Family<prometheus::Counter>*> counter_families_;
-    std::unordered_map<std::string, prometheus::Family<prometheus::Gauge>*> gauge_families_;
-    std::unordered_map<std::string, prometheus::Family<prometheus::Histogram>*> histogram_families_;
     
     // Cached metrics
     std::unordered_map<std::string, std::shared_ptr<Counter>> counters_;

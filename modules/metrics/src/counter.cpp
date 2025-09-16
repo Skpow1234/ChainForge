@@ -3,23 +3,23 @@
 
 namespace chainforge::metrics {
 
-Counter::Counter(prometheus::Counter& prometheus_counter, const std::string& name)
-    : prometheus_counter_(prometheus_counter), name_(name) {
+Counter::Counter(std::shared_ptr<internal::SimpleCounter> simple_counter, const std::string& name)
+    : simple_counter_(simple_counter), name_(name) {
 }
 
 void Counter::increment() {
-    prometheus_counter_.Increment();
+    simple_counter_->increment();
 }
 
 void Counter::increment(double value) {
     if (value < 0) {
         throw std::invalid_argument("Counter increment value must be non-negative");
     }
-    prometheus_counter_.Increment(value);
+    simple_counter_->increment(value);
 }
 
 double Counter::value() const {
-    return prometheus_counter_.Value();
+    return simple_counter_->value();
 }
 
 void Counter::reset() {

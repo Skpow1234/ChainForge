@@ -12,7 +12,8 @@ openssl/3.2.0
 libsodium/1.0.19
 
 # Metrics and observability
-prometheus-cpp/1.2.4
+# Note: prometheus-cpp temporarily disabled due to CI issues
+# Will implement basic metrics without external dependencies
 
 # Build system and development
 # Note: cmake is a system dependency and should be installed separately

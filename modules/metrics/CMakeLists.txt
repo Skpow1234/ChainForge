@@ -2,11 +2,12 @@
 # Prometheus metrics collection for ChainForge
 
 # Find required packages
-find_conan_package(prometheus-cpp)
 find_conan_package(nlohmann_json)
+# Note: prometheus-cpp temporarily disabled due to CI issues
 
 # Create the metrics library
 add_library(chainforge_metrics
+    src/simple_metrics.cpp
     src/metrics_registry.cpp
     src/counter.cpp
     src/gauge.cpp
@@ -29,7 +30,6 @@ target_include_directories(chainforge_metrics
 # Link dependencies
 target_link_libraries(chainforge_metrics
     PUBLIC
-        prometheus-cpp::prometheus-cpp
         nlohmann_json::nlohmann_json
         chainforge_logging
 )

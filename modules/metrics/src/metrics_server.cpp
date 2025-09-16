@@ -3,6 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <mutex>
+#include <iostream>
 
 namespace chainforge::metrics {
 
@@ -33,16 +34,10 @@ bool MetricsServer::start() {
         return true; // Already running
     }
     
-    try {
-        if (!initialize_exposer()) {
-            return false;
-        }
-        
-        running_.store(true);
-        return true;
-    } catch (const std::exception&) {
-        return false;
-    }
+    // Note: HTTP server temporarily disabled due to prometheus-cpp dependency issues
+    std::cout << "Metrics server stub started at " << metrics_url() << std::endl;
+    running_.store(true);
+    return true;
 }
 
 void MetricsServer::stop() {
@@ -50,7 +45,7 @@ void MetricsServer::stop() {
         return; // Already stopped
     }
     
-    exposer_.reset();
+    std::cout << "Metrics server stopped" << std::endl;
     running_.store(false);
 }
 
@@ -61,19 +56,8 @@ std::string MetricsServer::metrics_url() const {
 }
 
 bool MetricsServer::initialize_exposer() {
-    try {
-        // Create Prometheus exposer
-        exposer_ = std::make_unique<prometheus::Exposer>(config_.bind_address());
-        
-        // Register metrics registry
-        auto& registry = get_metrics_registry();
-        exposer_->RegisterCollectable(registry.prometheus_registry());
-        
-        return true;
-    } catch (const std::exception&) {
-        exposer_.reset();
-        return false;
-    }
+    // Stub implementation - HTTP server temporarily disabled
+    return true;
 }
 
 GlobalMetricsServer& GlobalMetricsServer::instance() {

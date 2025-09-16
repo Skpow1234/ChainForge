@@ -1,9 +1,9 @@
 #pragma once
 
-#include <prometheus/counter.h>
 #include <memory>
 #include <string>
 #include <map>
+#include "internal/simple_metrics.hpp"
 
 namespace chainforge::metrics {
 
@@ -12,7 +12,7 @@ namespace chainforge::metrics {
 class Counter {
 public:
     /// Constructor
-    explicit Counter(prometheus::Counter& prometheus_counter, const std::string& name);
+    explicit Counter(std::shared_ptr<internal::SimpleCounter> simple_counter, const std::string& name);
     
     /// Destructor
     ~Counter() = default;
@@ -39,7 +39,7 @@ public:
     void reset();
 
 private:
-    prometheus::Counter& prometheus_counter_;
+    std::shared_ptr<internal::SimpleCounter> simple_counter_;
     std::string name_;
 };
 
