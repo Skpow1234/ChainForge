@@ -168,7 +168,7 @@ Timestamp::value_type Timestamp::parse_iso8601(const std::string& iso_string) {
 }
 
 // Free functions
-Timestamp operator+(duration_type duration, const Timestamp& timestamp) {
+Timestamp operator+(Timestamp::duration_type duration, const Timestamp& timestamp) {
     return timestamp + duration;
 }
 
@@ -178,7 +178,7 @@ std::ostream& operator<<(std::ostream& os, const Timestamp& timestamp) {
 }
 
 std::istream& operator>>(std::istream& is, Timestamp& timestamp) {
-    value_type seconds;
+    Timestamp::value_type seconds;
     is >> seconds;
     timestamp = Timestamp(seconds);
     return is;

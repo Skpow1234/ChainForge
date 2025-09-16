@@ -8,13 +8,9 @@
 
 namespace chainforge::core {
 
-// Forward declarations
+// Forward declarations for classes that don't appear in structs
 class Block;
 class Transaction;
-class Address;
-class Amount;
-class Hash;
-class Timestamp;
 
 // Type aliases
 using BlockHeight = uint64_t;
@@ -32,9 +28,9 @@ using Address160 = std::array<uint8_t, 20>;
 // Block header structure
 struct BlockHeader {
     BlockHeight height;
-    Hash parent_hash;
-    Hash merkle_root;
-    Timestamp timestamp;
+    Hash256 parent_hash;
+    Hash256 merkle_root;
+    uint64_t timestamp;  // Unix timestamp in seconds
     BlockNonce nonce;
     GasLimit gas_limit;
     GasPrice gas_price;
@@ -43,9 +39,9 @@ struct BlockHeader {
 
 // Transaction structure
 struct TransactionData {
-    Address from;
-    Address to;
-    Amount value;
+    Address160 from;
+    Address160 to;
+    uint64_t value;  // Amount in base units (wei)
     GasLimit gas_limit;
     GasPrice gas_price;
     std::vector<uint8_t> data;

@@ -4,6 +4,7 @@
 #include <string>
 #include <compare>
 #include <stdexcept>
+#include <limits>
 
 namespace chainforge::core {
 
@@ -85,8 +86,8 @@ private:
     static value_type parse_decimal(const std::string& decimal_str);
 };
 
-// Free functions
-Amount operator*(value_type multiplier, const Amount& amount);
+// Free functions  
+Amount operator*(Amount::value_type multiplier, const Amount& amount);
 std::ostream& operator<<(std::ostream& os, const Amount& amount);
 std::istream& operator>>(std::istream& is, Amount& amount);
 

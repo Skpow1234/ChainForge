@@ -33,9 +33,6 @@ public:
     static CryptoResult<std::array<byte_t, 20>> keccak160(const ByteVector& data);
     static CryptoResult<std::array<byte_t, 20>> keccak160(const byte_t* data, size_t length);
 
-    static CryptoResult<std::array<byte_t, 32>> keccak256(const ByteVector& data);
-    static CryptoResult<std::array<byte_t, 32>> keccak256(const byte_t* data, size_t length);
-
     static CryptoResult<std::array<byte_t, 48>> keccak384(const ByteVector& data);
     static CryptoResult<std::array<byte_t, 48>> keccak384(const byte_t* data, size_t length);
 

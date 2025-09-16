@@ -218,9 +218,9 @@ bool is_valid_transaction_data(const TransactionData& data) {
 
 GasLimit estimate_gas(const Transaction& transaction) {
     if (transaction.is_contract_creation()) {
-        return 53000 + transaction.data().size() * 200; // Rough estimate
+        return 53000 + transaction.payload().size() * 200; // Rough estimate
     } else if (transaction.is_contract_call()) {
-        return 21000 + transaction.data().size() * 68; // Rough estimate
+        return 21000 + transaction.payload().size() * 68; // Rough estimate
     } else {
         return 21000; // Standard transfer
     }

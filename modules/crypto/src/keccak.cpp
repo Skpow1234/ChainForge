@@ -175,7 +175,7 @@ CryptoResult<Hash256> Keccak::ethereum_address_hash(const ByteVector& data) {
 
 CryptoResult<Hash256> Keccak::ethereum_signature_hash(const ByteVector& data) {
     // Add Ethereum message prefix
-    std::string prefix = "\x19Ethereum Signed Message:\n" + std::to_string(data.size());
+    std::string prefix = std::string("\x19", 1) + "Ethereum Signed Message:\n" + std::to_string(data.size());
     ByteVector message;
     message.reserve(prefix.size() + data.size());
     message.insert(message.end(), prefix.begin(), prefix.end());

@@ -31,6 +31,7 @@ CryptoResult<Secp256k1PublicKey> Signature::ecdsa_secp256k1_recover_public_key(
     bool compressed
 ) {
     // TODO: Implement public key recovery
+    (void)message; (void)signature; (void)compressed; // Suppress unused parameter warnings
     return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::UNSUPPORTED_ALGORITHM};
 }
 
@@ -81,10 +82,13 @@ CryptoResult<bool> Signature::bls_verify_aggregate(
     const std::vector<BlsPublicKey>& public_keys
 ) {
     // TODO: Implement BLS aggregate verification
+    (void)messages; (void)aggregate_signature; (void)public_keys; // Suppress unused parameter warnings
     return CryptoResult<bool>{false, CryptoError::UNSUPPORTED_ALGORITHM};
 }
 
-std::string Signature::signature_to_hex(const Secp256k1Signature& sig) {
+// Template implementation
+template<typename T>
+std::string Signature::signature_to_hex(const T& sig) {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
     for (auto byte : sig) {
@@ -93,22 +97,16 @@ std::string Signature::signature_to_hex(const Secp256k1Signature& sig) {
     return ss.str();
 }
 
-std::string Signature::signature_to_hex(const Ed25519Signature& sig) {
-    std::stringstream ss;
-    ss << std::hex << std::setfill('0');
-    for (auto byte : sig) {
-        ss << std::setw(2) << static_cast<int>(byte);
-    }
-    return ss.str();
+std::string Signature::secp256k1_signature_to_hex(const Secp256k1Signature& sig) {
+    return signature_to_hex(sig);
 }
 
-std::string Signature::signature_to_hex(const BlsSignature& sig) {
-    std::stringstream ss;
-    ss << std::hex << std::setfill('0');
-    for (auto byte : sig) {
-        ss << std::setw(2) << static_cast<int>(byte);
-    }
-    return ss.str();
+std::string Signature::ed25519_signature_to_hex(const Ed25519Signature& sig) {
+    return signature_to_hex(sig);
+}
+
+std::string Signature::bls_signature_to_hex(const BlsSignature& sig) {
+    return signature_to_hex(sig);
 }
 
 CryptoResult<Secp256k1Signature> Signature::signature_from_hex_secp256k1(const std::string& hex) {
@@ -159,6 +157,7 @@ CryptoResult<uint8_t> Signature::ecdsa_get_recovery_id(
     const Secp256k1PublicKey& public_key
 ) {
     // TODO: Implement recovery ID calculation
+    (void)message; (void)signature; (void)public_key; // Suppress unused parameter warnings
     return CryptoResult<uint8_t>{0, CryptoError::UNSUPPORTED_ALGORITHM};
 }
 
@@ -176,7 +175,7 @@ CryptoResult<Secp256k1Signature> Signature::internal_ecdsa_sign(
         return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, CryptoError::SIGNATURE_FAILED};
     }
 
-    BIGNUM* priv_bn = BN_bin2bn(private_key.data(), private_key.size(), nullptr);
+    BIGNUM* priv_bn = BN_bin2bn(private_key.data(), static_cast<int>(private_key.size()), nullptr);
     if (!priv_bn || !EC_KEY_set_private_key(ec_key, priv_bn)) {
         BN_free(priv_bn);
         EC_KEY_free(ec_key);
@@ -193,7 +192,7 @@ CryptoResult<Secp256k1Signature> Signature::internal_ecdsa_sign(
 
     // Convert to DER format
     int der_len = i2d_ECDSA_SIG(sig, nullptr);
-    if (der_len <= 0 || der_len > static_cast<int>(Secp256k1Signature::size())) {
+    if (der_len <= 0 || der_len > static_cast<int>(SECP256K1_SIGNATURE_SIZE)) {
         ECDSA_SIG_free(sig);
         EC_KEY_free(ec_key);
         return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, CryptoError::SIGNATURE_FAILED};
@@ -230,14 +229,14 @@ CryptoResult<bool> Signature::internal_ecdsa_verify(
 
     // Set the public key
     const unsigned char* pub_key_data = public_key.data();
-    if (!o2i_ECPublicKey(&ec_key, &pub_key_data, public_key.size())) {
+    if (!o2i_ECPublicKey(&ec_key, &pub_key_data, static_cast<long>(public_key.size()))) {
         EC_KEY_free(ec_key);
         return CryptoResult<bool>{false, CryptoError::INVALID_KEY};
     }
 
     // Parse DER signature
     const unsigned char* sig_data = signature.data();
-    ECDSA_SIG* sig = d2i_ECDSA_SIG(nullptr, &sig_data, signature.size());
+    ECDSA_SIG* sig = d2i_ECDSA_SIG(nullptr, &sig_data, static_cast<long>(signature.size()));
     if (!sig) {
         EC_KEY_free(ec_key);
         return CryptoResult<bool>{false, CryptoError::INVALID_SIGNATURE};
@@ -286,6 +285,7 @@ CryptoResult<BlsSignature> Signature::internal_bls_sign(
 ) {
     // BLS implementation not available - stub implementation
     // In a real implementation, this would use blst or another BLS library
+    (void)message; (void)message_len; // Suppress unused parameter warnings
     BlsSignature signature{};
     // Copy some data to make it look like a signature for testing
     std::copy(private_key.begin(), private_key.begin() + std::min(private_key.size(), signature.size()), signature.begin());

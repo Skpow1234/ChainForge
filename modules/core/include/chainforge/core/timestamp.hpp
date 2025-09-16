@@ -85,7 +85,7 @@ private:
 };
 
 // Free functions
-Timestamp operator+(duration_type duration, const Timestamp& timestamp);
+Timestamp operator+(Timestamp::duration_type duration, const Timestamp& timestamp);
 std::ostream& operator<<(std::ostream& os, const Timestamp& timestamp);
 std::istream& operator>>(std::istream& is, Timestamp& timestamp);
 

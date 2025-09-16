@@ -76,10 +76,14 @@ public:
         const std::vector<BlsPublicKey>& public_keys
     );
 
-    // Utility functions
-    static std::string signature_to_hex(const Secp256k1Signature& sig);
-    static std::string signature_to_hex(const Ed25519Signature& sig);
-    static std::string signature_to_hex(const BlsSignature& sig);
+    // Utility functions (templated to avoid overloading conflicts)
+    template<typename T>
+    static std::string signature_to_hex(const T& sig);
+    
+    // Explicit specializations for each signature type
+    static std::string secp256k1_signature_to_hex(const Secp256k1Signature& sig);
+    static std::string ed25519_signature_to_hex(const Ed25519Signature& sig);
+    static std::string bls_signature_to_hex(const BlsSignature& sig);
 
     static CryptoResult<Secp256k1Signature> signature_from_hex_secp256k1(const std::string& hex);
     static CryptoResult<Ed25519Signature> signature_from_hex_ed25519(const std::string& hex);

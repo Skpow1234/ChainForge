@@ -3,7 +3,9 @@
 #include "chainforge/crypto/hash.hpp"
 #include <openssl/ec.h>
 #include <openssl/bn.h>
+#include <openssl/obj_mac.h>
 #include <sodium.h>
+#include <secp256k1.h>
 #include <iomanip>
 #include <sstream>
 
@@ -172,6 +174,7 @@ bool KeyPair::is_valid_secp256k1_compressed_public_key(const Secp256k1Compressed
 
 bool KeyPair::is_valid_ed25519_private_key(const Ed25519PrivateKey& private_key) {
     // Ed25519 private keys are just 32 random bytes, always "valid"
+    (void)private_key; // Suppress unused parameter warnings
     return true;
 }
 
@@ -388,7 +391,7 @@ CryptoResult<Secp256k1PublicKey> KeyPair::internal_derive_secp256k1_public_key(c
         return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_KEY};
     }
 
-    BIGNUM* priv_bn = BN_bin2bn(private_key.data(), private_key.size(), nullptr);
+    BIGNUM* priv_bn = BN_bin2bn(private_key.data(), static_cast<int>(private_key.size()), nullptr);
     if (!priv_bn || !EC_KEY_set_private_key(ec_key, priv_bn)) {
         BN_free(priv_bn);
         EC_KEY_free(ec_key);
@@ -425,7 +428,7 @@ CryptoResult<Ed25519PublicKey> KeyPair::internal_derive_ed25519_public_key(const
     }
 
     Ed25519PublicKey public_key;
-    crypto_sign_ed25519_public_key_from_private_key(public_key.data(), private_key.data());
+    crypto_sign_ed25519_sk_to_pk(public_key.data(), private_key.data());
 
     return CryptoResult<Ed25519PublicKey>{public_key, CryptoError::SUCCESS};
 }

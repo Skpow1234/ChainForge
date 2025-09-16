@@ -190,7 +190,7 @@ void Amount::validate_overflow(value_type result, const char* operation) const {
 }
 
 // Free functions
-Amount operator*(value_type multiplier, const Amount& amount) {
+Amount operator*(Amount::value_type multiplier, const Amount& amount) {
     return amount * multiplier;
 }
 

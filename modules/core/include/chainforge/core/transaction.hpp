@@ -40,7 +40,7 @@ public:
     const Amount& value() const noexcept { return data_.value; }
     GasLimit gas_limit() const noexcept { return data_.gas_limit; }
     GasPrice gas_price() const noexcept { return data_.gas_price; }
-    const std::vector<uint8_t>& data() const noexcept { return data_.data; }
+    const std::vector<uint8_t>& payload() const noexcept { return data_.data; }
     uint64_t nonce() const noexcept { return data_.nonce; }
     
     // Setters
