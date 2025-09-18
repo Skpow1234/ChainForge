@@ -48,12 +48,12 @@ struct TransactionData {
     uint64_t nonce;
 };
 
-// Block structure
-struct BlockData {
-    BlockHeader header;
-    std::vector<Transaction> transactions;
-    Hash256 hash;
-};
+// Block structure (removed to avoid incomplete type issues)
+// struct BlockData {
+//     BlockHeader header;
+//     std::vector<Transaction> transactions;
+//     Hash256 hash;
+// };
 
 // Common constants
 constexpr size_t HASH_SIZE = 32;

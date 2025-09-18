@@ -1,4 +1,5 @@
 #include "chainforge/core/hash.hpp"
+#include "chainforge/core/address.hpp"
 #include <iomanip>
 #include <sstream>
 #include <random>
@@ -124,3 +125,30 @@ Hash hash_from_hex(const std::string& hex_string) {
 }
 
 } // namespace chainforge::core
+
+// Hash specializations for std::unordered_map
+namespace std {
+    template<>
+    struct hash<chainforge::core::Hash> {
+        size_t operator()(const chainforge::core::Hash& h) const noexcept {
+            // Simple hash based on the first 8 bytes
+            size_t result = 0;
+            for (size_t i = 0; i < 8 && i < h.data().size(); ++i) {
+                result = (result << 8) | h.data()[i];
+            }
+            return result;
+        }
+    };
+    
+    template<>
+    struct hash<chainforge::core::Address> {
+        size_t operator()(const chainforge::core::Address& addr) const noexcept {
+            // Simple hash based on the first 8 bytes
+            size_t result = 0;
+            for (size_t i = 0; i < 8 && i < addr.data().size(); ++i) {
+                result = (result << 8) | addr.data()[i];
+            }
+            return result;
+        }
+    };
+}

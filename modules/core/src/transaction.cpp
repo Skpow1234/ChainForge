@@ -6,22 +6,22 @@
 namespace chainforge::core {
 
 Transaction::Transaction(const Address& from, const Address& to, const Amount& value)
-    : data_{from, to, value, 21000, 1, {}, 0} {}
+    : data_{from.data(), to.data(), value.wei(), 21000, 1, {}, 0} {}
 
 Transaction::Transaction(const TransactionData& data) : data_(data) {}
 
 void Transaction::set_from(const Address& from) {
-    data_.from = from;
+    data_.from = from.data();
     invalidate_cache();
 }
 
 void Transaction::set_to(const Address& to) {
-    data_.to = to;
+    data_.to = to.data();
     invalidate_cache();
 }
 
 void Transaction::set_value(const Amount& value) {
-    data_.value = value;
+    data_.value = value.wei();
     invalidate_cache();
 }
 
@@ -55,14 +55,14 @@ Hash Transaction::calculate_hash() const {
     std::vector<uint8_t> hash_data;
 
     // Add addresses
-    auto from_bytes = data_.from.to_bytes();
+    auto from_bytes = data_.from;
     hash_data.insert(hash_data.end(), from_bytes.begin(), from_bytes.end());
 
-    auto to_bytes = data_.to.to_bytes();
+    auto to_bytes = data_.to;
     hash_data.insert(hash_data.end(), to_bytes.begin(), to_bytes.end());
 
     // Add value as bytes (big-endian)
-    auto value_wei = data_.value.wei();
+    auto value_wei = data_.value;
     for (int i = sizeof(value_wei) - 1; i >= 0; --i) {
         hash_data.push_back(static_cast<uint8_t>((value_wei >> (i * 8)) & 0xFF));
     }
@@ -89,19 +89,22 @@ Hash Transaction::calculate_hash() const {
 }
 
 Amount Transaction::calculate_fee() const {
-    return Amount(data_.gas_limit * data_.gas_price);
+    return Amount::from_wei(data_.gas_limit * data_.gas_price);
 }
 
 bool Transaction::is_contract_creation() const noexcept {
-    return data_.to.is_zero() && !data_.data.empty();
+    Address to_addr(data_.to);
+    return to_addr.is_zero() && !data_.data.empty();
 }
 
 bool Transaction::is_contract_call() const noexcept {
-    return !data_.to.is_zero() && !data_.data.empty();
+    Address to_addr(data_.to);
+    return !to_addr.is_zero() && !data_.data.empty();
 }
 
 bool Transaction::is_transfer() const noexcept {
-    return !data_.to.is_zero() && data_.data.empty();
+    Address to_addr(data_.to);
+    return !to_addr.is_zero() && data_.data.empty();
 }
 
 bool Transaction::is_valid() const {
@@ -118,7 +121,8 @@ bool Transaction::validate_gas() const {
 }
 
 bool Transaction::validate_amount() const {
-    return !data_.value.is_zero() || is_contract_creation();
+    Amount value(data_.value);
+    return !value.is_zero() || is_contract_creation();
 }
 
 size_t Transaction::size() const {
@@ -133,10 +137,13 @@ bool Transaction::is_too_large() const {
 
 std::string Transaction::to_string() const {
     std::stringstream ss;
+    Address from_addr(data_.from);
+    Address to_addr(data_.to);
+    Amount value(data_.value);
     ss << "Transaction{"
-       << "from: " << data_.from.to_hex()
-       << ", to: " << data_.to.to_hex()
-       << ", value: " << data_.value.to_string()
+       << "from: " << from_addr.to_hex()
+       << ", to: " << to_addr.to_hex()
+       << ", value: " << value.to_string()
        << ", gas_limit: " << data_.gas_limit
        << ", gas_price: " << data_.gas_price
        << ", nonce: " << data_.nonce
@@ -147,9 +154,12 @@ std::string Transaction::to_string() const {
 
 std::string Transaction::to_json() const {
     nlohmann::json j;
-    j["from"] = data_.from.to_hex();
-    j["to"] = data_.to.to_hex();
-    j["value"] = data_.value.to_string();
+    Address from_addr(data_.from);
+    Address to_addr(data_.to);
+    Amount value(data_.value);
+    j["from"] = from_addr.to_hex();
+    j["to"] = to_addr.to_hex();
+    j["value"] = value.to_string();
     j["gasLimit"] = data_.gas_limit;
     j["gasPrice"] = data_.gas_price;
     j["nonce"] = data_.nonce;
@@ -169,7 +179,9 @@ void Transaction::invalidate_cache() {
 }
 
 bool Transaction::validate_addresses() const {
-    return data_.from.is_valid() && (data_.to.is_valid() || is_contract_creation());
+    Address from_addr(data_.from);
+    Address to_addr(data_.to);
+    return from_addr.is_valid() && (to_addr.is_valid() || is_contract_creation());
 }
 
 bool Transaction::validate_nonce() const {

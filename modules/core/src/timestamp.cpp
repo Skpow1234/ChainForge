@@ -44,7 +44,7 @@ std::chrono::system_clock::time_point Timestamp::to_time_point() const {
 }
 
 Timestamp Timestamp::operator+(duration_type duration) const {
-    auto result_seconds = seconds_ + duration.count();
+    auto result_seconds = seconds_ + static_cast<value_type>(duration.count());
     if (result_seconds > MAX_VALUE) {
         throw std::overflow_error("Timestamp addition overflow");
     }
@@ -55,7 +55,7 @@ Timestamp Timestamp::operator-(duration_type duration) const {
     if (duration.count() > static_cast<std::chrono::seconds::rep>(seconds_)) {
         throw std::underflow_error("Timestamp subtraction underflow");
     }
-    return Timestamp(seconds_ - duration.count());
+    return Timestamp(seconds_ - static_cast<value_type>(duration.count()));
 }
 
 Timestamp::duration_type Timestamp::operator-(const Timestamp& other) const {

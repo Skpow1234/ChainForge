@@ -40,9 +40,9 @@ public:
     
     // Header field accessors
     BlockHeight height() const noexcept { return header_.height; }
-    const Hash& parent_hash() const noexcept { return header_.parent_hash; }
-    const Hash& merkle_root() const noexcept { return header_.merkle_root; }
-    const Timestamp& timestamp() const noexcept { return header_.timestamp; }
+    Hash parent_hash() const noexcept { return Hash(header_.parent_hash); }
+    Hash merkle_root() const noexcept { return Hash(header_.merkle_root); }
+    Timestamp timestamp() const noexcept { return Timestamp(header_.timestamp); }
     BlockNonce nonce() const noexcept { return header_.nonce; }
     GasLimit gas_limit() const noexcept { return header_.gas_limit; }
     GasPrice gas_price() const noexcept { return header_.gas_price; }

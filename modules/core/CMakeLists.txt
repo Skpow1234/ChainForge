@@ -41,7 +41,7 @@ target_link_libraries(chainforge-core PUBLIC fmt::fmt spdlog::spdlog nlohmann_js
 
 # Add test binary
 add_executable(cppchain-core-test src/main.cpp)
-target_link_libraries(cppchain-core-test PRIVATE chainforge-core chainforge-storage chainforge-mempool chainforge-consensus chainforge-rpc)
+target_link_libraries(cppchain-core-test PRIVATE chainforge-core)
 
 # Install
 install(TARGETS chainforge-core cppchain-core-test

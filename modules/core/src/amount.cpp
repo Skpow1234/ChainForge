@@ -22,7 +22,7 @@ Amount::value_type Amount::whole() const noexcept {
 }
 
 Amount::decimal_type Amount::fraction() const noexcept {
-    return wei_ % WEI_PER_ETHER;
+    return static_cast<decimal_type>(wei_ % WEI_PER_ETHER);
 }
 
 std::string Amount::to_string() const {
@@ -166,7 +166,7 @@ Amount Amount::from_string(const std::string& str) {
         frac_str += "0";
     }
 
-    decimal_type fraction = std::stoul(frac_str);
+    decimal_type fraction = static_cast<decimal_type>(std::stoul(frac_str));
 
     return Amount(whole, fraction);
 }

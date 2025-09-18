@@ -7,7 +7,7 @@
 namespace chainforge::core {
 
 Block::Block(BlockHeight height, const Hash& parent_hash, const Timestamp& timestamp)
-    : header_{height, parent_hash, Hash::zero(), timestamp, 0, 8000000, 1, 1},
+    : header_{height, parent_hash.data(), Hash::zero().data(), timestamp.seconds(), 0, 8000000, 1, 1},
       transactions_{} {}
 
 Block::Block(const BlockHeader& header, std::vector<Transaction> transactions)
@@ -21,12 +21,12 @@ void Block::set_height(BlockHeight height) {
 }
 
 void Block::set_parent_hash(const Hash& parent_hash) {
-    header_.parent_hash = parent_hash;
+    header_.parent_hash = parent_hash.data();
     invalidate_cache();
 }
 
 void Block::set_timestamp(const Timestamp& timestamp) {
-    header_.timestamp = timestamp;
+    header_.timestamp = timestamp.seconds();
     invalidate_cache();
 }
 
@@ -55,7 +55,7 @@ void Block::add_transaction(const Transaction& transaction) {
 
 void Block::remove_transaction(size_t index) {
     if (index < transactions_.size()) {
-        transactions_.erase(transactions_.begin() + index);
+        transactions_.erase(transactions_.begin() + static_cast<long>(index));
         update_merkle_root();
         invalidate_cache();
     }
@@ -63,7 +63,7 @@ void Block::remove_transaction(size_t index) {
 
 void Block::clear_transactions() {
     transactions_.clear();
-    header_.merkle_root = Hash::zero();
+    header_.merkle_root = Hash::zero().data();
     invalidate_cache();
 }
 
@@ -82,15 +82,15 @@ Hash Block::calculate_hash() const {
     }
 
     // Add parent hash
-    auto parent_hash_bytes = header_.parent_hash.to_bytes();
+    auto parent_hash_bytes = header_.parent_hash;
     hash_data.insert(hash_data.end(), parent_hash_bytes.begin(), parent_hash_bytes.end());
 
     // Add merkle root
-    auto merkle_root_bytes = header_.merkle_root.to_bytes();
+    auto merkle_root_bytes = header_.merkle_root;
     hash_data.insert(hash_data.end(), merkle_root_bytes.begin(), merkle_root_bytes.end());
 
     // Add timestamp
-    auto timestamp_seconds = header_.timestamp.seconds();
+    auto timestamp_seconds = header_.timestamp;
     for (int i = sizeof(timestamp_seconds) - 1; i >= 0; --i) {
         hash_data.push_back(static_cast<uint8_t>((timestamp_seconds >> (i * 8)) & 0xFF));
     }
@@ -175,8 +175,8 @@ bool Block::is_full() const {
 }
 
 bool Block::validate_header() const {
-    return header_.height >= 0 &&
-           header_.timestamp.is_valid() &&
+    Timestamp timestamp(header_.timestamp);
+    return timestamp.is_valid() &&
            header_.gas_limit > 0 &&
            header_.chain_id > 0;
 }
@@ -196,12 +196,14 @@ bool Block::validate_size() const {
 
 std::string Block::to_string() const {
     std::stringstream ss;
+    Hash parent_hash(header_.parent_hash);
+    Timestamp timestamp(header_.timestamp);
     ss << "Block{"
        << "height: " << header_.height
        << ", hash: " << calculate_hash().to_hex().substr(0, 16) << "..."
-       << ", parent: " << header_.parent_hash.to_hex().substr(0, 16) << "..."
+       << ", parent: " << parent_hash.to_hex().substr(0, 16) << "..."
        << ", transactions: " << transactions_.size()
-       << ", timestamp: " << header_.timestamp.seconds()
+       << ", timestamp: " << timestamp.seconds()
        << ", gas_limit: " << header_.gas_limit
        << "}";
     return ss.str();
@@ -209,11 +211,14 @@ std::string Block::to_string() const {
 
 std::string Block::to_json() const {
     nlohmann::json j;
+    Hash parent_hash(header_.parent_hash);
+    Hash merkle_root(header_.merkle_root);
+    Timestamp timestamp(header_.timestamp);
     j["height"] = header_.height;
     j["hash"] = calculate_hash().to_hex();
-    j["parentHash"] = header_.parent_hash.to_hex();
-    j["merkleRoot"] = header_.merkle_root.to_hex();
-    j["timestamp"] = header_.timestamp.seconds();
+    j["parentHash"] = parent_hash.to_hex();
+    j["merkleRoot"] = merkle_root.to_hex();
+    j["timestamp"] = timestamp.seconds();
     j["nonce"] = header_.nonce;
     j["gasLimit"] = header_.gas_limit;
     j["gasPrice"] = header_.gas_price;
@@ -229,7 +234,7 @@ std::string Block::to_json() const {
 }
 
 void Block::update_merkle_root() {
-    header_.merkle_root = calculate_merkle_root();
+    header_.merkle_root = calculate_merkle_root().data();
 }
 
 void Block::invalidate_cache() {
@@ -278,8 +283,8 @@ bool is_valid_block(const Block& block) {
 }
 
 bool is_valid_block_header(const BlockHeader& header) {
-    return header.height >= 0 &&
-           header.timestamp.is_valid() &&
+    Timestamp timestamp(header.timestamp);
+    return timestamp.is_valid() &&
            header.gas_limit > 0 &&
            header.chain_id > 0;
 }

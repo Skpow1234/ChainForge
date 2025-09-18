@@ -89,7 +89,7 @@ Address Address::from_public_key(const std::vector<uint8_t>& public_key) {
     // For now, return a placeholder address derived from the key
     Address160 addr_data{};
     auto copy_size = std::min(public_key.size(), ADDRESS_SIZE);
-    std::copy(public_key.begin(), public_key.begin() + copy_size, addr_data.begin());
+    std::copy(public_key.begin(), public_key.begin() + static_cast<long>(copy_size), addr_data.begin());
     return Address(addr_data);
 }
 
@@ -132,7 +132,7 @@ Address derive_contract_address(const Address& sender, uint64_t nonce) {
     // For now, just take first 20 bytes as contract address
     Address160 contract_addr{};
     auto copy_size = std::min(data.size(), ADDRESS_SIZE);
-    std::copy(data.begin(), data.begin() + copy_size, contract_addr.begin());
+    std::copy(data.begin(), data.begin() + static_cast<long>(copy_size), contract_addr.begin());
     return Address(contract_addr);
 }
 

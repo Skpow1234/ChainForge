@@ -35,9 +35,9 @@ public:
     TransactionData& data() noexcept { return data_; }
     
     // Field accessors
-    const Address& from() const noexcept { return data_.from; }
-    const Address& to() const noexcept { return data_.to; }
-    const Amount& value() const noexcept { return data_.value; }
+    Address from() const noexcept { return Address(data_.from); }
+    Address to() const noexcept { return Address(data_.to); }
+    Amount value() const noexcept { return Amount::from_wei(data_.value); }
     GasLimit gas_limit() const noexcept { return data_.gas_limit; }
     GasPrice gas_price() const noexcept { return data_.gas_price; }
     const std::vector<uint8_t>& payload() const noexcept { return data_.data; }
