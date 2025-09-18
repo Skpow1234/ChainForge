@@ -14,6 +14,7 @@ add_executable(core_tests
     unit/core/test_timestamp.cpp
     unit/core/test_block.cpp
     unit/core/test_transaction.cpp
+    unit/core/test_error_handling.cpp
 )
 
 add_executable(logging_tests
