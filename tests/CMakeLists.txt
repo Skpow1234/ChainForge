@@ -2,7 +2,7 @@
 
 # Find Google Test
 find_conan_package(gtest)
-find_package(GTest REQUIRED)
+find_package(Threads REQUIRED)
 
 # Enable testing
 enable_testing()
@@ -61,7 +61,8 @@ target_sources(core_tests PRIVATE
 target_link_libraries(core_tests
     PRIVATE
         chainforge-core
-        GTest::gtest
+        gtest::gtest
+        Threads::Threads
 )
 
 # Disabled until crypto module is fully implemented
