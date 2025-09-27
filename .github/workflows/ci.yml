@@ -56,7 +56,37 @@ jobs:
     - name: Run tests (GCC 11 Debug)
       run: |
         cd build-gcc11-debug
-        ctest --output-on-failure --parallel
+        # Run all tests with detailed output
+        ctest --output-on-failure --parallel --verbose
+        # Run tests by category
+        ctest --output-on-failure --label-regex "unit" --parallel
+        ctest --output-on-failure --label-regex "integration" --parallel
+        ctest --output-on-failure --label-regex "fuzz" --parallel
+
+    - name: Generate code coverage (GCC 11 Debug)
+      run: |
+        cd build-gcc11-debug
+        # Install lcov for coverage
+        sudo apt-get install -y lcov
+        # Generate coverage report
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        lcov --remove coverage.info '*/tests/*' --output-file coverage.info
+        lcov --list coverage.info
+        # Generate HTML report
+        genhtml coverage.info --output-directory coverage_html
+        # Upload coverage to codecov
+        bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov upload failed"
+
+    - name: Run performance benchmarks (GCC 11 Debug)
+      run: |
+        cd build-gcc11-debug
+        # Run performance tests if available
+        if [ -f "bin/performance_tests" ]; then
+          ./bin/performance_tests --benchmark_format=json --benchmark_out=benchmark_results.json
+        fi
+        # Run fuzz tests with performance monitoring
+        timeout 300s ctest --output-on-failure --label-regex "fuzz" --parallel || echo "Fuzz tests completed or timed out"
 
     - name: Verify build artifacts (GCC 11 Debug)
       run: |
