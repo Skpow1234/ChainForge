@@ -46,15 +46,20 @@ if(NOT SECP256K1_INCLUDE_DIR OR NOT SECP256K1_LIBRARY)
     message(STATUS "secp256k1 not found system-wide, building from source...")
     
     # Disable strict warnings for secp256k1 to avoid build failures
+    # We need to completely override the compiler flags to avoid inherited -Werror
     set(SECP256K1_CMAKE_ARGS
-        -DCMAKE_C_FLAGS="-w -O2 -Wno-conversion -Wno-sign-conversion"
-        -DCMAKE_CXX_FLAGS="-w -O2 -Wno-conversion -Wno-sign-conversion"
+        -DCMAKE_C_FLAGS="-w -O2 -Wno-conversion -Wno-sign-conversion -Wno-error=conversion -Wno-error=sign-conversion"
+        -DCMAKE_CXX_FLAGS="-w -O2 -Wno-conversion -Wno-sign-conversion -Wno-error=conversion -Wno-error=sign-conversion"
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_C_FLAGS_RELEASE="-w -O2 -Wno-conversion -Wno-sign-conversion"
-        -DCMAKE_CXX_FLAGS_RELEASE="-w -O2 -Wno-conversion -Wno-sign-conversion"
+        -DCMAKE_C_FLAGS_RELEASE="-w -O2 -Wno-conversion -Wno-sign-conversion -Wno-error=conversion -Wno-error=sign-conversion"
+        -DCMAKE_CXX_FLAGS_RELEASE="-w -O2 -Wno-conversion -Wno-sign-conversion -Wno-error=conversion -Wno-error=sign-conversion"
+        -DCMAKE_C_FLAGS_DEBUG="-g -w -Wno-conversion -Wno-sign-conversion -Wno-error=conversion -Wno-error=sign-conversion"
+        -DCMAKE_CXX_FLAGS_DEBUG="-g -w -Wno-conversion -Wno-sign-conversion -Wno-error=conversion -Wno-error=sign-conversion"
         -DTREAT_WARNINGS_AS_ERRORS=OFF
-        -DCMAKE_C_FLAGS_DEBUG="-g -w -Wno-conversion -Wno-sign-conversion"
-        -DCMAKE_CXX_FLAGS_DEBUG="-g -w -Wno-conversion -Wno-sign-conversion"
+        -DCMAKE_C_COMPILER_WORKS=1
+        -DCMAKE_CXX_COMPILER_WORKS=1
+        -DCMAKE_C_STANDARD=11
+        -DCMAKE_CXX_STANDARD=17
     )
     
     # Use FetchContent to download and build secp256k1
@@ -64,6 +69,7 @@ if(NOT SECP256K1_INCLUDE_DIR OR NOT SECP256K1_LIBRARY)
         GIT_TAG v0.4.1  # Use stable release
         GIT_SHALLOW TRUE
         CMAKE_ARGS ${SECP256K1_CMAKE_ARGS}
+        OVERRIDE_FIND_PACKAGE
     )
     
     # Configure secp256k1 build options
