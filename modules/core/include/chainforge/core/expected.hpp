@@ -223,6 +223,22 @@ public:
             return std::forward<F>(f)(std::move(*this).error());
         }
     }
+    
+    // Comparison operators
+    bool operator==(const expected& other) const {
+        if (has_value() != other.has_value()) {
+            return false;
+        }
+        if (has_value()) {
+            return value() == other.value();
+        } else {
+            return error() == other.error();
+        }
+    }
+    
+    bool operator!=(const expected& other) const {
+        return !(*this == other);
+    }
 };
 
 // Specialization for void
@@ -373,6 +389,22 @@ public:
         } else {
             return std::forward<F>(f)(std::move(*this).error());
         }
+    }
+    
+    // Comparison operators
+    bool operator==(const expected& other) const {
+        if (has_value() != other.has_value()) {
+            return false;
+        }
+        if (has_value()) {
+            return true; // Both have value (void)
+        } else {
+            return error() == other.error();
+        }
+    }
+    
+    bool operator!=(const expected& other) const {
+        return !(*this == other);
     }
 };
 

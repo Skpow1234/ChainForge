@@ -1,5 +1,6 @@
 # Build artifacts
 build/
+build-*/
 bin/
 lib/
 *.o
@@ -15,12 +16,20 @@ cmake_install.cmake
 Makefile
 *.cmake
 !cmake/*.cmake
+CMakePresets.json
+CMakeUserPresets.json
+compile_commands.json
 
 # Conan
 conan_toolchain.cmake
 conan_paths.cmake
 conanbuildinfo.cmake
 graph_info.json
+conanbuild.sh
+conanrun.sh
+deactivate_conanbuild.sh
+deactivate_conanrun.sh
+conan.lock
 
 # IDE files
 .vscode/
@@ -45,10 +54,13 @@ log/
 # Test artifacts
 test-results/
 coverage/
+coverage_html/
 *.gcov
 *.gcda
 *.gcno
 *.prof
+coverage.info
+benchmark_results.json
 
 # Temporary files
 tmp/
@@ -112,4 +124,12 @@ coverage/
 corpus/
 crashes/
 leaks/
+
+# External dependencies (downloaded by CMake)
+_deps/
+
+# Docker
+.dockerignore
+
+# Editor and IDE
 .cursorrules

@@ -134,6 +134,20 @@ struct ErrorInfo {
     
     // Get error chain as string
     std::string chain_to_string() const;
+    
+    // Comparison operators
+    bool operator==(const ErrorInfo& other) const noexcept {
+        return code == other.code && 
+               message == other.message && 
+               context == other.context && 
+               file == other.file && 
+               line == other.line &&
+               ((!cause && !other.cause) || (cause && other.cause && *cause == *other.cause));
+    }
+    
+    bool operator!=(const ErrorInfo& other) const noexcept {
+        return !(*this == other);
+    }
 };
 
 // Error creation helpers
@@ -171,7 +185,7 @@ inline ErrorInfo make_chained_error(ErrorCode code, std::string_view message,
 // Success result helpers
 template<typename T>
 inline Result<T> success(T&& value) {
-    return expected<T, ErrorInfo>(std::forward<T>(value));
+    return expected<T, ErrorInfo>(T(std::forward<T>(value)));
 }
 
 inline VoidResult success() {

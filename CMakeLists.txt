@@ -32,10 +32,10 @@ add_subdirectory(modules)
 #     add_subdirectory(tools)
 # endif()
 
-# if(BUILD_TESTING)
-#     enable_testing()
-#     add_subdirectory(tests)
-# endif()
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
 # Install configuration
 include(GNUInstallDirs)

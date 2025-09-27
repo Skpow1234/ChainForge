@@ -189,7 +189,7 @@ TEST_F(ErrorHandlingTest, FallbackChain) {
     
     auto result = recovery::fallback_chain(primary, secondary, tertiary);
     EXPECT_TRUE(result.has_value());
-    EXPECT_EQ(result.value(), "Tertiary working");
+    EXPECT_EQ(result.value(), std::string("Tertiary working"));
 }
 
 // Test error monitoring

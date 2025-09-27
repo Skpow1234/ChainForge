@@ -1,4 +1,5 @@
 #include "chainforge/crypto/curve.hpp"
+#include <algorithm>
 
 // Implementation of curve operations
 // TODO: Implement full curve operations using the respective crypto libraries

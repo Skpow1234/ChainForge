@@ -42,22 +42,33 @@ find_conan_package(nlohmann_json)
 target_link_libraries(chainforge-core PUBLIC fmt::fmt spdlog::spdlog nlohmann_json::nlohmann_json
                                       PRIVATE chainforge-crypto)
 
+# Force include directories for nlohmann_json (workaround for Debug/Release mismatch)
+# The Conan package only sets include directories for Release, but we need them for Debug too
+target_include_directories(chainforge-core PRIVATE /root/.conan2/p/nlohm1bed1ddc0a2fa/p/include)
+
 # Add test binary
 add_executable(cppchain-core-test src/main.cpp)
 target_link_libraries(cppchain-core-test PRIVATE chainforge-core)
 
-# Add error handling examples
-add_executable(error-handling-example examples/error_handling_example.cpp)
-target_link_libraries(error-handling-example PRIVATE chainforge-core)
+# Add error handling examples (only if BUILD_EXAMPLES is ON)
+if(BUILD_EXAMPLES)
+    add_executable(error-handling-example examples/error_handling_example.cpp)
+    target_link_libraries(error-handling-example PRIVATE chainforge-core)
 
-add_executable(simple-error-example examples/simple_error_example.cpp)
-target_link_libraries(simple-error-example PRIVATE chainforge-core)
+    add_executable(simple-error-example examples/simple_error_example.cpp)
+    target_link_libraries(simple-error-example PRIVATE chainforge-core)
 
-add_executable(error-integration-guide examples/error_integration_guide.cpp)
-target_link_libraries(error-integration-guide PRIVATE chainforge-core)
+    add_executable(error-integration-guide examples/error_integration_guide.cpp)
+    target_link_libraries(error-integration-guide PRIVATE chainforge-core)
+endif()
 
 # Install
-install(TARGETS chainforge-core cppchain-core-test error-handling-example simple-error-example error-integration-guide
+set(INSTALL_TARGETS chainforge-core cppchain-core-test)
+if(BUILD_EXAMPLES)
+    list(APPEND INSTALL_TARGETS error-handling-example simple-error-example error-integration-guide)
+endif()
+
+install(TARGETS ${INSTALL_TARGETS}
     EXPORT ChainForgeTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib

@@ -75,6 +75,10 @@ target_link_libraries(chainforge-crypto
         chainforge-core
 )
 
+# Force include directories for libsodium (workaround for Debug/Release mismatch)
+# The Conan package only sets include directories for Release, but we need them for Debug too
+target_include_directories(chainforge-crypto PRIVATE /root/.conan2/p/libso9ea0e73dc43a8/p/include)
+
 # Install
 install(TARGETS chainforge-crypto
     EXPORT ChainForgeTargets
