@@ -1,7 +1,6 @@
 {
-  "dashboard": {
-    "id": null,
-    "title": "ChainForge Overview",
+  "id": null,
+  "title": "ChainForge Overview",
     "tags": ["blockchain", "chainforge"],
     "style": "dark",
     "timezone": "browser",
@@ -75,5 +74,4 @@
     "refresh": "10s",
     "schemaVersion": 30,
     "version": 1
-  }
 }

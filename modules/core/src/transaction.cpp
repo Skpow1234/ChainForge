@@ -163,7 +163,7 @@ std::string Transaction::to_json() const {
     j["gasLimit"] = data_.gas_limit;
     j["gasPrice"] = data_.gas_price;
     j["nonce"] = data_.nonce;
-    j["data"] = "0x" + hash_from_hex("00").to_hex(); // Placeholder
+    j["data"] = "0x" + std::string(64, '0'); // Placeholder - 32 bytes of zeros
     j["hash"] = calculate_hash().to_hex();
 
     return j.dump(2);
