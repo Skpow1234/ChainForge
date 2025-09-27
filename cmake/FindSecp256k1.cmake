@@ -16,17 +16,44 @@ find_path(SECP256K1_INCLUDE_DIR
     NAMES secp256k1.h
     PATHS ${PC_SECP256K1_INCLUDE_DIRS}
     PATH_SUFFIXES include
+    NO_DEFAULT_PATH
 )
 
 find_library(SECP256K1_LIBRARY
     NAMES secp256k1
     PATHS ${PC_SECP256K1_LIBRARY_DIRS}
     PATH_SUFFIXES lib
+    NO_DEFAULT_PATH
 )
+
+# If not found with pkg-config, try standard paths
+if(NOT SECP256K1_INCLUDE_DIR)
+    find_path(SECP256K1_INCLUDE_DIR
+        NAMES secp256k1.h
+        PATHS /usr/include /usr/local/include
+    )
+endif()
+
+if(NOT SECP256K1_LIBRARY)
+    find_library(SECP256K1_LIBRARY
+        NAMES secp256k1
+        PATHS /usr/lib /usr/local/lib /usr/lib/x86_64-linux-gnu
+    )
+endif()
 
 # If not found, build from source
 if(NOT SECP256K1_INCLUDE_DIR OR NOT SECP256K1_LIBRARY)
     message(STATUS "secp256k1 not found system-wide, building from source...")
+    
+    # Disable strict warnings for secp256k1 to avoid build failures
+    set(SECP256K1_CMAKE_ARGS
+        -DCMAKE_C_FLAGS="-w -O2"
+        -DCMAKE_CXX_FLAGS="-w -O2"
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_C_FLAGS_RELEASE="-w -O2"
+        -DCMAKE_CXX_FLAGS_RELEASE="-w -O2"
+        -DTREAT_WARNINGS_AS_ERRORS=OFF
+    )
     
     # Use FetchContent to download and build secp256k1
     FetchContent_Declare(
@@ -34,6 +61,7 @@ if(NOT SECP256K1_INCLUDE_DIR OR NOT SECP256K1_LIBRARY)
         GIT_REPOSITORY https://github.com/bitcoin-core/secp256k1.git
         GIT_TAG v0.4.1  # Use stable release
         GIT_SHALLOW TRUE
+        CMAKE_ARGS ${SECP256K1_CMAKE_ARGS}
     )
     
     # Configure secp256k1 build options
@@ -64,6 +92,17 @@ if(NOT TARGET secp256k1::secp256k1)
     if(SECP256K1_BUILT_FROM_SOURCE)
         # For built-from-source, use the CMake target directly
         add_library(secp256k1::secp256k1 ALIAS secp256k1)
+        
+        # Add secp256k1 to the export set so it can be exported with ChainForgeTargets
+        set_target_properties(secp256k1 PROPERTIES
+            EXPORT_NAME secp256k1
+        )
+        install(TARGETS secp256k1
+            EXPORT ChainForgeTargets
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib
+            RUNTIME DESTINATION bin
+        )
     else()
         # For system library, create imported target
         add_library(secp256k1::secp256k1 UNKNOWN IMPORTED)

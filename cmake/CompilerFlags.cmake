@@ -61,8 +61,9 @@ if(USE_SANITIZERS AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # to avoid conflicts with address sanitizer
 endif()
 
-# Treat warnings as errors in CI
-if(DEFINED ENV{CI} OR CMAKE_BUILD_TYPE STREQUAL "Release")
+# Treat warnings as errors in CI (but allow disabling for external dependencies)
+option(TREAT_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
+if(TREAT_WARNINGS_AS_ERRORS AND (DEFINED ENV{CI} OR CMAKE_BUILD_TYPE STREQUAL "Release"))
     if(MSVC)
         add_compile_options(/WX)
     else()

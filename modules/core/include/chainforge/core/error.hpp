@@ -1,6 +1,6 @@
 #pragma once
 
-#include <expected>
+#include "expected.hpp"
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -17,9 +17,9 @@ namespace chainforge::core {
 enum class ErrorCode : int;
 struct ErrorInfo;
 
-// Main error type using std::expected
+// Main error type using our custom expected
 template<typename T>
-using Result = std::expected<T, ErrorInfo>;
+using Result = expected<T, ErrorInfo>;
 
 // Specialization for void return types
 using VoidResult = Result<void>;
@@ -171,39 +171,39 @@ inline ErrorInfo make_chained_error(ErrorCode code, std::string_view message,
 // Success result helpers
 template<typename T>
 inline Result<T> success(T&& value) {
-    return std::expected<T, ErrorInfo>(std::forward<T>(value));
+    return expected<T, ErrorInfo>(std::forward<T>(value));
 }
 
 inline VoidResult success() {
-    return std::expected<void, ErrorInfo>();
+    return expected<void, ErrorInfo>();
 }
 
 // Error result helpers
 template<typename T>
 inline Result<T> error(ErrorCode code, std::string_view message) {
-    return std::unexpected(ErrorInfo(code, message));
+    return make_unexpected(ErrorInfo(code, message));
 }
 
 template<typename T>
 inline Result<T> error(ErrorCode code, std::string_view message, std::string_view context) {
-    return std::unexpected(ErrorInfo(code, message, context));
+    return make_unexpected(ErrorInfo(code, message, context));
 }
 
 template<typename T>
 inline Result<T> error(const ErrorInfo& error_info) {
-    return std::unexpected(error_info);
+    return make_unexpected(error_info);
 }
 
 inline VoidResult error(ErrorCode code, std::string_view message) {
-    return std::unexpected(ErrorInfo(code, message));
+    return make_unexpected(ErrorInfo(code, message));
 }
 
 inline VoidResult error(ErrorCode code, std::string_view message, std::string_view context) {
-    return std::unexpected(ErrorInfo(code, message, context));
+    return make_unexpected(ErrorInfo(code, message, context));
 }
 
 inline VoidResult error(const ErrorInfo& error_info) {
-    return std::unexpected(error_info);
+    return make_unexpected(ErrorInfo(error_info));
 }
 
 } // namespace errors
