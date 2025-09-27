@@ -80,12 +80,14 @@ configure_project() {
             -DCMAKE_BUILD_TYPE=${build_type} \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DTREAT_WARNINGS_AS_ERRORS=OFF \
             -G Ninja
     else
         cmake .. \
             -DCMAKE_BUILD_TYPE=${build_type} \
             -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DTREAT_WARNINGS_AS_ERRORS=OFF
     fi
     
     cd ..

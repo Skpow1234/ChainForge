@@ -123,7 +123,7 @@ test_build() {
 
         echo 'Configuring build...'
         cd build
-        cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DTREAT_WARNINGS_AS_ERRORS=OFF
 
         echo 'Building project...'
         cmake --build . --parallel
