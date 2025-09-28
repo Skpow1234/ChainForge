@@ -90,14 +90,17 @@ endif()
 
 # If pkg-config didn't work, try Conan package paths
 if(NOT LIBSODIUM_PKG_FOUND)
+    # Try to find libsodium in Conan cache directly
+    # Since Conan target properties are broken for Debug/Release, search directly
     find_path(LIBSODIUM_CONAN_INCLUDE_DIR sodium.h
         PATHS
-            /root/.conan2/p/*/p/include
-            $ENV{HOME}/.conan2/p/*/p/include
-            $ENV{CONAN_USER_HOME}/.conan2/p/*/p/include
-            # CI/GHA specific paths
+            # CI/GHA specific paths (search first)
             /home/runner/.conan2/p/*/p/include
             /home/runner/work/_temp/.conan2/p/*/p/include
+            # Standard paths
+            $ENV{HOME}/.conan2/p/*/p/include
+            /root/.conan2/p/*/p/include
+            $ENV{CONAN_USER_HOME}/.conan2/p/*/p/include
             # Alternative CI paths
             $ENV{RUNNER_TEMP}/.conan2/p/*/p/include
             $ENV{AGENT_TEMPDIRECTORY}/.conan2/p/*/p/include
@@ -112,12 +115,19 @@ if(NOT LIBSODIUM_PKG_FOUND)
         target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_CONAN_ROOT}/include)
         message(STATUS "Found libsodium via Conan path: ${LIBSODIUM_CONAN_ROOT}/include")
     else()
-        # Try getting from target property as fallback
+        # Last resort: try to extract from broken target property
         if(TARGET libsodium::libsodium)
             get_target_property(LIBSODIUM_INCLUDE_DIRS libsodium::libsodium INTERFACE_INCLUDE_DIRECTORIES)
-            if(LIBSODIUM_INCLUDE_DIRS)
+            # The property contains a generator expression like $<CONFIG:Release>:/path
+            # Extract the actual path by removing the generator expression
+            if(LIBSODIUM_INCLUDE_DIRS AND LIBSODIUM_INCLUDE_DIRS MATCHES "\\$<.*:(.*)>")
+                set(LIBSODIUM_REAL_PATH "${CMAKE_MATCH_1}")
+                target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_REAL_PATH})
+                message(STATUS "Found libsodium via target property extraction: ${LIBSODIUM_REAL_PATH}")
+            elseif(LIBSODIUM_INCLUDE_DIRS)
+                # Try using it as-is (may work for some cases)
                 target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
-                message(STATUS "Found libsodium via target property: ${LIBSODIUM_INCLUDE_DIRS}")
+                message(STATUS "Found libsodium via target property (may be generator expression): ${LIBSODIUM_INCLUDE_DIRS}")
             else()
                 message(WARNING "libsodium target found but no include directories. This may cause compilation errors.")
             endif()
