@@ -42,9 +42,27 @@ find_conan_package(nlohmann_json)
 target_link_libraries(chainforge-core PUBLIC fmt::fmt spdlog::spdlog nlohmann_json::nlohmann_json
                                       PRIVATE chainforge-crypto)
 
-# Force include directories for nlohmann_json (workaround for Debug/Release mismatch)
-# The Conan package only sets include directories for Release, but we need them for Debug too
-target_include_directories(chainforge-core PRIVATE /root/.conan2/p/nlohm1bed1ddc0a2fa/p/include)
+# Fix nlohmann_json include directories (workaround for Conan Debug/Release mismatch)
+# Use Conan package paths directly since target properties may not be set correctly
+find_path(NLOHMANN_JSON_CONAN_INCLUDE_DIR nlohmann/json.hpp
+    PATHS
+        /root/.conan2/p/*/p/include
+        $ENV{HOME}/.conan2/p/*/p/include
+        $ENV{CONAN_USER_HOME}/.conan2/p/*/p/include
+    NO_DEFAULT_PATH
+)
+if(NLOHMANN_JSON_CONAN_INCLUDE_DIR)
+    get_filename_component(NLOHMANN_JSON_CONAN_ROOT "${NLOHMANN_JSON_CONAN_INCLUDE_DIR}" DIRECTORY)
+    target_include_directories(chainforge-core PRIVATE ${NLOHMANN_JSON_CONAN_ROOT}/include)
+else()
+    # Try getting from target property as fallback
+    if(TARGET nlohmann_json::nlohmann_json)
+        get_target_property(NLOHMANN_JSON_INCLUDE_DIRS nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+        if(NLOHMANN_JSON_INCLUDE_DIRS)
+            target_include_directories(chainforge-core PRIVATE ${NLOHMANN_JSON_INCLUDE_DIRS})
+        endif()
+    endif()
+endif()
 
 # Add test binary
 add_executable(cppchain-core-test src/main.cpp)
