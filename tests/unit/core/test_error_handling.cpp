@@ -178,15 +178,15 @@ TEST_F(ErrorHandlingTest, FallbackChain) {
     auto primary = []() -> Result<std::string> {
         return errors::error<std::string>(ErrorCode::SERVICE_UNAVAILABLE, "Primary down");
     };
-    
+
     auto secondary = []() -> Result<std::string> {
         return errors::error<std::string>(ErrorCode::SERVICE_UNAVAILABLE, "Secondary down");
     };
-    
+
     auto tertiary = []() -> Result<std::string> {
-        return errors::success("Tertiary working");
+        return errors::success(std::string("Tertiary working"));
     };
-    
+
     auto result = recovery::fallback_chain(primary, secondary, tertiary);
     EXPECT_TRUE(result.has_value());
     EXPECT_EQ(result.value(), std::string("Tertiary working"));

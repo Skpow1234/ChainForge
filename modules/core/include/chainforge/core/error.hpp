@@ -185,7 +185,12 @@ inline ErrorInfo make_chained_error(ErrorCode code, std::string_view message,
 // Success result helpers
 template<typename T>
 inline Result<T> success(T&& value) {
-    return expected<T, ErrorInfo>(T(std::forward<T>(value)));
+    return expected<T, ErrorInfo>(std::forward<T>(value));
+}
+
+// Overload for string literals
+inline Result<std::string> success(const char* value) {
+    return expected<std::string, ErrorInfo>(std::string(value));
 }
 
 inline VoidResult success() {

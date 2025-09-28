@@ -2,6 +2,7 @@
 
 # Find Google Test
 find_conan_package(gtest)
+find_package(GTest REQUIRED)
 find_package(Threads REQUIRED)
 
 # Enable testing
@@ -11,11 +12,11 @@ enable_testing()
 add_executable(core_tests
     unit/core/test_hash.cpp
     # unit/core/test_address.cpp      # Disabled - missing functions
-    # unit/core/test_amount.cpp       # Disabled - missing functions  
+    # unit/core/test_amount.cpp       # Disabled - missing functions
     # unit/core/test_timestamp.cpp    # Disabled - missing functions
     # unit/core/test_block.cpp        # Disabled - missing functions
     # unit/core/test_transaction.cpp  # Disabled - missing functions
-    # unit/core/test_error_handling.cpp  # Disabled due to template issues
+    unit/core/test_error_handling.cpp
 )
 
 # Add main function for tests
@@ -61,7 +62,8 @@ target_sources(core_tests PRIVATE
 target_link_libraries(core_tests
     PRIVATE
         chainforge-core
-        gtest::gtest
+        GTest::gtest
+        GTest::gtest_main
         Threads::Threads
 )
 

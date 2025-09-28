@@ -21,10 +21,10 @@ private:
 public:
     // Constructors
     expected() = default;
-    
+
     expected(const T& value) : data_(value) {}
     expected(T&& value) : data_(std::move(value)) {}
-    
+
     expected(const E& error) : data_(error) {}
     expected(E&& error) : data_(std::move(error)) {}
     expected(const unexpected<E>& u) : data_(u.error()) {}

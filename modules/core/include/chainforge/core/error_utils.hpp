@@ -24,9 +24,9 @@ auto transform_error(Result<T>&& result, F&& transform_func) -> Result<T> {
     if (result.has_value()) {
         return std::move(result);
     }
-    
+
     auto new_error = transform_func(result.error());
-    return std::unexpected(new_error);
+    return make_unexpected(std::move(new_error));
 }
 
 // Map error code to different error code
@@ -35,9 +35,9 @@ auto map_error_code(Result<T>&& result, ErrorCode new_code) -> Result<T> {
     if (result.has_value()) {
         return std::move(result);
     }
-    
+
     auto new_error = ErrorInfo(new_code, result.error().message, result.error().context);
-    return std::unexpected(new_error);
+    return make_unexpected(std::move(new_error));
 }
 
 // Add context to error
@@ -46,11 +46,11 @@ auto add_context(Result<T>&& result, std::string_view context) -> Result<T> {
     if (result.has_value()) {
         return std::move(result);
     }
-    
-    auto new_error = ErrorInfo(result.error().code, result.error().message, 
-                              context.empty() ? result.error().context : 
+
+    auto new_error = ErrorInfo(result.error().code, result.error().message,
+                              context.empty() ? result.error().context :
                               std::string(result.error().context) + " -> " + std::string(context));
-    return std::unexpected(new_error);
+    return make_unexpected(std::move(new_error));
 }
 
 // Chain errors (for error propagation)
@@ -59,10 +59,10 @@ auto chain_error(Result<T>&& result, ErrorCode new_code, std::string_view new_me
     if (result.has_value()) {
         return std::move(result);
     }
-    
+
     auto cause = std::make_shared<ErrorInfo>(result.error());
     auto new_error = ErrorInfo(new_code, new_message, "", "", 0, cause);
-    return std::unexpected(new_error);
+    return make_unexpected(std::move(new_error));
 }
 
 } // namespace propagation
@@ -72,9 +72,9 @@ namespace recovery {
 
 // Retry with exponential backoff
 template<typename F, typename... Args>
-auto retry_with_backoff(int max_attempts, std::chrono::milliseconds initial_delay, 
-                       double backoff_multiplier, F&& func, Args&&... args) 
-    -> Result<std::invoke_result_t<F, Args...>> {
+auto retry_with_backoff(int max_attempts, std::chrono::milliseconds initial_delay,
+                       double backoff_multiplier, F&& func, Args&&... args)
+    -> typename std::invoke_result_t<F, Args...> {
     
     auto delay = initial_delay;
     
@@ -83,21 +83,22 @@ auto retry_with_backoff(int max_attempts, std::chrono::milliseconds initial_dela
         if (result.has_value()) {
             return result;
         }
-        
+
         if (attempt < max_attempts - 1) {
             std::this_thread::sleep_for(delay);
             delay = std::chrono::milliseconds(static_cast<long long>(delay.count() * backoff_multiplier));
         }
     }
-    
-    return errors::error(ErrorCode::TIMEOUT, "Operation failed after maximum retry attempts");
+
+    using ReturnType = std::invoke_result_t<F, Args...>;
+    return ReturnType(make_unexpected(ErrorInfo(ErrorCode::TIMEOUT, "Operation failed after maximum retry attempts")));
 }
 
 // Retry with jitter
 template<typename F, typename... Args>
-auto retry_with_jitter(int max_attempts, std::chrono::milliseconds base_delay, 
-                      double jitter_factor, F&& func, Args&&... args) 
-    -> Result<std::invoke_result_t<F, Args...>> {
+auto retry_with_jitter(int max_attempts, std::chrono::milliseconds base_delay,
+                      double jitter_factor, F&& func, Args&&... args)
+    -> typename std::invoke_result_t<F, Args...> {
     
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -108,36 +109,38 @@ auto retry_with_jitter(int max_attempts, std::chrono::milliseconds base_delay,
         if (result.has_value()) {
             return result;
         }
-        
+
         if (attempt < max_attempts - 1) {
             auto jittered_delay = std::chrono::milliseconds(
                 static_cast<long long>(base_delay.count() * dis(gen)));
             std::this_thread::sleep_for(jittered_delay);
         }
     }
-    
-    return errors::error(ErrorCode::TIMEOUT, "Operation failed after maximum retry attempts");
+
+    using ReturnType = std::invoke_result_t<F, Args...>;
+    return ReturnType(make_unexpected(ErrorInfo(ErrorCode::TIMEOUT, "Operation failed after maximum retry attempts")));
 }
 
-// Circuit breaker pattern
+    // Circuit breaker pattern
 class CircuitBreaker {
 public:
     enum class State { CLOSED, OPEN, HALF_OPEN };
-    
+
     CircuitBreaker(int failure_threshold, std::chrono::milliseconds timeout)
-        : failure_threshold_(failure_threshold), timeout_(timeout), 
+        : failure_threshold_(failure_threshold), timeout_(timeout),
           failure_count_(0), last_failure_time_(std::chrono::steady_clock::now()),
           state_(State::CLOSED) {}
-    
+
     template<typename F, typename... Args>
-    auto execute(F&& func, Args&&... args) -> Result<std::invoke_result_t<F, Args...>> {
+    auto execute(F&& func, Args&&... args) -> typename std::invoke_result_t<F, Args...> {
         std::lock_guard<std::mutex> lock(mutex_);
         
         if (state_ == State::OPEN) {
             if (std::chrono::steady_clock::now() - last_failure_time_ >= timeout_) {
                 state_ = State::HALF_OPEN;
             } else {
-                return errors::error(ErrorCode::SERVICE_UNAVAILABLE, "Circuit breaker is open");
+                using ReturnType = std::invoke_result_t<F, Args...>;
+                return ReturnType(make_unexpected(ErrorInfo(ErrorCode::SERVICE_UNAVAILABLE, "Circuit breaker is open")));
             }
         }
         
@@ -188,17 +191,18 @@ private:
 
 // Timeout wrapper
 template<typename F, typename... Args>
-auto with_timeout(std::chrono::milliseconds timeout, F&& func, Args&&... args) 
-    -> Result<std::invoke_result_t<F, Args...>> {
+auto with_timeout(std::chrono::milliseconds timeout, F&& func, Args&&... args)
+    -> typename std::invoke_result_t<F, Args...> {
     
     auto future = std::async(std::launch::async, [&]() {
         return func(std::forward<Args>(args)...);
     });
     
     if (future.wait_for(timeout) == std::future_status::timeout) {
-        return errors::error(ErrorCode::TIMEOUT, "Operation timed out");
+        using ReturnType = std::invoke_result_t<F, Args...>;
+        return ReturnType(make_unexpected(ErrorInfo(ErrorCode::TIMEOUT, "Operation timed out")));
     }
-    
+
     return future.get();
 }
 
