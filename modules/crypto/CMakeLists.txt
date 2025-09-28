@@ -76,23 +76,53 @@ target_link_libraries(chainforge-crypto
 )
 
 # Fix libsodium include directories (workaround for Conan Debug/Release mismatch)
-# Use Conan package paths directly since target properties may not be set correctly
-find_path(LIBSODIUM_CONAN_INCLUDE_DIR sodium.h
-    PATHS
-        /root/.conan2/p/*/p/include
-        $ENV{HOME}/.conan2/p/*/p/include
-        $ENV{CONAN_USER_HOME}/.conan2/p/*/p/include
-    NO_DEFAULT_PATH
-)
-if(LIBSODIUM_CONAN_INCLUDE_DIR)
-    get_filename_component(LIBSODIUM_CONAN_ROOT "${LIBSODIUM_CONAN_INCLUDE_DIR}" DIRECTORY)
-    target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_CONAN_ROOT}/include)
-else()
-    # Try getting from target property as fallback
-    if(TARGET libsodium::libsodium)
-        get_target_property(LIBSODIUM_INCLUDE_DIRS libsodium::libsodium INTERFACE_INCLUDE_DIRECTORIES)
-        if(LIBSODIUM_INCLUDE_DIRS)
-            target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+# Try multiple approaches to find libsodium headers
+
+# First, try to find using pkg-config (common on Linux)
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+    pkg_check_modules(LIBSODIUM_PKG QUIET libsodium)
+    if(LIBSODIUM_PKG_FOUND)
+        target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_PKG_INCLUDE_DIRS})
+        message(STATUS "Found libsodium via pkg-config: ${LIBSODIUM_PKG_INCLUDE_DIRS}")
+    endif()
+endif()
+
+# If pkg-config didn't work, try Conan package paths
+if(NOT LIBSODIUM_PKG_FOUND)
+    find_path(LIBSODIUM_CONAN_INCLUDE_DIR sodium.h
+        PATHS
+            /root/.conan2/p/*/p/include
+            $ENV{HOME}/.conan2/p/*/p/include
+            $ENV{CONAN_USER_HOME}/.conan2/p/*/p/include
+            # CI/GHA specific paths
+            /home/runner/.conan2/p/*/p/include
+            /home/runner/work/_temp/.conan2/p/*/p/include
+            # Alternative CI paths
+            $ENV{RUNNER_TEMP}/.conan2/p/*/p/include
+            $ENV{AGENT_TEMPDIRECTORY}/.conan2/p/*/p/include
+            # More CI paths
+            /opt/conan/p/*/p/include
+            /usr/local/conan/p/*/p/include
+        NO_DEFAULT_PATH
+    )
+
+    if(LIBSODIUM_CONAN_INCLUDE_DIR)
+        get_filename_component(LIBSODIUM_CONAN_ROOT "${LIBSODIUM_CONAN_INCLUDE_DIR}" DIRECTORY)
+        target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_CONAN_ROOT}/include)
+        message(STATUS "Found libsodium via Conan path: ${LIBSODIUM_CONAN_ROOT}/include")
+    else()
+        # Try getting from target property as fallback
+        if(TARGET libsodium::libsodium)
+            get_target_property(LIBSODIUM_INCLUDE_DIRS libsodium::libsodium INTERFACE_INCLUDE_DIRECTORIES)
+            if(LIBSODIUM_INCLUDE_DIRS)
+                target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+                message(STATUS "Found libsodium via target property: ${LIBSODIUM_INCLUDE_DIRS}")
+            else()
+                message(WARNING "libsodium target found but no include directories. This may cause compilation errors.")
+            endif()
+        else()
+            message(WARNING "libsodium target not found. Compilation may fail.")
         endif()
     endif()
 endif()
