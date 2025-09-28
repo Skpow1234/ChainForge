@@ -1,0 +1,30 @@
+// block.proto - Block serialization
+syntax = "proto3";
+
+package chainforge.block;
+
+import "types.proto";
+import "transaction.proto";
+
+option java_package = "com.chainforge.block";
+option java_outer_classname = "BlockProto";
+
+// Block Header
+message BlockHeader {
+  uint64 version = 1; // Block version
+  chainforge.types.Hash prev_block_hash = 2; // Previous block hash
+  chainforge.types.Hash merkle_root = 3; // Merkle root of transactions
+  chainforge.types.Timestamp timestamp = 4; // Block timestamp
+  uint64 difficulty = 5; // Mining difficulty
+  uint64 nonce = 6; // Nonce for proof-of-work
+  uint32 height = 7; // Block height in chain
+  bytes extra_data = 8; // Additional data
+}
+
+// Block
+message Block {
+  BlockHeader header = 1; // Block header
+  repeated chainforge.transaction.Transaction transactions = 2; // Transactions in block
+  chainforge.types.Hash block_hash = 3; // Block hash (computed)
+  uint32 tx_count = 4; // Number of transactions
+}

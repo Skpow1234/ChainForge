@@ -3,6 +3,7 @@
 
 add_subdirectory(core)
 add_subdirectory(crypto)
+add_subdirectory(serialization)
 # add_subdirectory(logging)
 # add_subdirectory(metrics)
 # add_subdirectory(storage)

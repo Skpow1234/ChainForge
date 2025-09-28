@@ -31,6 +31,11 @@ target_sources(core_tests PRIVATE
 #     unit/crypto/test_hash.cpp
 # )
 
+# Add serialization test executables
+add_executable(serialization_tests
+    unit/serialization/test_serialization.cpp
+)
+
 # Disabled until logging module is implemented
 # add_executable(logging_tests
 #     unit/logging/test_logger.cpp
@@ -76,6 +81,15 @@ target_link_libraries(core_tests
 #         GTest::gtest_main
 # )
 
+# Link serialization test dependencies
+target_link_libraries(serialization_tests
+    PRIVATE
+        chainforge-serialization
+        chainforge-core
+        GTest::gtest
+        GTest::gtest_main
+)
+
 # Disabled until logging module is implemented
 # target_link_libraries(logging_tests
 #     PRIVATE
@@ -112,6 +126,7 @@ target_link_libraries(core_tests
 
 # Add tests with labels
 add_test(NAME CoreTests COMMAND core_tests)
+add_test(NAME SerializationTests COMMAND serialization_tests)
 # Disabled until modules are fully implemented
 # add_test(NAME CryptoTests COMMAND crypto_tests)
 # add_test(NAME LoggingTests COMMAND logging_tests)
@@ -122,6 +137,12 @@ add_test(NAME CoreTests COMMAND core_tests)
 # Set test labels
 set_tests_properties(CoreTests PROPERTIES
     LABELS "unit;core"
+    TIMEOUT 300
+    ENVIRONMENT "GTEST_COLOR=1"
+)
+
+set_tests_properties(SerializationTests PROPERTIES
+    LABELS "unit;serialization"
     TIMEOUT 300
     ENVIRONMENT "GTEST_COLOR=1"
 )
@@ -160,6 +181,6 @@ set_tests_properties(CoreTests PROPERTIES
 # )
 
 # Install test binaries
-install(TARGETS core_tests
+install(TARGETS core_tests serialization_tests
     RUNTIME DESTINATION bin/tests
 )

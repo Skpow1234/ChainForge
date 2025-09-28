@@ -59,9 +59,10 @@ jobs:
         # Run all tests with detailed output
         ctest --output-on-failure --parallel --verbose
         # Run tests by category
-        ctest --output-on-failure --label-regex "unit" --parallel
-        ctest --output-on-failure --label-regex "integration" --parallel
-        ctest --output-on-failure --label-regex "fuzz" --parallel
+           ctest --output-on-failure --label-regex "unit" --parallel
+           ctest --output-on-failure --label-regex "serialization" --parallel
+           ctest --output-on-failure --label-regex "integration" --parallel
+           ctest --output-on-failure --label-regex "fuzz" --parallel
 
     - name: Generate code coverage (GCC 11 Debug)
       run: |

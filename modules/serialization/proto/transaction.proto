@@ -1,0 +1,36 @@
+// transaction.proto - Transaction serialization
+syntax = "proto3";
+
+package chainforge.transaction;
+
+import "types.proto";
+
+option java_package = "com.chainforge.transaction";
+option java_outer_classname = "TransactionProto";
+
+// Transaction Input
+message TxInput {
+  bytes prev_tx_hash = 1; // Hash of previous transaction
+  uint32 output_index = 2; // Index of output in previous transaction
+  chainforge.types.Signature signature = 3; // Unlocking signature
+  chainforge.types.PublicKey pubkey = 4; // Public key for verification
+}
+
+// Transaction Output
+message TxOutput {
+  chainforge.types.Amount amount = 1; // Amount to send
+  chainforge.types.Address recipient = 2; // Recipient address
+}
+
+// Transaction
+message Transaction {
+  uint64 version = 1; // Transaction version
+  repeated TxInput inputs = 2; // Transaction inputs
+  repeated TxOutput outputs = 3; // Transaction outputs
+  uint64 gas_limit = 4; // Gas limit for execution
+  chainforge.types.Amount gas_price = 5; // Gas price
+  bytes data = 6; // Additional data (e.g., contract calls)
+  uint64 nonce = 7; // Account nonce
+  chainforge.types.Timestamp timestamp = 8; // Transaction timestamp
+  chainforge.types.Hash tx_hash = 9; // Transaction hash (computed)
+}

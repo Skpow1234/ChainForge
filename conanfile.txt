@@ -11,6 +11,9 @@ gtest/1.14.0
 openssl/3.2.0
 libsodium/1.0.19
 
+# Serialization
+protobuf/3.21.12
+
 # Metrics and observability
 # Note: prometheus-cpp temporarily disabled due to CI issues
 # Will implement basic metrics without external dependencies

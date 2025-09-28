@@ -1,0 +1,43 @@
+// types.proto - Basic type definitions for ChainForge serialization
+syntax = "proto3";
+
+package chainforge.types;
+
+option java_package = "com.chainforge.types";
+option java_outer_classname = "TypesProto";
+
+// Hash - Fixed-size 256-bit hash
+message Hash {
+  bytes data = 1; // 32 bytes for Keccak256
+}
+
+// Address - Blockchain address (20 bytes for Ethereum-style)
+message Address {
+  bytes data = 1; // 20 bytes
+}
+
+// Amount - Token amount with high precision
+message Amount {
+  bytes value = 1; // Variable precision amount as bytes
+}
+
+// Timestamp - Unix timestamp
+message Timestamp {
+  uint64 seconds = 1;
+  uint32 nanoseconds = 2; // Optional nanosecond precision
+}
+
+// Public Key - Cryptographic public key
+message PublicKey {
+  bytes data = 1; // Variable size depending on algorithm
+}
+
+// Private Key - Cryptographic private key (sensitive!)
+message PrivateKey {
+  bytes data = 1; // Variable size depending on algorithm
+}
+
+// Signature - Cryptographic signature
+message Signature {
+  bytes data = 1; // Variable size depending on algorithm
+}
