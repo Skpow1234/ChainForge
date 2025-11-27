@@ -12,6 +12,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Include cmake modules
 include(cmake/CompilerFlags.cmake)
 include(cmake/ConanSetup.cmake)
+include(cmake/TestCoverage.cmake)
 
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

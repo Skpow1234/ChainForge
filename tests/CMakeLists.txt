@@ -19,6 +19,11 @@ add_executable(core_tests
     unit/core/test_error_handling.cpp
 )
 
+# Add framework demo tests
+add_executable(framework_tests
+    unit/test_framework_demo.cpp
+)
+
 # Add main function for tests
 target_sources(core_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cpp
@@ -70,6 +75,22 @@ target_link_libraries(core_tests
         GTest::gtest
         GTest::gtest_main
         Threads::Threads
+)
+
+# Link framework test dependencies
+target_link_libraries(framework_tests
+    PRIVATE
+        chainforge-core
+        chainforge-serialization
+        GTest::gtest
+        GTest::gtest_main
+        Threads::Threads
+)
+
+# Include test helpers directory
+target_include_directories(framework_tests
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # Disabled until crypto module is fully implemented
@@ -127,6 +148,7 @@ target_link_libraries(serialization_tests
 # Add tests with labels
 add_test(NAME CoreTests COMMAND core_tests)
 add_test(NAME SerializationTests COMMAND serialization_tests)
+add_test(NAME FrameworkTests COMMAND framework_tests)
 # Disabled until modules are fully implemented
 # add_test(NAME CryptoTests COMMAND crypto_tests)
 # add_test(NAME LoggingTests COMMAND logging_tests)
@@ -143,6 +165,12 @@ set_tests_properties(CoreTests PROPERTIES
 
 set_tests_properties(SerializationTests PROPERTIES
     LABELS "unit;serialization"
+    TIMEOUT 300
+    ENVIRONMENT "GTEST_COLOR=1"
+)
+
+set_tests_properties(FrameworkTests PROPERTIES
+    LABELS "unit;framework;demo"
     TIMEOUT 300
     ENVIRONMENT "GTEST_COLOR=1"
 )
@@ -181,6 +209,6 @@ set_tests_properties(SerializationTests PROPERTIES
 # )
 
 # Install test binaries
-install(TARGETS core_tests serialization_tests
+install(TARGETS core_tests serialization_tests framework_tests
     RUNTIME DESTINATION bin/tests
 )
