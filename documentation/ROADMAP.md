@@ -232,7 +232,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Networking, P2P, reliability
 **Tests**: Network tests, connection tests, error scenarios
 
-### Milestone 17: Peer Discovery
+### Milestone 17: Peer Discovery ✅
 
 **Problem**: Need to find other nodes on the network
 **Solution**: Implement peer discovery mechanisms

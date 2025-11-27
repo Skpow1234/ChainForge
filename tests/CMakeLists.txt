@@ -29,6 +29,11 @@ add_executable(network_tests
     unit/test_network_transport.cpp
 )
 
+# Add peer discovery tests
+add_executable(discovery_tests
+    unit/test_peer_discovery.cpp
+)
+
 # Add main function for tests
 target_sources(core_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cpp
@@ -108,6 +113,16 @@ target_link_libraries(network_tests
         Threads::Threads
 )
 
+# Link discovery test dependencies
+target_link_libraries(discovery_tests
+    PRIVATE
+        chainforge-core
+        chainforge-p2p
+        GTest::gtest
+        GTest::gtest_main
+        Threads::Threads
+)
+
 # Disabled until crypto module is fully implemented
 # target_link_libraries(crypto_tests
 #     PRIVATE
@@ -165,6 +180,7 @@ add_test(NAME CoreTests COMMAND core_tests)
 add_test(NAME SerializationTests COMMAND serialization_tests)
 add_test(NAME FrameworkTests COMMAND framework_tests)
 add_test(NAME NetworkTests COMMAND network_tests)
+add_test(NAME DiscoveryTests COMMAND discovery_tests)
 # Disabled until modules are fully implemented
 # add_test(NAME CryptoTests COMMAND crypto_tests)
 # add_test(NAME LoggingTests COMMAND logging_tests)
@@ -193,6 +209,12 @@ set_tests_properties(FrameworkTests PROPERTIES
 
 set_tests_properties(NetworkTests PROPERTIES
     LABELS "unit;network;p2p"
+    TIMEOUT 300
+    ENVIRONMENT "GTEST_COLOR=1"
+)
+
+set_tests_properties(DiscoveryTests PROPERTIES
+    LABELS "unit;p2p;discovery"
     TIMEOUT 300
     ENVIRONMENT "GTEST_COLOR=1"
 )
@@ -231,6 +253,6 @@ set_tests_properties(NetworkTests PROPERTIES
 # )
 
 # Install test binaries
-install(TARGETS core_tests serialization_tests framework_tests network_tests
+install(TARGETS core_tests serialization_tests framework_tests network_tests discovery_tests
     RUNTIME DESTINATION bin/tests
 )

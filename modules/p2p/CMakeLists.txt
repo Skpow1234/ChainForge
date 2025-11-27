@@ -6,6 +6,8 @@ set(P2P_SOURCES
     src/tcp_server.cpp
     src/tcp_client.cpp
     src/udp_transport.cpp
+    src/peer_address.cpp
+    src/peer_discovery.cpp
 )
 
 set(P2P_HEADERS
@@ -13,6 +15,9 @@ set(P2P_HEADERS
     include/chainforge/p2p/tcp_server.hpp
     include/chainforge/p2p/tcp_client.hpp
     include/chainforge/p2p/udp_transport.hpp
+    include/chainforge/p2p/peer_address.hpp
+    include/chainforge/p2p/peer_discovery.hpp
+    include/chainforge/p2p/network.hpp
 )
 
 add_library(chainforge-p2p STATIC ${P2P_SOURCES} ${P2P_HEADERS})
