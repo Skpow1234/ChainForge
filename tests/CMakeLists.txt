@@ -33,7 +33,7 @@ target_sources(core_tests PRIVATE
 
 # Add serialization test executables
 add_executable(serialization_tests
-    unit/serialization/test_serialization.cpp
+    unit/test_serialization.cpp
 )
 
 # Disabled until logging module is implemented

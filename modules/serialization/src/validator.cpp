@@ -33,15 +33,15 @@ ValidationResult DefaultValidator::validate_block(const Block& block) {
     }
 
     // Validate transactions
-    for (const auto& tx : block.get_transactions()) {
-        auto tx_result = validate_transaction(*tx);
+    for (const auto& tx : block.transactions()) {
+        auto tx_result = validate_transaction(tx);
         if (!tx_result.has_value()) {
             return tx_result;
         }
     }
 
     // Validate block hash
-    auto hash_result = validate_hash(block.get_hash());
+    auto hash_result = validate_hash(block.calculate_hash());
     if (!hash_result.has_value()) {
         return hash_result;
     }
@@ -56,37 +56,25 @@ ValidationResult DefaultValidator::validate_transaction(const Transaction& tx) {
         return structure_result;
     }
 
-    // Validate inputs
-    for (const auto& input : tx.get_inputs()) {
-        // Validate input addresses, amounts, etc.
-        if (!input.get_address().has_value()) {
-            return make_validation_error(
-                ValidationError::INVALID_ADDRESS,
-                "Transaction input missing address"
-            );
-        }
-
-        auto addr_result = validate_address(input.get_address().value());
-        if (!addr_result.has_value()) {
-            return addr_result;
-        }
+    // Validate addresses
+    auto from_result = validate_address(tx.from());
+    if (!from_result.has_value()) {
+        return from_result;
     }
 
-    // Validate outputs
-    for (const auto& output : tx.get_outputs()) {
-        auto addr_result = validate_address(output.get_address());
-        if (!addr_result.has_value()) {
-            return addr_result;
-        }
+    auto to_result = validate_address(tx.to());
+    if (!to_result.has_value()) {
+        return to_result;
+    }
 
-        auto amount_result = validate_amount(output.get_amount());
-        if (!amount_result.has_value()) {
-            return amount_result;
-        }
+    // Validate amount
+    auto amount_result = validate_amount(tx.value());
+    if (!amount_result.has_value()) {
+        return amount_result;
     }
 
     // Validate gas parameters
-    if (tx.get_gas_limit() == 0) {
+    if (tx.gas_limit() == 0) {
         return make_validation_error(
             ValidationError::INVALID_TRANSACTION,
             "Transaction gas limit must be greater than zero"
@@ -140,21 +128,21 @@ ValidationResult DefaultValidator::validate_serialized_data(
 // Private validation methods
 ValidationResult DefaultValidator::validate_block_header(const Block& block) {
     // Validate timestamp is reasonable (not too far in future/past)
-    auto ts_result = validate_timestamp(block.get_timestamp());
+    auto ts_result = validate_timestamp(block.timestamp());
     if (!ts_result.has_value()) {
         return ts_result;
     }
 
-    // Validate difficulty is positive
-    if (block.get_difficulty() == 0) {
+    // Validate gas limit is positive
+    if (block.gas_limit() == 0) {
         return make_validation_error(
             ValidationError::INVALID_BLOCK,
-            "Block difficulty must be greater than zero"
+            "Block gas limit must be greater than zero"
         );
     }
 
     // Validate block height
-    if (block.get_height() > std::numeric_limits<uint32_t>::max()) {
+    if (block.height() > std::numeric_limits<uint32_t>::max()) {
         return make_validation_error(
             ValidationError::INVALID_BLOCK,
             "Block height exceeds maximum allowed value"
@@ -165,26 +153,21 @@ ValidationResult DefaultValidator::validate_block_header(const Block& block) {
 }
 
 ValidationResult DefaultValidator::validate_transaction_structure(const Transaction& tx) {
-    // Validate transaction has at least one input and one output
-    if (tx.get_inputs().empty()) {
+    // Validate transaction has valid addresses
+    if (tx.from().is_zero()) {
         return make_validation_error(
             ValidationError::INVALID_TRANSACTION,
-            "Transaction must have at least one input"
+            "Transaction from address cannot be zero"
         );
     }
 
-    if (tx.get_outputs().empty()) {
+    // Note: to address can be zero for contract creation
+    
+    // Validate amount is valid
+    if (!tx.value().is_valid()) {
         return make_validation_error(
-            ValidationError::INVALID_TRANSACTION,
-            "Transaction must have at least one output"
-        );
-    }
-
-    // Validate transaction version
-    if (tx.get_version() == 0) {
-        return make_validation_error(
-            ValidationError::INVALID_TRANSACTION,
-            "Transaction version must be greater than zero"
+            ValidationError::INVALID_AMOUNT,
+            "Transaction value is invalid"
         );
     }
 
