@@ -4,10 +4,10 @@
 add_subdirectory(core)
 add_subdirectory(crypto)
 add_subdirectory(serialization)
+add_subdirectory(p2p)
 # add_subdirectory(logging)
 # add_subdirectory(metrics)
 # add_subdirectory(storage)
-# add_subdirectory(p2p)         # Requires networking libraries
 # add_subdirectory(consensus)
 # add_subdirectory(execution)   # Requires storage
 # add_subdirectory(mempool)

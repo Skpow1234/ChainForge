@@ -24,6 +24,11 @@ add_executable(framework_tests
     unit/test_framework_demo.cpp
 )
 
+# Add network transport tests
+add_executable(network_tests
+    unit/test_network_transport.cpp
+)
+
 # Add main function for tests
 target_sources(core_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cpp
@@ -93,6 +98,16 @@ target_include_directories(framework_tests
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+# Link network test dependencies
+target_link_libraries(network_tests
+    PRIVATE
+        chainforge-core
+        chainforge-p2p
+        GTest::gtest
+        GTest::gtest_main
+        Threads::Threads
+)
+
 # Disabled until crypto module is fully implemented
 # target_link_libraries(crypto_tests
 #     PRIVATE
@@ -149,6 +164,7 @@ target_link_libraries(serialization_tests
 add_test(NAME CoreTests COMMAND core_tests)
 add_test(NAME SerializationTests COMMAND serialization_tests)
 add_test(NAME FrameworkTests COMMAND framework_tests)
+add_test(NAME NetworkTests COMMAND network_tests)
 # Disabled until modules are fully implemented
 # add_test(NAME CryptoTests COMMAND crypto_tests)
 # add_test(NAME LoggingTests COMMAND logging_tests)
@@ -171,6 +187,12 @@ set_tests_properties(SerializationTests PROPERTIES
 
 set_tests_properties(FrameworkTests PROPERTIES
     LABELS "unit;framework;demo"
+    TIMEOUT 300
+    ENVIRONMENT "GTEST_COLOR=1"
+)
+
+set_tests_properties(NetworkTests PROPERTIES
+    LABELS "unit;network;p2p"
     TIMEOUT 300
     ENVIRONMENT "GTEST_COLOR=1"
 )
@@ -209,6 +231,6 @@ set_tests_properties(FrameworkTests PROPERTIES
 # )
 
 # Install test binaries
-install(TARGETS core_tests serialization_tests framework_tests
+install(TARGETS core_tests serialization_tests framework_tests network_tests
     RUNTIME DESTINATION bin/tests
 )

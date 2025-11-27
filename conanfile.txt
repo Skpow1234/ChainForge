@@ -14,13 +14,15 @@ libsodium/1.0.19
 # Serialization
 protobuf/3.21.12
 
+# Networking
+boost/1.84.0
+
 # Metrics and observability
 # Note: prometheus-cpp temporarily disabled due to CI issues
 # Will implement basic metrics without external dependencies
 
 # Build system and development
 # Note: cmake is a system dependency and should be installed separately
-# Note: boost will be added when needed for p2p/networking modules
 
 [generators]
 CMakeDeps
