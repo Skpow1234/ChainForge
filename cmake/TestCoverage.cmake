@@ -8,14 +8,15 @@ if(ENABLE_COVERAGE)
     
     # Check compiler support
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        # Add coverage flags
-        set(COVERAGE_COMPILE_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
-        set(COVERAGE_LINK_FLAGS "--coverage")
-        
-        # Apply flags to all targets
+        # Add coverage flags as a CMake list (not one string) so each flag is a
+        # separate compiler argument. Quoting as a single string makes g++ treat
+        # everything after -g as an invalid debug level.
+        set(COVERAGE_COMPILE_FLAGS -g -O0 --coverage -fprofile-arcs -ftest-coverage)
+        set(COVERAGE_LINK_FLAGS --coverage)
+
         add_compile_options(${COVERAGE_COMPILE_FLAGS})
         add_link_options(${COVERAGE_LINK_FLAGS})
-        
+
         message(STATUS "Coverage flags: ${COVERAGE_COMPILE_FLAGS}")
         
         # Find coverage tools
