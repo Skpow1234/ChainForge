@@ -60,7 +60,13 @@ curl -X POST http://localhost:8545 \
 | `eth_getTransactionByHash` | Transaction by hash |
 | `eth_getTransactionReceipt` | Transaction receipt |
 
-Implementation lives under `modules/rpc/` (not in the default CMake build yet). Responses may be mock/stub data while the node composition root is unfinished.
+Implementation lives under `modules/rpc/` and is composed by `chainforge-node` via `ChainState` (storage + mempool). `eth_sendRawTransaction` still uses a simplified hex seed path until RLP decode lands.
+
+```bash
+# After building:
+./build/bin/chainforge-node --self-check
+./build/bin/chainforge-node --mine-once --rpc-port 8545
+```
 
 ## Observability URLs
 

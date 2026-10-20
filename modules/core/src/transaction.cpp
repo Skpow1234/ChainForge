@@ -1,12 +1,13 @@
 #include "chainforge/core/transaction.hpp"
 #include <sstream>
+#include <iomanip>
 #include <algorithm>
 #include <nlohmann/json.hpp>
 
 namespace chainforge::core {
 
 Transaction::Transaction(const Address& from, const Address& to, const Amount& value)
-    : data_{from.data(), to.data(), value.wei(), 21000, 1, {}, 0} {}
+    : data_{from.data(), to.data(), value.wei(), 21000, 1, {}, 0, {}} {}
 
 Transaction::Transaction(const TransactionData& data) : data_(data) {}
 
@@ -50,41 +51,24 @@ Hash Transaction::calculate_hash() const {
         return cached_hash_.value();
     }
 
-    // Create a simple hash from transaction data
-    // TODO: Implement proper transaction hashing with RLP encoding
+    // Canonical preimage (RLP comes later): keccak256 of field concatenation
     std::vector<uint8_t> hash_data;
+    hash_data.insert(hash_data.end(), data_.from.begin(), data_.from.end());
+    hash_data.insert(hash_data.end(), data_.to.begin(), data_.to.end());
 
-    // Add addresses
-    auto from_bytes = data_.from;
-    hash_data.insert(hash_data.end(), from_bytes.begin(), from_bytes.end());
+    auto append_be = [&](uint64_t value, size_t width) {
+        for (int i = static_cast<int>(width) - 1; i >= 0; --i) {
+            hash_data.push_back(static_cast<uint8_t>((value >> (i * 8)) & 0xFF));
+        }
+    };
 
-    auto to_bytes = data_.to;
-    hash_data.insert(hash_data.end(), to_bytes.begin(), to_bytes.end());
-
-    // Add value as bytes (big-endian)
-    auto value_wei = data_.value;
-    for (int i = sizeof(value_wei) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((value_wei >> (i * 8)) & 0xFF));
-    }
-
-    // Add gas limit and price
-    for (int i = sizeof(data_.gas_limit) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((data_.gas_limit >> (i * 8)) & 0xFF));
-    }
-
-    for (int i = sizeof(data_.gas_price) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((data_.gas_price >> (i * 8)) & 0xFF));
-    }
-
-    // Add nonce
-    for (int i = sizeof(data_.nonce) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((data_.nonce >> (i * 8)) & 0xFF));
-    }
-
-    // Add data
+    append_be(data_.value, 8);
+    append_be(data_.gas_limit, 8);
+    append_be(data_.gas_price, 8);
+    append_be(data_.nonce, 8);
     hash_data.insert(hash_data.end(), data_.data.begin(), data_.data.end());
 
-    cached_hash_ = hash_sha256(hash_data);
+    cached_hash_ = hash_keccak256(hash_data);
     return cached_hash_.value();
 }
 
@@ -112,8 +96,11 @@ bool Transaction::is_valid() const {
 }
 
 bool Transaction::validate_signature() const {
-    // TODO: Implement signature validation
-    return true;
+    // Unsigned txs are allowed in local/dev pools; when present, require 65-byte r||s||v.
+    if (data_.signature.empty()) {
+        return true;
+    }
+    return data_.signature.size() == 65;
 }
 
 bool Transaction::validate_gas() const {
@@ -163,15 +150,36 @@ std::string Transaction::to_json() const {
     j["gasLimit"] = data_.gas_limit;
     j["gasPrice"] = data_.gas_price;
     j["nonce"] = data_.nonce;
-    j["data"] = "0x" + std::string(64, '0'); // Placeholder - 32 bytes of zeros
-    j["hash"] = calculate_hash().to_hex();
+    {
+        std::ostringstream oss;
+        oss << "0x" << std::hex << std::setfill('0');
+        for (uint8_t b : data_.data) {
+            oss << std::setw(2) << static_cast<int>(b);
+        }
+        j["data"] = oss.str();
+    }
+    j["hash"] = "0x" + calculate_hash().to_hex();
 
     return j.dump(2);
 }
 
 std::string Transaction::to_hex() const {
-    // TODO: Implement proper RLP encoding
-    return calculate_hash().to_hex();
+    // Hex of the hash preimage fields (not RLP yet)
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+    for (uint8_t b : data_.from) oss << std::setw(2) << static_cast<int>(b);
+    for (uint8_t b : data_.to) oss << std::setw(2) << static_cast<int>(b);
+    auto append_be = [&](uint64_t value) {
+        for (int i = 7; i >= 0; --i) {
+            oss << std::setw(2) << static_cast<int>((value >> (i * 8)) & 0xFF);
+        }
+    };
+    append_be(data_.value);
+    append_be(data_.gas_limit);
+    append_be(data_.gas_price);
+    append_be(data_.nonce);
+    for (uint8_t b : data_.data) oss << std::setw(2) << static_cast<int>(b);
+    return oss.str();
 }
 
 void Transaction::invalidate_cache() {

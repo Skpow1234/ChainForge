@@ -46,6 +46,7 @@ struct TransactionData {
     GasPrice gas_price;
     std::vector<uint8_t> data;
     uint64_t nonce;
+    std::vector<uint8_t> signature; // r||s||v (empty = unsigned)
 };
 
 // Block structure (removed to avoid incomplete type issues)

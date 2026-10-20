@@ -1,14 +1,15 @@
 # RPC module - JSON-RPC server for blockchain communication
-# Provides HTTP server with JSON-RPC protocol and blockchain API endpoints
 
 set(RPC_SOURCES
     src/rpc_server_impl.cpp
     src/http_server.cpp
     src/blockchain_rpc_methods.cpp
+    src/chain_state.cpp
 )
 
 set(RPC_HEADERS
     include/chainforge/rpc/rpc_server.hpp
+    include/chainforge/rpc/chain_state.hpp
     src/http_server.hpp
     src/blockchain_rpc_methods.hpp
 )
@@ -25,21 +26,19 @@ target_include_directories(chainforge-rpc
 
 target_compile_features(chainforge-rpc PRIVATE cxx_std_20)
 
-# Link dependencies
 find_conan_package(nlohmann_json)
 target_link_libraries(chainforge-rpc
     PUBLIC
         nlohmann_json::nlohmann_json
-    PRIVATE
         chainforge-core
+        chainforge-storage
+        chainforge-mempool
 )
 
-# Platform-specific libraries
 if(WIN32)
     target_link_libraries(chainforge-rpc PRIVATE ws2_32)
 endif()
 
-# Install
 install(TARGETS chainforge-rpc
     EXPORT ChainForgeTargets
     LIBRARY DESTINATION lib

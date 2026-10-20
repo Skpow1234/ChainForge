@@ -133,41 +133,10 @@ MiningResult ProofOfWork::perform_mining(const chainforge::core::Block& block_te
 }
 
 chainforge::core::Hash ProofOfWork::calculate_block_hash(const chainforge::core::Block& block, uint64_t nonce) const {
-    // Create a modified block with the nonce for hashing
-    // In a real implementation, this would serialize the block header + nonce
-    std::vector<uint8_t> data;
-
-    // Add block height
-    uint64_t height = block.height();
-    for (int i = 7; i >= 0; --i) {
-        data.push_back(static_cast<uint8_t>((height >> (i * 8)) & 0xFF));
-    }
-
-    // Add parent hash
-    auto parent_hash_bytes = block.parent_hash().to_bytes();
-    data.insert(data.end(), parent_hash_bytes.begin(), parent_hash_bytes.end());
-
-    // Add merkle root
-    auto merkle_root_bytes = block.merkle_root().to_bytes();
-    data.insert(data.end(), merkle_root_bytes.begin(), merkle_root_bytes.end());
-
-    // Add timestamp
-    uint64_t timestamp = block.timestamp().seconds();
-    for (int i = 7; i >= 0; --i) {
-        data.push_back(static_cast<uint8_t>((timestamp >> (i * 8)) & 0xFF));
-    }
-
-    // Add nonce
-    for (int i = 7; i >= 0; --i) {
-        data.push_back(static_cast<uint8_t>((nonce >> (i * 8)) & 0xFF));
-    }
-
-    // Add difficulty (simplified)
-    for (int i = 7; i >= 0; --i) {
-        data.push_back(static_cast<uint8_t>((current_difficulty_ >> (i * 8)) & 0xFF));
-    }
-
-    return chainforge::core::hash_sha256(data);
+    // Keep mining hash identical to Block::calculate_hash (nonce in header)
+    chainforge::core::Block candidate = block;
+    candidate.set_nonce(nonce);
+    return candidate.calculate_hash();
 }
 
 bool ProofOfWork::meets_difficulty_target(const chainforge::core::Hash& hash, Difficulty difficulty) const {
@@ -195,23 +164,23 @@ Difficulty ProofOfWork::hash_to_difficulty(const chainforge::core::Hash& hash) c
 }
 
 bool ProofOfWork::validate_block(const chainforge::core::Block& block) const {
-    // Basic block validation
     if (!block.is_valid()) {
         return false;
     }
 
-    // Validate proof of work
-    auto block_hash = block.calculate_hash();
-    return validate_proof_of_work(block_hash, block.nonce(), current_difficulty_);
+    const auto expected = calculate_block_hash(block, block.nonce());
+    const auto actual = block.calculate_hash();
+    if (expected != actual) {
+        return false;
+    }
+    return meets_difficulty_target(actual, current_difficulty_);
 }
 
 bool ProofOfWork::validate_proof_of_work(const chainforge::core::Hash& block_hash,
-                                       uint64_t nonce,
+                                       uint64_t /*nonce*/,
                                        Difficulty difficulty) const {
-    // Recalculate the block hash with the given nonce
-    // This is a simplified validation - in practice, we'd need the full block data
-    auto calculated_hash = block_hash; // Placeholder
-    return meets_difficulty_target(calculated_hash, difficulty);
+    // Without the full header, only check the hash meets the difficulty target.
+    return meets_difficulty_target(block_hash, difficulty);
 }
 
 Difficulty ProofOfWork::adjust_difficulty(uint64_t actual_block_time_seconds,

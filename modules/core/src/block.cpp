@@ -72,49 +72,24 @@ Hash Block::calculate_hash() const {
         return cached_hash_.value();
     }
 
-    // Create a simple hash from block header
-    // TODO: Implement proper block header hashing
+    // Header preimage hashed with Keccak-256 (RLP header encoding later)
     std::vector<uint8_t> hash_data;
+    auto append_be = [&](uint64_t value, size_t width) {
+        for (int i = static_cast<int>(width) - 1; i >= 0; --i) {
+            hash_data.push_back(static_cast<uint8_t>((value >> (i * 8)) & 0xFF));
+        }
+    };
 
-    // Add height (big-endian)
-    for (int i = sizeof(header_.height) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((header_.height >> (i * 8)) & 0xFF));
-    }
+    append_be(header_.height, 8);
+    hash_data.insert(hash_data.end(), header_.parent_hash.begin(), header_.parent_hash.end());
+    hash_data.insert(hash_data.end(), header_.merkle_root.begin(), header_.merkle_root.end());
+    append_be(header_.timestamp, 8);
+    append_be(header_.nonce, 8);
+    append_be(header_.gas_limit, 8);
+    append_be(header_.gas_price, 8);
+    append_be(header_.chain_id, 4);
 
-    // Add parent hash
-    auto parent_hash_bytes = header_.parent_hash;
-    hash_data.insert(hash_data.end(), parent_hash_bytes.begin(), parent_hash_bytes.end());
-
-    // Add merkle root
-    auto merkle_root_bytes = header_.merkle_root;
-    hash_data.insert(hash_data.end(), merkle_root_bytes.begin(), merkle_root_bytes.end());
-
-    // Add timestamp
-    auto timestamp_seconds = header_.timestamp;
-    for (int i = sizeof(timestamp_seconds) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((timestamp_seconds >> (i * 8)) & 0xFF));
-    }
-
-    // Add nonce
-    for (int i = sizeof(header_.nonce) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((header_.nonce >> (i * 8)) & 0xFF));
-    }
-
-    // Add gas limit and price
-    for (int i = sizeof(header_.gas_limit) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((header_.gas_limit >> (i * 8)) & 0xFF));
-    }
-
-    for (int i = sizeof(header_.gas_price) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((header_.gas_price >> (i * 8)) & 0xFF));
-    }
-
-    // Add chain id
-    for (int i = sizeof(header_.chain_id) - 1; i >= 0; --i) {
-        hash_data.push_back(static_cast<uint8_t>((header_.chain_id >> (i * 8)) & 0xFF));
-    }
-
-    cached_hash_ = hash_sha256(hash_data);
+    cached_hash_ = hash_keccak256(hash_data);
     return cached_hash_.value();
 }
 
@@ -176,14 +151,22 @@ bool Block::is_full() const {
 
 bool Block::validate_header() const {
     Timestamp timestamp(header_.timestamp);
-    return timestamp.is_valid() &&
-           header_.gas_limit > 0 &&
-           header_.chain_id > 0;
+    if (!timestamp.is_valid() || header_.gas_limit == 0 || header_.chain_id == 0) {
+        return false;
+    }
+    if (!is_genesis()) {
+        Hash parent(header_.parent_hash);
+        if (parent.is_zero()) {
+            return false;
+        }
+    }
+    // Merkle root must match transactions
+    return Hash(header_.merkle_root) == calculate_merkle_root();
 }
 
 bool Block::validate_transactions() const {
     for (const auto& tx : transactions_) {
-        if (!tx.is_valid()) {
+        if (!tx.is_valid() || !tx.validate_signature()) {
             return false;
         }
     }

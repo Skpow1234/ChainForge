@@ -164,5 +164,11 @@ public:
 std::unique_ptr<RpcServer> create_rpc_server();
 std::unique_ptr<BlockchainRpcMethods> create_blockchain_rpc_methods();
 
+class ChainState;
+std::unique_ptr<BlockchainRpcMethods> create_blockchain_rpc_methods(std::shared_ptr<ChainState> state); // NOLINT(performance-unnecessary-value-param)
+
+/** Register standard eth_/net_/web3_ handlers on a server. */
+void register_blockchain_rpc_methods(RpcServer& server, BlockchainRpcMethods& methods);
+
 } // namespace rpc
 } // namespace chainforge
