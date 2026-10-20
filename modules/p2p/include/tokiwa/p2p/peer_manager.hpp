@@ -10,21 +10,6 @@
 
 namespace tokiwa::p2p {
 
-enum class PeerState {
-    Discovered,
-    Connecting,
-    Connected,
-    Banned
-};
-
-struct PeerInfo {
-    PeerAddress address;
-    PeerState state = PeerState::Discovered;
-    int score = 0;
-    std::chrono::steady_clock::time_point last_seen = std::chrono::steady_clock::now();
-    std::string agent;
-};
-
 /**
  * Tracks known peers, scores, and connection state (Milestone 18 scaffolding).
  */

@@ -97,7 +97,17 @@ namespace ServiceFlags {
 }
 
 /**
- * @brief Peer information including connection state
+ * @brief Connection lifecycle state for a known peer
+ */
+enum class PeerState {
+    Discovered,
+    Connecting,
+    Connected,
+    Banned
+};
+
+/**
+ * @brief Peer information including connection state and scoring
  */
 struct PeerInfo {
     PeerAddress address;
@@ -108,9 +118,13 @@ struct PeerInfo {
     uint32_t connection_attempts{0};
     std::chrono::system_clock::time_point last_attempt;
     std::chrono::system_clock::time_point connected_since;
-    
+    PeerState state = PeerState::Discovered;
+    int score = 0;
+    std::chrono::steady_clock::time_point last_seen = std::chrono::steady_clock::now();
+    std::string agent;
+
     PeerInfo() = default;
-    
+
     explicit PeerInfo(const PeerAddress& addr)
         : address(addr) {}
     
