@@ -75,7 +75,9 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update
-          pkgs="build-essential cmake ninja-build pkg-config python3-pip python3-setuptools python3-wheel libssl-dev libsecp256k1-dev libsodium-dev libprotobuf-dev protobuf-compiler librocksdb-dev"
+          # Do not install system libprotobuf-dev/protobuf-compiler: Conan provides
+          # protobuf/3.21 and mixing system protoc with Conan headers breaks codegen.
+          pkgs="build-essential cmake ninja-build pkg-config python3-pip python3-setuptools python3-wheel libssl-dev libsecp256k1-dev libsodium-dev librocksdb-dev"
           case "${{ matrix.compiler }}" in
             gcc-*) pkgs="$pkgs ${{ matrix.compiler }}" ;;
             clang-*) pkgs="$pkgs ${{ matrix.compiler }} ${{ matrix.cxx }}" ;;
@@ -177,7 +179,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake ninja-build pkg-config \
             python3-pip libssl-dev libsecp256k1-dev libsodium-dev \
-            libprotobuf-dev protobuf-compiler librocksdb-dev g++-12
+            librocksdb-dev g++-12
 
       - name: Setup Conan
         run: |

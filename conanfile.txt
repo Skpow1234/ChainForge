@@ -24,6 +24,10 @@ boost/1.84.0
 # Build system and development
 # Note: cmake is a system dependency and should be installed separately
 
+[tool_requires]
+# Matching codegen tool for protobuf/3.21 (avoids system /usr/bin/protoc mismatch)
+protobuf/3.21.12
+
 [options]
 # P2P only needs Boost.Asio headers; skip compiling unused Boost libs in CI
 boost/*:header_only=True

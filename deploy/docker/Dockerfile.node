@@ -22,8 +22,6 @@ RUN apt-get update && apt-get install -y \
     libboost-thread-dev \
     libboost-chrono-dev \
     libboost-atomic-dev \
-    libprotobuf-dev \
-    protobuf-compiler \
     librocksdb-dev \
     libgtest-dev \
     libsecp256k1-dev \
@@ -70,8 +68,6 @@ RUN apt-get update && apt-get install -y \
     libboost-thread1.74.0 \
     libboost-chrono1.74.0 \
     libboost-atomic1.74.0 \
-    # Protocol Buffers Runtime
-    libprotobuf23 \
     # System Libraries
     libc6 \
     && rm -rf /var/lib/apt/lists/*

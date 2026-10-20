@@ -17,8 +17,6 @@ RUN apt-get update && apt-get install -y \
     python3-wheel \
     libssl-dev \
     libboost-all-dev \
-    libprotobuf-dev \
-    protobuf-compiler \
     librocksdb-dev \
     libgtest-dev \
     clang-tidy \
