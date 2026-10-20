@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <functional>
 
 namespace tokiwa::core {
 
@@ -68,3 +69,16 @@ Address derive_address_from_public_key(const std::vector<uint8_t>& public_key);
 Address derive_contract_address(const Address& sender, uint64_t nonce);
 
 } // namespace tokiwa::core
+
+namespace std {
+template<>
+struct hash<tokiwa::core::Address> {
+    size_t operator()(const tokiwa::core::Address& addr) const noexcept {
+        size_t result = 0;
+        for (uint8_t byte : addr.data()) {
+            result ^= static_cast<size_t>(byte) + 0x9e3779b9 + (result << 6) + (result >> 2);
+        }
+        return result;
+    }
+};
+} // namespace std

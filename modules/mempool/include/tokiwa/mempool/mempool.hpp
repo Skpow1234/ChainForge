@@ -151,7 +151,7 @@ enum class SelectionStrategy {
 };
 
 std::vector<tokiwa::core::Transaction> select_transactions_for_block(
-    const Mempool& mempool,
+    Mempool& mempool,
     SelectionStrategy strategy,
     size_t max_count,
     uint64_t max_gas_limit

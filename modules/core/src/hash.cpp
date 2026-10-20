@@ -135,27 +135,3 @@ Hash hash_from_hex(const std::string& hex_string) {
 }
 
 } // namespace tokiwa::core
-
-namespace std {
-template<>
-struct hash<tokiwa::core::Hash> {
-    size_t operator()(const tokiwa::core::Hash& h) const noexcept {
-        size_t result = 0;
-        for (size_t i = 0; i < 8 && i < h.data().size(); ++i) {
-            result = (result << 8) | h.data()[i];
-        }
-        return result;
-    }
-};
-
-template<>
-struct hash<tokiwa::core::Address> {
-    size_t operator()(const tokiwa::core::Address& addr) const noexcept {
-        size_t result = 0;
-        for (size_t i = 0; i < 8 && i < addr.data().size(); ++i) {
-            result = (result << 8) | addr.data()[i];
-        }
-        return result;
-    }
-};
-} // namespace std

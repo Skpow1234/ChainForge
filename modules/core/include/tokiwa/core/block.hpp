@@ -3,13 +3,12 @@
 #include "types.hpp"
 #include "hash.hpp"
 #include "timestamp.hpp"
+#include "transaction.hpp"
 #include <vector>
 #include <memory>
 #include <optional>
 
 namespace tokiwa::core {
-
-class Transaction;
 
 /**
  * Block class representing a blockchain block

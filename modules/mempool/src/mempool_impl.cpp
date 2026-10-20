@@ -472,7 +472,7 @@ std::string mempool_error_to_string(MempoolError error) {
 
 // Transaction selection
 std::vector<tokiwa::core::Transaction> select_transactions_for_block(
-    const Mempool& mempool,
+    Mempool& mempool,
     SelectionStrategy strategy,
     size_t max_count,
     uint64_t max_gas_limit

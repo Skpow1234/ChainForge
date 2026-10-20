@@ -11,57 +11,72 @@
 
 namespace tokiwa::storage {
 
+namespace {
+
+struct ByteVectorHash {
+    size_t operator()(const std::vector<uint8_t>& v) const noexcept {
+        size_t h = 0;
+        for (uint8_t b : v) {
+            h ^= static_cast<size_t>(b) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        }
+        return h;
+    }
+};
+
+using KeyValueMap = std::unordered_map<Key, Value, ByteVectorHash>;
+
+} // namespace
+
 // In-memory iterator implementation
 class MemoryIterator : public Iterator {
 public:
-    explicit MemoryIterator(const std::unordered_map<Key, Value>& data, const ReadOptions& options)
-        : data_(data), options_(options) {
-        // Create a sorted vector of keys for iteration
+    explicit MemoryIterator(const KeyValueMap& data, const ReadOptions& /*options*/)
+        : data_(data) {
         keys_.reserve(data.size());
         for (const auto& [key, value] : data) {
+            (void)value;
             keys_.push_back(key);
         }
         std::sort(keys_.begin(), keys_.end());
-        current_index_ = -1;
+        current_index_ = npos;
     }
 
     ~MemoryIterator() override = default;
 
     bool valid() const override {
-        return current_index_ >= 0 && static_cast<size_t>(current_index_) < keys_.size();
+        return current_index_ != npos && current_index_ < keys_.size();
     }
 
     void seek_to_first() override {
-        current_index_ = keys_.empty() ? -1 : 0;
+        current_index_ = keys_.empty() ? npos : 0;
     }
 
     void seek_to_last() override {
-        current_index_ = keys_.empty() ? -1 : static_cast<int>(keys_.size() - 1);
+        current_index_ = keys_.empty() ? npos : keys_.size() - 1;
     }
 
     void seek(const Key& key) override {
-        // Binary search for the key
         auto it = std::lower_bound(keys_.begin(), keys_.end(), key);
         if (it != keys_.end() && *it == key) {
-            current_index_ = static_cast<int>(it - keys_.begin());
+            current_index_ = static_cast<size_t>(it - keys_.begin());
         } else {
-            current_index_ = -1;
+            current_index_ = npos;
         }
     }
 
     void next() override {
-        if (current_index_ >= 0 && static_cast<size_t>(current_index_) < keys_.size() - 1) {
+        if (current_index_ != npos && current_index_ + 1 < keys_.size()) {
             ++current_index_;
         } else {
-            current_index_ = -1;
+            current_index_ = npos;
         }
     }
 
     void prev() override {
-        if (current_index_ > 0) {
+        if (current_index_ != npos && current_index_ > 0) {
             --current_index_;
         } else {
-            current_index_ = -1;
+            current_index_ = npos;
         }
     }
 
@@ -86,15 +101,26 @@ public:
     }
 
 private:
-    const std::unordered_map<Key, Value>& data_;
-    ReadOptions options_;
+    static constexpr size_t npos = static_cast<size_t>(-1);
+    const KeyValueMap& data_;
     std::vector<Key> keys_;
-    int current_index_;
+    size_t current_index_;
 };
 
 // In-memory write batch implementation
 class MemoryWriteBatch : public WriteBatch {
 public:
+    enum class OperationType { PUT, REMOVE };
+
+    struct Operation {
+        OperationType type;
+        Key key;
+        Value value;
+
+        Operation(OperationType t, const Key& k, const Value& v)
+            : type(t), key(k), value(v) {}
+    };
+
     MemoryWriteBatch() = default;
 
     void put(const Key& key, const Value& value) override {
@@ -118,17 +144,6 @@ public:
     }
 
 private:
-    enum class OperationType { PUT, REMOVE };
-
-    struct Operation {
-        OperationType type;
-        Key key;
-        Value value;
-
-        Operation(OperationType t, const Key& k, const Value& v)
-            : type(t), key(k), value(v) {}
-    };
-
     std::vector<Operation> operations_;
 };
 
@@ -171,7 +186,7 @@ public:
         return is_open_;
     }
 
-    StorageResult<Value> get(const Key& key, const ReadOptions& options) override {
+    StorageResult<Value> get(const Key& key, const ReadOptions& /*options*/) override {
         if (!is_open_) {
             return StorageResult<Value>{Value{}, StorageError::IO_ERROR};
         }
@@ -185,7 +200,7 @@ public:
         return StorageResult<Value>{it->second, StorageError::SUCCESS};
     }
 
-    StorageResult<void> put(const Key& key, const Value& value, const WriteOptions& options) override {
+    StorageResult<void> put(const Key& key, const Value& value, const WriteOptions& /*options*/) override {
         if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
@@ -195,7 +210,7 @@ public:
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
-    StorageResult<void> remove(const Key& key, const WriteOptions& options) override {
+    StorageResult<void> remove(const Key& key, const WriteOptions& /*options*/) override {
         if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
@@ -210,7 +225,7 @@ public:
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
-    StorageResult<void> write(WriteBatch& batch, const WriteOptions& options) override {
+    StorageResult<void> write(WriteBatch& batch, const WriteOptions& /*options*/) override {
         if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
@@ -241,19 +256,17 @@ public:
         return std::make_unique<MemoryIterator>(data_, options);
     }
 
-    StorageResult<void> flush(const WriteOptions& options) override {
+    StorageResult<void> flush(const WriteOptions& /*options*/) override {
         if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
-        // In-memory database, nothing to flush
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
-    StorageResult<void> compact_range(const Key* begin, const Key* end) override {
+    StorageResult<void> compact_range(const Key* /*begin*/, const Key* /*end*/) override {
         if (!is_open_) {
             return StorageResult<void>{StorageError::IO_ERROR};
         }
-        // In-memory database, nothing to compact
         return StorageResult<void>{StorageError::SUCCESS};
     }
 
@@ -290,7 +303,7 @@ public:
 
 private:
     mutable std::shared_mutex mutex_;
-    std::unordered_map<Key, Value> data_;
+    KeyValueMap data_;
     DatabaseConfig config_;
     bool is_open_ = false;
 };
@@ -331,8 +344,6 @@ private:
     std::string path_;
 
     void load_from_disk() {
-        // Access protected via public API only — re-open empty and import.
-        // MemoryDatabase stores privately; use get/put after reading file into temp map.
         std::ifstream in(path_, std::ios::binary);
         if (!in) return;
         while (in.peek() != EOF) {
@@ -341,8 +352,8 @@ private:
             if (!in) break;
             in.read(reinterpret_cast<char*>(&vlen), sizeof(vlen));
             if (!in) break;
-            Key key(klen);
-            Value value(vlen);
+            Key key(static_cast<size_t>(klen));
+            Value value(static_cast<size_t>(vlen));
             in.read(reinterpret_cast<char*>(key.data()), static_cast<std::streamsize>(klen));
             in.read(reinterpret_cast<char*>(value.data()), static_cast<std::streamsize>(vlen));
             if (!in) break;
@@ -351,7 +362,6 @@ private:
     }
 
     void save_to_disk() {
-        // Export via iterator
         auto it = new_iterator({});
         if (!it) return;
         std::ofstream out(path_, std::ios::binary | std::ios::trunc);

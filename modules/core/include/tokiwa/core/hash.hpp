@@ -4,6 +4,7 @@
 #include <string>
 #include <array>
 #include <vector>
+#include <functional>
 
 namespace tokiwa::core {
 
@@ -66,3 +67,16 @@ std::string hash_to_hex(const Hash& hash);
 Hash hash_from_hex(const std::string& hex_string);
 
 } // namespace tokiwa::core
+
+namespace std {
+template<>
+struct hash<tokiwa::core::Hash> {
+    size_t operator()(const tokiwa::core::Hash& h) const noexcept {
+        size_t result = 0;
+        for (uint8_t byte : h.data()) {
+            result ^= static_cast<size_t>(byte) + 0x9e3779b9 + (result << 6) + (result >> 2);
+        }
+        return result;
+    }
+};
+} // namespace std

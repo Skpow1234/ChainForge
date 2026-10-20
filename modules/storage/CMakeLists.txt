@@ -30,11 +30,31 @@ if(TOKIWA_USE_ROCKSDB)
     find_path(ROCKSDB_INCLUDE_DIR NAMES rocksdb/db.h)
     find_library(ROCKSDB_LIBRARY NAMES rocksdb)
     if(ROCKSDB_INCLUDE_DIR AND ROCKSDB_LIBRARY)
-        set(TOKIWA_HAS_ROCKSDB ON)
-        target_compile_definitions(tokiwa-storage PRIVATE TOKIWA_HAS_ROCKSDB=1)
-        target_include_directories(tokiwa-storage PRIVATE ${ROCKSDB_INCLUDE_DIR})
-        target_link_libraries(tokiwa-storage PRIVATE ${ROCKSDB_LIBRARY})
-        message(STATUS "Storage: RocksDB enabled (${ROCKSDB_LIBRARY})")
+        # Distro RocksDB headers (esp. Ubuntu) can be incompatible with C++20
+        # libstdc++ (incomplete types in rocksdb/metadata.h). Probe before enabling.
+        file(WRITE "${CMAKE_BINARY_DIR}/tokiwa_rocksdb_probe.cpp"
+             "#include <rocksdb/db.h>\n"
+             "#include <rocksdb/options.h>\n"
+             "#include <rocksdb/write_batch.h>\n"
+             "#include <rocksdb/iterator.h>\n"
+             "int main() { rocksdb::Options opts; (void)opts; return 0; }\n")
+        try_compile(TOKIWA_ROCKSDB_HEADERS_OK
+            "${CMAKE_BINARY_DIR}/tokiwa_rocksdb_probe"
+            "${CMAKE_BINARY_DIR}/tokiwa_rocksdb_probe.cpp"
+            CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${ROCKSDB_INCLUDE_DIR}"
+            CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED ON
+        )
+
+        if(TOKIWA_ROCKSDB_HEADERS_OK)
+            set(TOKIWA_HAS_ROCKSDB ON)
+            target_compile_definitions(tokiwa-storage PRIVATE TOKIWA_HAS_ROCKSDB=1)
+            target_include_directories(tokiwa-storage PRIVATE ${ROCKSDB_INCLUDE_DIR})
+            target_link_libraries(tokiwa-storage PRIVATE ${ROCKSDB_LIBRARY})
+            message(STATUS "Storage: RocksDB enabled (${ROCKSDB_LIBRARY})")
+        else()
+            message(WARNING "Storage: RocksDB found but headers incompatible with C++20; using file-KV fallback")
+        endif()
     else()
         message(STATUS "Storage: RocksDB not found; file-KV used for rocksdb backend")
     endif()
