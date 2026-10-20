@@ -51,7 +51,7 @@ COPY . .
 # Build the project
 RUN cd build && \
     cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DTREAT_WARNINGS_AS_ERRORS=OFF && \
-    cmake --build . --target cppchain-core-test --parallel
+    cmake --build . --target chainforge-node --parallel
 
 # Stage 2: Runtime environment (minimal Ubuntu with complete C++ runtime)
 FROM ubuntu:22.04 AS runtime
@@ -80,7 +80,7 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -r -s /bin/false chainforge
 
 # Copy the binary
-COPY --from=builder /app/build/bin/cppchain-core-test /usr/local/bin/cppchain-node
+COPY --from=builder /app/build/bin/chainforge-node /usr/local/bin/cppchain-node
 
 # Copy runtime dependencies from build stage (including RocksDB)
 COPY --from=builder /app/build/lib/ /usr/local/lib/

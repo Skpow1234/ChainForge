@@ -11,7 +11,8 @@ Index for project docs. Start with the [root README](../README.md) for a quick o
 | [Deployment](./deployment.md) | Docker Compose, Helm, images |
 | [Endpoints](./endpoints.md) | Ports, HTTP/RPC, observability URLs |
 | [Milestones](./milestones.md) | Phase summary and current focus |
-| [Roadmap](./ROADMAP.md) | Full 60-milestone plan |
+| [Roadmap](./ROADMAP.md) | Full milestones 1–60 |
+| [Milestone backlog](./milestones-backlog.md) | 500+ improvement milestones (61+) |
 | [Milestone template](./MILESTONE_TEMPLATE.md) | How to write a milestone |
 | [Observability](./observability.md) | Metrics, Grafana, Jaeger |
 | [Security](./security.md) | Crypto, sanitizers, practices |

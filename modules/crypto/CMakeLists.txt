@@ -71,8 +71,6 @@ target_link_libraries(chainforge-crypto
         ${OPENSSL_TARGETS}
         libsodium::libsodium
         secp256k1::secp256k1
-    PRIVATE
-        chainforge-core
 )
 
 # Fix libsodium include directories (workaround for Conan Debug/Release mismatch)

@@ -1,16 +1,118 @@
 #include "chainforge/crypto/keccak.hpp"
 #include "chainforge/crypto/hash.hpp"
+#include <algorithm>
+#include <cstring>
 #include <iomanip>
 #include <sstream>
 
 namespace chainforge::crypto {
+namespace {
 
-// StreamHasher implementation
+// Keccak-f[1600] round constants
+constexpr uint64_t RC[24] = {
+    0x0000000000000001ULL, 0x0000000000008082ULL, 0x800000000000808AULL,
+    0x8000000080008000ULL, 0x000000000000808BULL, 0x0000000080000001ULL,
+    0x8000000080008081ULL, 0x8000000000008009ULL, 0x000000000000008AULL,
+    0x0000000000000088ULL, 0x0000000080008009ULL, 0x000000008000000AULL,
+    0x000000008000808BULL, 0x800000000000008BULL, 0x8000000000008089ULL,
+    0x8000000000008003ULL, 0x8000000000008002ULL, 0x8000000000000080ULL,
+    0x000000000000800AULL, 0x800000008000000AULL, 0x8000000080008081ULL,
+    0x8000000000008080ULL, 0x0000000080000001ULL, 0x8000000080008008ULL
+};
+
+constexpr int ROTC[24] = {
+    1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 2, 14,
+    27, 41, 56, 8, 25, 43, 62, 18, 39, 61, 20, 44
+};
+
+constexpr int PILN[24] = {
+    10, 7, 11, 17, 18, 3, 5, 16, 8, 21, 24, 4,
+    15, 23, 19, 13, 12, 2, 20, 14, 22, 9, 6, 1
+};
+
+inline uint64_t rotl64(uint64_t x, int n) {
+    return (x << n) | (x >> (64 - n));
+}
+
+void keccak_f1600(uint64_t state[25]) {
+    uint64_t bc[5];
+    for (int round = 0; round < 24; ++round) {
+        for (int i = 0; i < 5; ++i) {
+            bc[i] = state[i] ^ state[i + 5] ^ state[i + 10] ^ state[i + 15] ^ state[i + 20];
+        }
+        for (int i = 0; i < 5; ++i) {
+            const uint64_t t = bc[(i + 4) % 5] ^ rotl64(bc[(i + 1) % 5], 1);
+            for (int j = 0; j < 25; j += 5) {
+                state[j + i] ^= t;
+            }
+        }
+
+        uint64_t t = state[1];
+        for (int i = 0; i < 24; ++i) {
+            const int j = PILN[i];
+            bc[0] = state[j];
+            state[j] = rotl64(t, ROTC[i]);
+            t = bc[0];
+        }
+
+        for (int j = 0; j < 25; j += 5) {
+            for (int i = 0; i < 5; ++i) {
+                bc[i] = state[j + i];
+            }
+            for (int i = 0; i < 5; ++i) {
+                state[j + i] = bc[i] ^ ((~bc[(i + 1) % 5]) & bc[(i + 2) % 5]);
+            }
+        }
+
+        state[0] ^= RC[round];
+    }
+}
+
+// Ethereum / original Keccak padding (0x01), not NIST SHA-3 (0x06).
+CryptoResult<ByteVector> keccak_sponge(const byte_t* data, size_t length, size_t output_bytes) {
+    if (output_bytes == 0 || output_bytes > 64) {
+        return CryptoResult<ByteVector>{ByteVector{}, CryptoError::INVALID_ARGUMENT};
+    }
+
+    // rate = 1600 - 2 * (output_bits); for 256-bit digest -> rate 1088 bits = 136 bytes
+    const size_t rate_bytes = 200 - 2 * output_bytes;
+    if (rate_bytes == 0 || rate_bytes > 200) {
+        return CryptoResult<ByteVector>{ByteVector{}, CryptoError::INVALID_ARGUMENT};
+    }
+
+    uint64_t state[25] = {};
+    size_t offset = 0;
+
+    while (offset + rate_bytes <= length) {
+        for (size_t i = 0; i < rate_bytes; ++i) {
+            reinterpret_cast<uint8_t*>(state)[i] ^= data[offset + i];
+        }
+        keccak_f1600(state);
+        offset += rate_bytes;
+    }
+
+    uint8_t block[200] = {};
+    const size_t remaining = length - offset;
+    if (remaining > 0) {
+        std::memcpy(block, data + offset, remaining);
+    }
+    block[remaining] = 0x01;           // Keccak pad
+    block[rate_bytes - 1] |= 0x80;     // final bit
+
+    for (size_t i = 0; i < rate_bytes; ++i) {
+        reinterpret_cast<uint8_t*>(state)[i] ^= block[i];
+    }
+    keccak_f1600(state);
+
+    ByteVector out(output_bytes);
+    std::memcpy(out.data(), state, output_bytes);
+    return CryptoResult<ByteVector>{out, CryptoError::SUCCESS};
+}
+
+} // namespace
+
 class Keccak::StreamHasher::Impl {
 public:
-    Impl() = default;
-    ~Impl() = default;
-
     void update(const ByteVector& data) {
         buffer_.insert(buffer_.end(), data.begin(), data.end());
     }
@@ -39,9 +141,7 @@ public:
         return Keccak::keccak512(buffer_);
     }
 
-    void reset() {
-        buffer_.clear();
-    }
+    void reset() { buffer_.clear(); }
 
 private:
     ByteVector buffer_;
@@ -50,39 +150,15 @@ private:
 Keccak::StreamHasher::StreamHasher() : impl_(std::make_unique<Impl>()) {}
 Keccak::StreamHasher::~StreamHasher() = default;
 
-void Keccak::StreamHasher::update(const ByteVector& data) {
-    impl_->update(data);
-}
+void Keccak::StreamHasher::update(const ByteVector& data) { impl_->update(data); }
+void Keccak::StreamHasher::update(const byte_t* data, size_t length) { impl_->update(data, length); }
+void Keccak::StreamHasher::update(const std::string& data) { impl_->update(data); }
+CryptoResult<Hash256> Keccak::StreamHasher::finalize_256() { return impl_->finalize_256(); }
+CryptoResult<std::array<byte_t, 20>> Keccak::StreamHasher::finalize_160() { return impl_->finalize_160(); }
+CryptoResult<std::array<byte_t, 48>> Keccak::StreamHasher::finalize_384() { return impl_->finalize_384(); }
+CryptoResult<std::array<byte_t, 64>> Keccak::StreamHasher::finalize_512() { return impl_->finalize_512(); }
+void Keccak::StreamHasher::reset() { impl_->reset(); }
 
-void Keccak::StreamHasher::update(const byte_t* data, size_t length) {
-    impl_->update(data, length);
-}
-
-void Keccak::StreamHasher::update(const std::string& data) {
-    impl_->update(data);
-}
-
-CryptoResult<Hash256> Keccak::StreamHasher::finalize_256() {
-    return impl_->finalize_256();
-}
-
-CryptoResult<std::array<byte_t, 20>> Keccak::StreamHasher::finalize_160() {
-    return impl_->finalize_160();
-}
-
-CryptoResult<std::array<byte_t, 48>> Keccak::StreamHasher::finalize_384() {
-    return impl_->finalize_384();
-}
-
-CryptoResult<std::array<byte_t, 64>> Keccak::StreamHasher::finalize_512() {
-    return impl_->finalize_512();
-}
-
-void Keccak::StreamHasher::reset() {
-    impl_->reset();
-}
-
-// Static Keccak functions
 CryptoResult<Hash256> Keccak::keccak256(const ByteVector& data) {
     return internal_keccak(data.data(), data.size(), 256);
 }
@@ -100,10 +176,13 @@ CryptoResult<std::array<byte_t, 20>> Keccak::keccak160(const ByteVector& data) {
 }
 
 CryptoResult<std::array<byte_t, 20>> Keccak::keccak160(const byte_t* data, size_t length) {
-    auto result = internal_keccak(data, length, 160);
-    std::array<byte_t, 20> output;
-    std::copy(result.value.begin(), result.value.begin() + 20, output.begin());
-    return CryptoResult<std::array<byte_t, 20>>{output, result.error};
+    auto result = keccak_sponge(data, length, 20);
+    if (!result.success()) {
+        return CryptoResult<std::array<byte_t, 20>>{{}, result.error};
+    }
+    std::array<byte_t, 20> output{};
+    std::copy_n(result.value.begin(), 20, output.begin());
+    return CryptoResult<std::array<byte_t, 20>>{output, CryptoError::SUCCESS};
 }
 
 CryptoResult<std::array<byte_t, 48>> Keccak::keccak384(const ByteVector& data) {
@@ -111,10 +190,13 @@ CryptoResult<std::array<byte_t, 48>> Keccak::keccak384(const ByteVector& data) {
 }
 
 CryptoResult<std::array<byte_t, 48>> Keccak::keccak384(const byte_t* data, size_t length) {
-    auto result = internal_keccak(data, length, 384);
-    std::array<byte_t, 48> output;
-    std::copy(result.value.begin(), result.value.begin() + 48, output.begin());
-    return CryptoResult<std::array<byte_t, 48>>{output, result.error};
+    auto result = keccak_sponge(data, length, 48);
+    if (!result.success()) {
+        return CryptoResult<std::array<byte_t, 48>>{{}, result.error};
+    }
+    std::array<byte_t, 48> output{};
+    std::copy_n(result.value.begin(), 48, output.begin());
+    return CryptoResult<std::array<byte_t, 48>>{output, CryptoError::SUCCESS};
 }
 
 CryptoResult<std::array<byte_t, 64>> Keccak::keccak512(const ByteVector& data) {
@@ -122,13 +204,15 @@ CryptoResult<std::array<byte_t, 64>> Keccak::keccak512(const ByteVector& data) {
 }
 
 CryptoResult<std::array<byte_t, 64>> Keccak::keccak512(const byte_t* data, size_t length) {
-    auto result = internal_keccak(data, length, 512);
-    std::array<byte_t, 64> output;
-    std::copy(result.value.begin(), result.value.begin() + 64, output.begin());
-    return CryptoResult<std::array<byte_t, 64>>{output, result.error};
+    auto result = keccak_sponge(data, length, 64);
+    if (!result.success()) {
+        return CryptoResult<std::array<byte_t, 64>>{{}, result.error};
+    }
+    std::array<byte_t, 64> output{};
+    std::copy_n(result.value.begin(), 64, output.begin());
+    return CryptoResult<std::array<byte_t, 64>>{output, CryptoError::SUCCESS};
 }
 
-// Utility functions
 std::string Keccak::to_hex(const Hash256& hash) {
     return Hash::to_hex(hash);
 }
@@ -160,9 +244,7 @@ std::string Keccak::to_hex(const std::array<byte_t, 64>& hash) {
     return ss.str();
 }
 
-// Ethereum-specific functions
 CryptoResult<Hash256> Keccak::ethereum_address_hash(const ByteVector& data) {
-    // Ethereum address: keccak256(data)[12:32]
     auto keccak_result = keccak256(data);
     if (!keccak_result.success()) {
         return keccak_result;
@@ -174,54 +256,40 @@ CryptoResult<Hash256> Keccak::ethereum_address_hash(const ByteVector& data) {
 }
 
 CryptoResult<Hash256> Keccak::ethereum_signature_hash(const ByteVector& data) {
-    // Add Ethereum message prefix
     std::string prefix = std::string("\x19", 1) + "Ethereum Signed Message:\n" + std::to_string(data.size());
     ByteVector message;
     message.reserve(prefix.size() + data.size());
     message.insert(message.end(), prefix.begin(), prefix.end());
     message.insert(message.end(), data.begin(), data.end());
-
     return keccak256(message);
 }
 
-// Mining functions (placeholders)
 void Keccak::keccak_f800_round(byte_t* state) {
-    // TODO: Implement Keccak-f[800] round function
-    (void)state; // Suppress unused parameter warning
+    // Keccak-f[800] not required for current Eth-style hashing; keep as no-op hook.
+    (void)state;
 }
 
 void Keccak::keccak_f1600_round(byte_t* state) {
-    // TODO: Implement Keccak-f[1600] round function
-    (void)state; // Suppress unused parameter warning
+    if (!state) {
+        return;
+    }
+    uint64_t words[25];
+    std::memcpy(words, state, sizeof(words));
+    keccak_f1600(words);
+    std::memcpy(state, words, sizeof(words));
 }
 
-// Internal implementation
 CryptoResult<Hash256> Keccak::internal_keccak(const byte_t* data, size_t length, size_t output_bits) {
-    // TODO: Implement proper Keccak hashing
-    // For now, fall back to SHA256 as placeholder
-    // This should be replaced with a proper Keccak implementation
-
-    if (output_bits == 256) {
-        return Hash::sha256(data, length);
+    const size_t output_bytes = (output_bits + 7) / 8;
+    auto sponge = keccak_sponge(data, length, output_bytes);
+    if (!sponge.success()) {
+        return CryptoResult<Hash256>{Hash256{}, sponge.error};
     }
 
-    // For other output sizes, return truncated/extended SHA256
-    auto sha256_result = Hash::sha256(data, length);
-    if (!sha256_result.success()) {
-        return sha256_result;
-    }
-
-    // Adjust output size
-    if (output_bits < 256) {
-        // Truncate
-        Hash256 truncated{};
-        size_t bytes_to_copy = (output_bits + 7) / 8; // Round up to bytes
-        std::copy(sha256_result.value.begin(), sha256_result.value.begin() + bytes_to_copy, truncated.begin());
-        return CryptoResult<Hash256>{truncated, CryptoError::SUCCESS};
-    } else {
-        // For larger outputs, we'd need to extend, but for now just return SHA256
-        return sha256_result;
-    }
+    Hash256 out{};
+    const size_t copy_n = std::min(output_bytes, HASH256_SIZE);
+    std::copy_n(sponge.value.begin(), copy_n, out.begin());
+    return CryptoResult<Hash256>{out, CryptoError::SUCCESS};
 }
 
 } // namespace chainforge::crypto

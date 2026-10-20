@@ -96,7 +96,8 @@ enum class CryptoError {
     SIGNATURE_FAILED = 6,
     VERIFICATION_FAILED = 7,
     UNSUPPORTED_ALGORITHM = 8,
-    INVALID_LENGTH = 9
+    INVALID_LENGTH = 9,
+    INVALID_ARGUMENT = 10
 };
 
 // Result type for crypto operations

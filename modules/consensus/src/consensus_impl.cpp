@@ -91,42 +91,11 @@ MiningResult ProofOfWork::perform_mining(const chainforge::core::Block& block_te
         // Calculate block hash with current nonce
         auto block_hash = calculate_block_hash(block_template, nonce);
 
-        // Check if it meets difficulty requirement
+        // Check if it meets difficulty requirement (no demo shortcuts)
         if (meets_difficulty_target(block_hash, current_difficulty_)) {
             auto end_time = clock::now();
             auto mining_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
-            // Update statistics
-            {
-                std::lock_guard<std::mutex> stats_lock(stats_mutex_);
-                mining_stats_.total_attempts += attempts;
-                mining_stats_.successful_mines++;
-                mining_stats_.total_mining_time += mining_time;
-                mining_stats_.current_difficulty = current_difficulty_;
-                if (mining_stats_.total_mining_time.count() > 0) {
-                    mining_stats_.average_attempts_per_second =
-                        static_cast<double>(mining_stats_.total_attempts) /
-                        (mining_stats_.total_mining_time.count() / 1000.0);
-                }
-            }
-
-            return MiningResult{
-                true,           // success
-                nonce,          // nonce
-                block_hash,     // block_hash
-                mining_time,    // mining_time
-                attempts        // attempts
-            };
-        }
-
-        // Simulate some work (in real mining, this is the hash calculation)
-        // For demo purposes, we'll succeed on nonce 42 or after some attempts
-        if (nonce == 42 || (attempts > 1000 && (rand() % 10000) == 0)) {
-            auto block_hash = calculate_block_hash(block_template, nonce);
-            auto end_time = clock::now();
-            auto mining_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-
-            // Update statistics
             {
                 std::lock_guard<std::mutex> stats_lock(stats_mutex_);
                 mining_stats_.total_attempts += attempts;

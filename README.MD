@@ -40,7 +40,7 @@ Full build options, tests, and IDE notes: [docs/development.md](docs/development
 
 Version **0.1.0**. Default build enables `core`, `crypto`, `serialization`, and `p2p`. Storage, consensus, RPC, mempool, and metrics exist as source but are not wired into the default CMake build; node/explorer apps are still to be composed. Treat credentials in Compose/config as **dev-only**.
 
-Honest milestone status and next-up queue: [docs/milestones.md](docs/milestones.md).
+Honest milestone status: [docs/milestones.md](docs/milestones.md). Extended backlog (500+): [docs/milestones-backlog.md](docs/milestones-backlog.md).
 
 ## Acknowledgments
 

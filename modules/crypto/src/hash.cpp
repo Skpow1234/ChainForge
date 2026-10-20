@@ -1,4 +1,5 @@
 #include "chainforge/crypto/hash.hpp"
+#include "chainforge/crypto/keccak.hpp"
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
 #include <iomanip>
@@ -189,9 +190,7 @@ CryptoResult<Hash256> Hash::internal_sha256(const byte_t* data, size_t length) {
 }
 
 CryptoResult<Hash256> Hash::internal_keccak256(const byte_t* data, size_t length) {
-    // TODO: Implement Keccak256 using a proper Keccak library
-    // For now, fall back to SHA256 as placeholder
-    return internal_sha256(data, length);
+    return Keccak::keccak256(data, length);
 }
 
 CryptoResult<Ripemd160Hash> Hash::internal_ripemd160(const byte_t* data, size_t length) {

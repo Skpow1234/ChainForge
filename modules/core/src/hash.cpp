@@ -1,24 +1,40 @@
 #include "chainforge/core/hash.hpp"
 #include "chainforge/core/address.hpp"
+#include "chainforge/crypto/hash.hpp"
+#include "chainforge/crypto/random.hpp"
 #include <iomanip>
 #include <sstream>
-#include <random>
+#include <stdexcept>
 #include <algorithm>
 
-// TODO: Include crypto module when available
-// #include "chainforge/crypto/hash.hpp"
-
 namespace chainforge::core {
+namespace {
+
+core::Hash from_crypto_hash256(const chainforge::crypto::Hash256& value) {
+    Hash256 data{};
+    std::copy(value.begin(), value.end(), data.begin());
+    return Hash(data);
+}
+
+std::string strip_0x(std::string hex) {
+    if (hex.size() >= 2 && hex[0] == '0' && (hex[1] == 'x' || hex[1] == 'X')) {
+        hex.erase(0, 2);
+    }
+    return hex;
+}
+
+} // namespace
 
 Hash::Hash(const Hash256& data) : data_(data) {}
 
 Hash::Hash(const std::string& hex_string) {
-    if (hex_string.length() != HASH_SIZE * 2) {
+    const std::string hex = strip_0x(hex_string);
+    if (hex.length() != HASH_SIZE * 2) {
         throw std::invalid_argument("Invalid hex string length for hash");
     }
 
     for (size_t i = 0; i < HASH_SIZE; ++i) {
-        std::string byte_str = hex_string.substr(i * 2, 2);
+        std::string byte_str = hex.substr(i * 2, 2);
         data_[i] = static_cast<uint8_t>(std::stoi(byte_str, nullptr, 16));
     }
 }
@@ -33,11 +49,9 @@ Hash::Hash(const std::vector<uint8_t>& data) {
 std::string Hash::to_hex() const {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
-    
     for (uint8_t byte : data_) {
         ss << std::setw(2) << static_cast<int>(byte);
     }
-    
     return ss.str();
 }
 
@@ -67,53 +81,49 @@ Hash Hash::zero() noexcept {
 }
 
 Hash Hash::random() {
-    Hash256 random_data;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<uint8_t> dis(0, 255);
-    
-    for (auto& byte : random_data) {
-        byte = dis(gen);
+    auto result = chainforge::crypto::Random::generate_hash256();
+    if (!result.success()) {
+        return Hash::zero();
     }
-    return Hash(random_data);
+    return from_crypto_hash256(result.value);
 }
 
-// Free functions
 Hash hash_sha256(const std::vector<uint8_t>& data) {
-    // TODO: Implement actual SHA256 hashing
-    // For now, return a placeholder hash
-    Hash256 hash_data{};
-    auto copy_size = static_cast<ptrdiff_t>(std::min(data.size(), HASH_SIZE));
-    std::copy(data.begin(), data.begin() + copy_size, hash_data.begin());
-    return Hash(hash_data);
+    auto result = chainforge::crypto::Hash::sha256(data);
+    if (!result.success()) {
+        throw std::runtime_error("SHA256 hashing failed");
+    }
+    return from_crypto_hash256(result.value);
 }
 
 Hash hash_keccak256(const std::vector<uint8_t>& data) {
-    // TODO: Implement actual Keccak256 hashing
-    // For now, return a placeholder hash
-    Hash256 hash_data{};
-    auto copy_size = static_cast<ptrdiff_t>(std::min(data.size(), HASH_SIZE));
-    std::copy(data.begin(), data.begin() + copy_size, hash_data.begin());
-    return Hash(hash_data);
+    auto result = chainforge::crypto::Hash::keccak256(data);
+    if (!result.success()) {
+        throw std::runtime_error("Keccak256 hashing failed");
+    }
+    return from_crypto_hash256(result.value);
 }
 
 Hash hash_ripemd160(const std::vector<uint8_t>& data) {
-    // TODO: Implement actual RIPEMD160 hashing
-    // For now, return a placeholder hash
-    Hash256 hash_data{};
-    auto copy_size = static_cast<ptrdiff_t>(std::min(data.size(), HASH_SIZE));
-    std::copy(data.begin(), data.begin() + copy_size, hash_data.begin());
-    return Hash(hash_data);
+    auto result = chainforge::crypto::Hash::ripemd160(data);
+    if (!result.success()) {
+        throw std::runtime_error("RIPEMD160 hashing failed");
+    }
+    Hash256 padded{};
+    std::copy(result.value.begin(), result.value.end(), padded.begin());
+    return Hash(padded);
 }
 
 Hash combine_hashes(const Hash& left, const Hash& right) {
-    // Simple combination for now - in practice, this would be more sophisticated
-    Hash256 combined{};
-    for (size_t i = 0; i < HASH_SIZE / 2; ++i) {
-        combined[i] = left.data()[i];
-        combined[i + HASH_SIZE / 2] = right.data()[i];
+    chainforge::crypto::Hash256 left_bytes{};
+    chainforge::crypto::Hash256 right_bytes{};
+    std::copy(left.data().begin(), left.data().end(), left_bytes.begin());
+    std::copy(right.data().begin(), right.data().end(), right_bytes.begin());
+    auto result = chainforge::crypto::Hash::hash_pair(left_bytes, right_bytes);
+    if (!result.success()) {
+        throw std::runtime_error("Hash combination failed");
     }
-    return Hash(combined);
+    return from_crypto_hash256(result.value);
 }
 
 std::string hash_to_hex(const Hash& hash) {
@@ -126,29 +136,26 @@ Hash hash_from_hex(const std::string& hex_string) {
 
 } // namespace chainforge::core
 
-// Hash specializations for std::unordered_map
 namespace std {
-    template<>
-    struct hash<chainforge::core::Hash> {
-        size_t operator()(const chainforge::core::Hash& h) const noexcept {
-            // Simple hash based on the first 8 bytes
-            size_t result = 0;
-            for (size_t i = 0; i < 8 && i < h.data().size(); ++i) {
-                result = (result << 8) | h.data()[i];
-            }
-            return result;
+template<>
+struct hash<chainforge::core::Hash> {
+    size_t operator()(const chainforge::core::Hash& h) const noexcept {
+        size_t result = 0;
+        for (size_t i = 0; i < 8 && i < h.data().size(); ++i) {
+            result = (result << 8) | h.data()[i];
         }
-    };
-    
-    template<>
-    struct hash<chainforge::core::Address> {
-        size_t operator()(const chainforge::core::Address& addr) const noexcept {
-            // Simple hash based on the first 8 bytes
-            size_t result = 0;
-            for (size_t i = 0; i < 8 && i < addr.data().size(); ++i) {
-                result = (result << 8) | addr.data()[i];
-            }
-            return result;
+        return result;
+    }
+};
+
+template<>
+struct hash<chainforge::core::Address> {
+    size_t operator()(const chainforge::core::Address& addr) const noexcept {
+        size_t result = 0;
+        for (size_t i = 0; i < 8 && i < addr.data().size(); ++i) {
+            result = (result << 8) | addr.data()[i];
         }
-    };
-}
+        return result;
+    }
+};
+} // namespace std

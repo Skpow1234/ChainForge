@@ -15,7 +15,16 @@ Status marks below reflect the **codebase**, not aspirational planning. Summary 
 | Partial | Scaffolding / stubs / mocks / not in default CMake build |
 | Todo | Not started in a meaningful way |
 
-Default build: `core`, `crypto`, `serialization`, `p2p`. No `node` / `explorer` / `execution` packages yet.
+Default build now includes crypto/core/serialization/p2p/logging/metrics/storage/consensus/mempool/rpc/node. Still missing: execution, explorer.
+
+### Recent code progress
+
+- Real Keccak-256 sponge (Ethereum padding) and core hash wiring
+- secp256k1 curve operations via libsecp256k1 (stubs removed)
+- Enabled storage/consensus/mempool/rpc/logging/metrics + `chainforge-node`
+- PoW demo mining shortcuts removed
+- Extended backlog: [milestones-backlog.md](./milestones-backlog.md)
+
 
 ## Phase 1: Foundation & Core Infrastructure (Milestones 1-15) [Partial]
 

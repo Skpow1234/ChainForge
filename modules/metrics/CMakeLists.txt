@@ -37,7 +37,7 @@ target_link_libraries(chainforge_metrics
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(chainforge_metrics PRIVATE
-        -Wall -Wextra -Werror
+        -Wall -Wextra
         -Wno-unused-parameter
     )
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

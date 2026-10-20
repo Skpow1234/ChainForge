@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 #include <optional>
+#include <cstdint>
+#include <nlohmann/json.hpp>
 
 namespace chainforge {
 
@@ -18,6 +20,22 @@ class Hash;
 }
 
 namespace rpc {
+
+/**
+ * JSON-RPC error structure
+ */
+struct JsonRpcError {
+    int code;
+    std::string message;
+    std::optional<nlohmann::json> data;
+
+    static JsonRpcError parse_error(const std::string& message = "Parse error");
+    static JsonRpcError invalid_request(const std::string& message = "Invalid request");
+    static JsonRpcError method_not_found(const std::string& message = "Method not found");
+    static JsonRpcError invalid_params(const std::string& message = "Invalid parameters");
+    static JsonRpcError internal_error(const std::string& message = "Internal error");
+    static JsonRpcError server_error(int code, const std::string& message);
+};
 
 /**
  * JSON-RPC 2.0 request structure
@@ -42,22 +60,6 @@ struct JsonRpcResponse {
     std::optional<std::string> id;
 
     nlohmann::json to_json() const;
-};
-
-/**
- * JSON-RPC error structure
- */
-struct JsonRpcError {
-    int code;
-    std::string message;
-    std::optional<nlohmann::json> data;
-
-    static JsonRpcError parse_error(const std::string& message = "Parse error");
-    static JsonRpcError invalid_request(const std::string& message = "Invalid request");
-    static JsonRpcError method_not_found(const std::string& message = "Method not found");
-    static JsonRpcError invalid_params(const std::string& message = "Invalid parameters");
-    static JsonRpcError internal_error(const std::string& message = "Internal error");
-    static JsonRpcError server_error(int code, const std::string& message);
 };
 
 /**
