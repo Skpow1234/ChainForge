@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -87,43 +88,50 @@ public:
     void error(const std::string& message, const LogContext& context = {});
     void critical(const std::string& message, const LogContext& context = {});
     
-    /// Template convenience methods for format strings
+    // Format helpers must not compete with (message, LogContext) overloads.
+    // Without this constraint, Clang prefers Args&& = LogContext& over const LogContext&.
     template<typename... Args>
+        requires (( !std::is_same_v<std::remove_cvref_t<Args>, LogContext> ) && ...)
     void trace(const std::string& format, Args&&... args) {
         if (should_log(LogLevel::TRACE)) {
             trace(fmt::format(format, std::forward<Args>(args)...));
         }
     }
-    
+
     template<typename... Args>
+        requires (( !std::is_same_v<std::remove_cvref_t<Args>, LogContext> ) && ...)
     void debug(const std::string& format, Args&&... args) {
         if (should_log(LogLevel::DEBUG)) {
             debug(fmt::format(format, std::forward<Args>(args)...));
         }
     }
-    
+
     template<typename... Args>
+        requires (( !std::is_same_v<std::remove_cvref_t<Args>, LogContext> ) && ...)
     void info(const std::string& format, Args&&... args) {
         if (should_log(LogLevel::INFO)) {
             info(fmt::format(format, std::forward<Args>(args)...));
         }
     }
-    
+
     template<typename... Args>
+        requires (( !std::is_same_v<std::remove_cvref_t<Args>, LogContext> ) && ...)
     void warn(const std::string& format, Args&&... args) {
         if (should_log(LogLevel::WARN)) {
             warn(fmt::format(format, std::forward<Args>(args)...));
         }
     }
-    
+
     template<typename... Args>
+        requires (( !std::is_same_v<std::remove_cvref_t<Args>, LogContext> ) && ...)
     void error(const std::string& format, Args&&... args) {
         if (should_log(LogLevel::ERROR)) {
             error(fmt::format(format, std::forward<Args>(args)...));
         }
     }
-    
+
     template<typename... Args>
+        requires (( !std::is_same_v<std::remove_cvref_t<Args>, LogContext> ) && ...)
     void critical(const std::string& format, Args&&... args) {
         if (should_log(LogLevel::CRITICAL)) {
             critical(fmt::format(format, std::forward<Args>(args)...));

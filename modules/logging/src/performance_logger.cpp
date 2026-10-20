@@ -83,7 +83,10 @@ void PerformanceMetrics::record_duration(const std::string& operation, std::chro
                .with("duration_ms", duration.count() / 1000.0)
                .with("metric_type", "duration");
         
-        logger_.debug(fmt::format("Performance: {} took {:.2f}ms", operation, duration.count() / 1000.0), context);
+        logger_.log(LogLevel::DEBUG,
+                    fmt::format("Performance: {} took {:.2f}ms", operation,
+                                static_cast<double>(duration.count()) / 1000.0),
+                    context);
     }
 }
 
@@ -97,7 +100,9 @@ void PerformanceMetrics::record_count(const std::string& operation, uint64_t cou
                .with("total_count", counters_[operation])
                .with("metric_type", "count");
         
-        logger_.debug(fmt::format("Performance: {} count: {}", operation, count), context);
+        logger_.log(LogLevel::DEBUG,
+                    fmt::format("Performance: {} count: {}", operation, count),
+                    context);
     }
 }
 
@@ -112,7 +117,10 @@ void PerformanceMetrics::record_memory_usage(const std::string& context, size_t 
                    .with("mb", bytes / (1024.0 * 1024.0))
                    .with("metric_type", "memory");
         
-        logger_.debug(fmt::format("Performance: {} memory: {:.2f} MB", context, bytes / (1024.0 * 1024.0)), log_context);
+        logger_.log(LogLevel::DEBUG,
+                    fmt::format("Performance: {} memory: {:.2f} MB", context,
+                                static_cast<double>(bytes) / (1024.0 * 1024.0)),
+                    log_context);
     }
 }
 
@@ -125,7 +133,9 @@ void PerformanceMetrics::record_throughput(const std::string& operation, double 
                .with("ops_per_second", ops_per_second)
                .with("metric_type", "throughput");
         
-        logger_.debug(fmt::format("Performance: {} throughput: {:.2f} ops/sec", operation, ops_per_second), context);
+        logger_.log(LogLevel::DEBUG,
+                    fmt::format("Performance: {} throughput: {:.2f} ops/sec", operation, ops_per_second),
+                    context);
     }
 }
 
@@ -174,7 +184,7 @@ void PerformanceMetrics::log_summary() {
         summary_context.with("throughput", throughput_);
     }
     
-    logger_.info("Performance metrics summary", summary_context);
+    logger_.log(LogLevel::INFO, "Performance metrics summary", summary_context);
     last_summary_ = std::chrono::steady_clock::now();
 }
 
