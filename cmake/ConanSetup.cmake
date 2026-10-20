@@ -17,12 +17,21 @@ set(CONAN_CMAKE_TARGETS_FILE "${CMAKE_BINARY_DIR}/conan_toolchain.cmake")
 set(CONAN_CMAKE_FIND_ROOT_PATH "${CMAKE_BINARY_DIR}")
 
 # Function to find Conan packages
+# Some Conan recipes use a different cmake_file_name than the package name
+# (e.g. boost -> Boost). Map those here so callers can use either form.
 function(find_conan_package PACKAGE_NAME)
-    if(EXISTS "${CMAKE_BINARY_DIR}/conan_toolchain.cmake")
-        find_package(${PACKAGE_NAME} REQUIRED)
-    else()
+    if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan_toolchain.cmake")
         message(FATAL_ERROR "Conan toolchain not available. Please run 'conan install' first.")
     endif()
+
+    set(_pkg "${PACKAGE_NAME}")
+    if(_pkg STREQUAL "boost")
+        set(_pkg "Boost")
+    elseif(_pkg STREQUAL "gtest" OR _pkg STREQUAL "GTest")
+        set(_pkg "GTest")
+    endif()
+
+    find_package(${_pkg} REQUIRED)
 endfunction()
 
 # Special handling for OpenSSL Conan package

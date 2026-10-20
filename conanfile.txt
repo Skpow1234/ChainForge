@@ -14,7 +14,7 @@ libsodium/1.0.19
 # Serialization
 protobuf/3.21.12
 
-# Networking
+# Networking (Boost.Asio for P2P transport)
 boost/1.84.0
 
 # Metrics and observability
@@ -23,6 +23,11 @@ boost/1.84.0
 
 # Build system and development
 # Note: cmake is a system dependency and should be installed separately
+
+[options]
+# P2P only needs Boost.Asio headers; skip compiling unused Boost libs in CI
+boost/*:header_only=True
+boost/*:asio_no_deprecated=True
 
 [generators]
 CMakeDeps

@@ -536,8 +536,8 @@ boost/1.84.0
 
 CMake configuration in `modules/p2p/CMakeLists.txt`:
 ```cmake
-find_conan_package(boost)
-target_link_libraries(tokiwa-p2p PUBLIC boost::boost)
+find_conan_package(Boost)
+target_link_libraries(tokiwa-p2p PUBLIC Boost::headers)
 target_compile_definitions(tokiwa-p2p PUBLIC 
     BOOST_ASIO_NO_DEPRECATED
     BOOST_ASIO_STANDALONE

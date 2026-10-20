@@ -39,22 +39,16 @@ target_include_directories(tokiwa-p2p
 target_compile_features(tokiwa-p2p PRIVATE cxx_std_20)
 
 # Find dependencies
-find_conan_package(boost)
+# Conan CMakeDeps exposes Boost as package name "Boost" (capital B)
+find_conan_package(Boost)
 find_conan_package(spdlog)
 
 target_link_libraries(tokiwa-p2p
     PUBLIC
         tokiwa-core
-        boost::boost
+        Boost::headers
     PRIVATE
         spdlog::spdlog
-)
-
-# Add Boost.Asio specific definitions
-target_compile_definitions(tokiwa-p2p
-    PUBLIC
-        BOOST_ASIO_NO_DEPRECATED
-        BOOST_ASIO_STANDALONE
 )
 
 # Install
