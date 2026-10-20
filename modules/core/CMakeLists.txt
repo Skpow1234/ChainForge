@@ -9,6 +9,7 @@ set(CORE_SOURCES
     src/transaction.cpp
     src/block.cpp
     src/error.cpp
+    src/rlp.cpp
 )
 
 set(CORE_HEADERS
@@ -21,6 +22,7 @@ set(CORE_HEADERS
     include/chainforge/core/timestamp.hpp
     include/chainforge/core/block.hpp
     include/chainforge/core/transaction.hpp
+    include/chainforge/core/rlp.hpp
 )
 
 add_library(chainforge-core STATIC ${CORE_SOURCES} ${CORE_HEADERS})

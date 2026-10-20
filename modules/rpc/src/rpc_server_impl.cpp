@@ -221,9 +221,26 @@ HttpResponse RpcServerImpl::handle_http_request(const HttpRequest& request) {
         return response;
     }
 
+    // Health / readiness (Milestone 12)
+    if (request.method == "GET" && (request.path == "/health" || request.path == "/livez")) {
+        HttpResponse response = HttpResponse::ok(R"({"status":"ok","service":"chainforge-node"})");
+        response.content_type = "application/json";
+        add_cors_headers(response);
+        return response;
+    }
+    if (request.method == "GET" && (request.path == "/ready" || request.path == "/readyz")) {
+        const bool ready = is_running();
+        HttpResponse response = HttpResponse::ok(ready ? R"({"status":"ready"})" : R"({"status":"not_ready"})");
+        response.content_type = "application/json";
+        response.status_code = ready ? 200 : 503;
+        response.status_message = ready ? "OK" : "Service Unavailable";
+        add_cors_headers(response);
+        return response;
+    }
+
     // Only accept POST requests for JSON-RPC
     if (request.method != "POST") {
-        return HttpResponse::bad_request("Only POST requests are supported");
+        return HttpResponse::bad_request("Only POST requests are supported (or GET /health|/ready)");
     }
 
     // Parse JSON-RPC request

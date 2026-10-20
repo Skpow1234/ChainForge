@@ -5,6 +5,8 @@
 #include <shared_mutex>
 #include <algorithm>
 #include <vector>
+#include <fstream>
+#include <string>
 
 namespace chainforge::storage {
 
@@ -133,7 +135,12 @@ private:
 class MemoryDatabase : public Database {
 public:
     MemoryDatabase() = default;
-    ~MemoryDatabase() override = default;
+    ~MemoryDatabase() override {
+        if (is_open_) {
+            data_.clear();
+            is_open_ = false;
+        }
+    }
 
     StorageResult<void> open(const DatabaseConfig& config) override {
         if (is_open_) {
@@ -287,13 +294,90 @@ private:
     bool is_open_ = false;
 };
 
+// Simple file-backed KV (length-prefixed records). Used when RocksDB is unavailable.
+class FileDatabase : public MemoryDatabase {
+public:
+    StorageResult<void> open(const DatabaseConfig& config) override {
+        auto base = MemoryDatabase::open(config);
+        if (!base.success()) {
+            return base;
+        }
+        path_ = config.path.empty() ? std::string("./data/chainforge.kv") : config.path;
+        load_from_disk();
+        return StorageResult<void>{StorageError::SUCCESS};
+    }
+
+    StorageResult<void> close() override {
+        save_to_disk();
+        return MemoryDatabase::close();
+    }
+
+    StorageResult<void> put(const Key& key, const Value& value, const WriteOptions& options) override {
+        auto r = MemoryDatabase::put(key, value, options);
+        if (r.success() && options.sync) {
+            save_to_disk();
+        }
+        return r;
+    }
+
+    StorageResult<void> flush(const WriteOptions& options) override {
+        (void)options;
+        save_to_disk();
+        return StorageResult<void>{StorageError::SUCCESS};
+    }
+
+private:
+    std::string path_;
+
+    void load_from_disk() {
+        // Access protected via public API only — re-open empty and import.
+        // MemoryDatabase stores privately; use get/put after reading file into temp map.
+        std::ifstream in(path_, std::ios::binary);
+        if (!in) return;
+        while (in.peek() != EOF) {
+            uint64_t klen = 0, vlen = 0;
+            in.read(reinterpret_cast<char*>(&klen), sizeof(klen));
+            if (!in) break;
+            in.read(reinterpret_cast<char*>(&vlen), sizeof(vlen));
+            if (!in) break;
+            Key key(klen);
+            Value value(vlen);
+            in.read(reinterpret_cast<char*>(key.data()), static_cast<std::streamsize>(klen));
+            in.read(reinterpret_cast<char*>(value.data()), static_cast<std::streamsize>(vlen));
+            if (!in) break;
+            MemoryDatabase::put(key, value, {});
+        }
+    }
+
+    void save_to_disk() {
+        // Export via iterator
+        auto it = new_iterator({});
+        if (!it) return;
+        std::ofstream out(path_, std::ios::binary | std::ios::trunc);
+        if (!out) return;
+        for (it->seek_to_first(); it->valid(); it->next()) {
+            const auto& key = it->key();
+            const auto& value = it->value();
+            uint64_t klen = key.size();
+            uint64_t vlen = value.size();
+            out.write(reinterpret_cast<const char*>(&klen), sizeof(klen));
+            out.write(reinterpret_cast<const char*>(&vlen), sizeof(vlen));
+            out.write(reinterpret_cast<const char*>(key.data()), static_cast<std::streamsize>(klen));
+            out.write(reinterpret_cast<const char*>(value.data()), static_cast<std::streamsize>(vlen));
+        }
+    }
+};
+
 // Factory functions
 std::unique_ptr<Database> create_database(const std::string& backend) {
-    if (backend == "memory" || backend == "rocksdb") {
-        // Provide in-memory implementation for both backends for now
+    if (backend == "memory") {
         return std::make_unique<MemoryDatabase>();
     }
-    return nullptr;  // Unknown backend
+    if (backend == "file" || backend == "rocksdb") {
+        // RocksDB real backend is gated; file-backed KV is the durable default today.
+        return std::make_unique<FileDatabase>();
+    }
+    return nullptr;
 }
 
 std::unique_ptr<WriteBatch> create_write_batch() {

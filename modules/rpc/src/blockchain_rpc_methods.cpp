@@ -172,31 +172,37 @@ JsonRpcResponse BlockchainRpcMethodsImpl::eth_sendRawTransaction(const nlohmann:
         return response;
     }
 
-    // Dev path: treat hex payload as keccak input seed and create a placeholder transfer.
-    // Full RLP decode is a later milestone.
     const std::string raw = strip_0x(params[0].get<std::string>());
     std::vector<uint8_t> bytes;
     bytes.reserve(raw.size() / 2);
-    for (size_t i = 0; i + 1 < raw.size(); i += 2) {
-        bytes.push_back(static_cast<uint8_t>(std::stoi(raw.substr(i, 2), nullptr, 16)));
+    try {
+        for (size_t i = 0; i + 1 < raw.size(); i += 2) {
+            bytes.push_back(static_cast<uint8_t>(std::stoi(raw.substr(i, 2), nullptr, 16)));
+        }
+    } catch (const std::exception&) {
+        response.error = JsonRpcError::invalid_params("Invalid hex in raw transaction");
+        return response;
     }
     if (bytes.empty()) {
         response.error = JsonRpcError::invalid_params("Empty raw transaction");
         return response;
     }
 
-    core::Address from = core::Address::zero();
-    core::Address to = core::Address::zero();
-    if (bytes.size() >= 40) {
-        from = core::Address(std::vector<uint8_t>(bytes.begin(), bytes.begin() + 20));
-        to = core::Address(std::vector<uint8_t>(bytes.begin() + 20, bytes.begin() + 40));
+    try {
+        auto tx = core::Transaction::from_rlp(bytes);
+        if (!tx.is_valid() || !tx.validate_signature()) {
+            response.error = JsonRpcError::invalid_params("Transaction invalid or bad signature");
+            return response;
+        }
+        if (tx.chain_id() != 0 && tx.chain_id() != state_->chain_id()) {
+            response.error = JsonRpcError::invalid_params("chainId mismatch");
+            return response;
+        }
+        const auto hash = state_->submit_transaction(tx);
+        response.result = "0x" + hash.to_hex();
+    } catch (const std::exception& e) {
+        response.error = JsonRpcError::invalid_params(e.what());
     }
-
-    core::Transaction tx(from, to, core::Amount::from_wei(0));
-    tx.set_nonce(state_->get_nonce(from));
-    tx.set_data(bytes);
-    const auto hash = state_->submit_transaction(tx);
-    response.result = "0x" + hash.to_hex();
     return response;
 }
 

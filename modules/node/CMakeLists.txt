@@ -1,10 +1,16 @@
-# Node composition root — thin binary wiring enabled modules
+# Node composition root
 
 set(NODE_SOURCES
     src/main.cpp
+    src/config.cpp
 )
 
 add_executable(chainforge-node ${NODE_SOURCES})
+
+target_include_directories(chainforge-node
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 target_compile_features(chainforge-node PRIVATE cxx_std_20)
 

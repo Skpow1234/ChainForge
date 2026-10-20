@@ -60,12 +60,14 @@ curl -X POST http://localhost:8545 \
 | `eth_getTransactionByHash` | Transaction by hash |
 | `eth_getTransactionReceipt` | Transaction receipt |
 
-Implementation lives under `modules/rpc/` and is composed by `chainforge-node` via `ChainState` (storage + mempool). `eth_sendRawTransaction` still uses a simplified hex seed path until RLP decode lands.
+Implementation lives under `modules/rpc/` and is composed by `chainforge-node` via `ChainState` (storage + mempool). `eth_sendRawTransaction` accepts legacy/EIP-155 RLP hex.
 
 ```bash
 # After building:
 ./build/bin/chainforge-node --self-check
-./build/bin/chainforge-node --mine-once --rpc-port 8545
+./build/bin/chainforge-node --config config/config.yaml --mine-once
+curl http://127.0.0.1:8545/health
+curl http://127.0.0.1:8545/ready
 ```
 
 ## Observability URLs

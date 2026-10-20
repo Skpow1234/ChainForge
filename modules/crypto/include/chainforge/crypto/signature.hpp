@@ -35,9 +35,11 @@ public:
         const Secp256k1PublicKey& public_key
     );
 
+    /// Recover uncompressed pubkey (64 bytes, no 0x04). `recovery_id` is 0 or 1.
     static CryptoResult<Secp256k1PublicKey> ecdsa_secp256k1_recover_public_key(
         const Message& message,
         const Secp256k1Signature& signature,
+        uint8_t recovery_id,
         bool compressed = false
     );
 

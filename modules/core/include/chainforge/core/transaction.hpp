@@ -51,9 +51,19 @@ public:
     void set_gas_price(GasPrice gas_price);
     void set_data(const std::vector<uint8_t>& data);
     void set_nonce(uint64_t nonce);
-    
+    void set_signature(const std::vector<uint8_t>& signature);
+    void set_chain_id(uint64_t chain_id);
+
+    uint64_t chain_id() const noexcept { return data_.chain_id; }
+    const std::vector<uint8_t>& signature() const noexcept { return data_.signature; }
+
     // Transaction operations
     Hash calculate_hash() const;
+    /// keccak256(rlp(unsigned legacy or EIP-155 signing payload))
+    Hash signing_hash() const;
+    std::vector<uint8_t> rlp_encode_unsigned() const;
+    std::vector<uint8_t> rlp_encode_signed() const;
+    static Transaction from_rlp(const std::vector<uint8_t>& rlp_bytes);
     Amount calculate_fee() const;
     bool is_contract_creation() const noexcept;
     bool is_contract_call() const noexcept;

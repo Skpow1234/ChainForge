@@ -42,6 +42,18 @@ Config is mounted from `./config` into the containers. Port map: [endpoints.md](
 
 Prefer env files or secret managers; do not reuse these defaults outside localhost.
 
+### Node binary
+
+```bash
+# After Conan + CMake build:
+./build/bin/chainforge-node --config config/config.yaml --mine-once
+# Health (same port as RPC):
+curl http://127.0.0.1:8545/health
+curl http://127.0.0.1:8545/ready
+```
+
+Storage backends: `memory` (default in code if unset), `file` / `rocksdb` (file-backed KV until real RocksDB is linked).
+
 ## 2. Docker images
 
 Multi-stage builds under `deploy/docker/`:

@@ -1,12 +1,19 @@
 #include "chainforge/crypto/signature.hpp"
+#include "chainforge/crypto/hash.hpp"
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
 #include <openssl/obj_mac.h>
 #include <openssl/sha.h>
+#include <secp256k1.h>
+#if __has_include(<secp256k1_recovery.h>)
+#include <secp256k1_recovery.h>
+#define CHAINFORGE_HAS_SECP_RECOVERY 1
+#endif
 #include <sodium.h>
 #include <iomanip>
 #include <sstream>
 #include <memory>
+#include <cstring>
 
 namespace chainforge::crypto {
 
@@ -28,11 +35,68 @@ CryptoResult<bool> Signature::ecdsa_secp256k1_verify(
 CryptoResult<Secp256k1PublicKey> Signature::ecdsa_secp256k1_recover_public_key(
     const Message& message,
     const Secp256k1Signature& signature,
+    uint8_t recovery_id,
     bool compressed
 ) {
-    // TODO: Implement public key recovery
-    (void)message; (void)signature; (void)compressed; // Suppress unused parameter warnings
+#if !defined(CHAINFORGE_HAS_SECP_RECOVERY)
+    (void)message; (void)signature; (void)recovery_id; (void)compressed;
     return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::UNSUPPORTED_ALGORITHM};
+#else
+    if (recovery_id > 3) {
+        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_SIGNATURE};
+    }
+
+    Hash256 digest{};
+    if (message.size() == HASH256_SIZE) {
+        std::copy(message.begin(), message.end(), digest.begin());
+    } else {
+        auto hashed = Hash::keccak256(message);
+        if (!hashed.success()) {
+            return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, hashed.error};
+        }
+        digest = hashed.value;
+    }
+
+    secp256k1_context* ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY);
+    if (!ctx) {
+        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::VERIFICATION_FAILED};
+    }
+
+    secp256k1_ecdsa_recoverable_signature rec_sig;
+    if (secp256k1_ecdsa_recoverable_signature_parse_compact(
+            ctx, &rec_sig, signature.data(), static_cast<int>(recovery_id)) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_SIGNATURE};
+    }
+
+    secp256k1_pubkey pubkey;
+    if (secp256k1_ecdsa_recover(ctx, &pubkey, &rec_sig, digest.data()) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::VERIFICATION_FAILED};
+    }
+
+    if (compressed) {
+        Secp256k1CompressedPublicKey out{};
+        size_t out_len = out.size();
+        secp256k1_ec_pubkey_serialize(ctx, out.data(), &out_len, &pubkey, SECP256K1_EC_COMPRESSED);
+        secp256k1_context_destroy(ctx);
+        Secp256k1PublicKey padded{};
+        std::copy(out.begin(), out.end(), padded.begin());
+        return CryptoResult<Secp256k1PublicKey>{padded, CryptoError::SUCCESS};
+    }
+
+    uint8_t uncompressed[65];
+    size_t out_len = sizeof(uncompressed);
+    if (secp256k1_ec_pubkey_serialize(ctx, uncompressed, &out_len, &pubkey, SECP256K1_EC_UNCOMPRESSED) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::VERIFICATION_FAILED};
+    }
+    secp256k1_context_destroy(ctx);
+
+    Secp256k1PublicKey result{};
+    std::copy(uncompressed + 1, uncompressed + 65, result.begin());
+    return CryptoResult<Secp256k1PublicKey>{result, CryptoError::SUCCESS};
+#endif
 }
 
 CryptoResult<Ed25519Signature> Signature::ed25519_sign(

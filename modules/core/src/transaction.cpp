@@ -1,13 +1,16 @@
 #include "chainforge/core/transaction.hpp"
+#include "chainforge/core/rlp.hpp"
+#include "chainforge/crypto/signature.hpp"
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <stdexcept>
 #include <nlohmann/json.hpp>
 
 namespace chainforge::core {
 
 Transaction::Transaction(const Address& from, const Address& to, const Amount& value)
-    : data_{from.data(), to.data(), value.wei(), 21000, 1, {}, 0, {}} {}
+    : data_{from.data(), to.data(), value.wei(), 21000, 1, {}, 0, {}, 0} {}
 
 Transaction::Transaction(const TransactionData& data) : data_(data) {}
 
@@ -46,30 +49,144 @@ void Transaction::set_nonce(uint64_t nonce) {
     invalidate_cache();
 }
 
+void Transaction::set_signature(const std::vector<uint8_t>& signature) {
+    data_.signature = signature;
+    invalidate_cache();
+}
+
+void Transaction::set_chain_id(uint64_t chain_id) {
+    data_.chain_id = chain_id;
+    invalidate_cache();
+}
+
+std::vector<uint8_t> Transaction::rlp_encode_unsigned() const {
+    std::vector<rlp::Bytes> fields;
+    fields.push_back(rlp::encode_uint(data_.nonce));
+    fields.push_back(rlp::encode_uint(data_.gas_price));
+    fields.push_back(rlp::encode_uint(data_.gas_limit));
+    fields.push_back(rlp::encode_address20(data_.to.data()));
+    fields.push_back(rlp::encode_uint(data_.value));
+    fields.push_back(rlp::encode_bytes(data_.data));
+    if (data_.chain_id != 0) {
+        // EIP-155 signing payload
+        fields.push_back(rlp::encode_uint(data_.chain_id));
+        fields.push_back(rlp::encode_uint(0));
+        fields.push_back(rlp::encode_uint(0));
+    }
+    return rlp::encode_list(fields);
+}
+
+std::vector<uint8_t> Transaction::rlp_encode_signed() const {
+    if (data_.signature.size() != 65) {
+        throw std::invalid_argument("Signed RLP requires 65-byte signature");
+    }
+    const uint8_t v_raw = data_.signature[64];
+    uint64_t v = v_raw;
+    if (data_.chain_id != 0 && v_raw < 35) {
+        // Accept recovery id 0/1 and convert to EIP-155 v
+        v = static_cast<uint64_t>(v_raw) + 35 + 2 * data_.chain_id;
+    }
+
+    std::vector<uint8_t> r(data_.signature.begin(), data_.signature.begin() + 32);
+    std::vector<uint8_t> s(data_.signature.begin() + 32, data_.signature.begin() + 64);
+
+    std::vector<rlp::Bytes> fields;
+    fields.push_back(rlp::encode_uint(data_.nonce));
+    fields.push_back(rlp::encode_uint(data_.gas_price));
+    fields.push_back(rlp::encode_uint(data_.gas_limit));
+    fields.push_back(rlp::encode_address20(data_.to.data()));
+    fields.push_back(rlp::encode_uint(data_.value));
+    fields.push_back(rlp::encode_bytes(data_.data));
+    fields.push_back(rlp::encode_uint(v));
+    fields.push_back(rlp::encode_bytes(r));
+    fields.push_back(rlp::encode_bytes(s));
+    return rlp::encode_list(fields);
+}
+
+Hash Transaction::signing_hash() const {
+    return hash_keccak256(rlp_encode_unsigned());
+}
+
 Hash Transaction::calculate_hash() const {
     if (cached_hash_.has_value()) {
         return cached_hash_.value();
     }
 
-    // Canonical preimage (RLP comes later): keccak256 of field concatenation
-    std::vector<uint8_t> hash_data;
-    hash_data.insert(hash_data.end(), data_.from.begin(), data_.from.end());
-    hash_data.insert(hash_data.end(), data_.to.begin(), data_.to.end());
-
-    auto append_be = [&](uint64_t value, size_t width) {
-        for (int i = static_cast<int>(width) - 1; i >= 0; --i) {
-            hash_data.push_back(static_cast<uint8_t>((value >> (i * 8)) & 0xFF));
-        }
-    };
-
-    append_be(data_.value, 8);
-    append_be(data_.gas_limit, 8);
-    append_be(data_.gas_price, 8);
-    append_be(data_.nonce, 8);
-    hash_data.insert(hash_data.end(), data_.data.begin(), data_.data.end());
-
-    cached_hash_ = hash_keccak256(hash_data);
+    if (data_.signature.size() == 65) {
+        cached_hash_ = hash_keccak256(rlp_encode_signed());
+    } else {
+        cached_hash_ = signing_hash();
+    }
     return cached_hash_.value();
+}
+
+Transaction Transaction::from_rlp(const std::vector<uint8_t>& rlp_bytes) {
+    auto decoded = rlp::decode(rlp_bytes);
+    if (!decoded || !decoded->is_list ||
+        (decoded->items.size() != 6 && decoded->items.size() != 9)) {
+        throw std::invalid_argument("Invalid transaction RLP");
+    }
+
+    TransactionData data{};
+    data.nonce = rlp::item_as_uint(decoded->items[0]);
+    data.gas_price = rlp::item_as_uint(decoded->items[1]);
+    data.gas_limit = rlp::item_as_uint(decoded->items[2]);
+    {
+        auto to = rlp::item_as_bytes(decoded->items[3]);
+        if (to.empty()) {
+            data.to = {};
+        } else if (to.size() == 20) {
+            std::copy(to.begin(), to.end(), data.to.begin());
+        } else {
+            throw std::invalid_argument("Invalid to address in RLP");
+        }
+    }
+    data.value = rlp::item_as_uint(decoded->items[4]);
+    data.data = rlp::item_as_bytes(decoded->items[5]);
+
+    if (decoded->items.size() == 9) {
+        const uint64_t v = rlp::item_as_uint(decoded->items[6]);
+        auto r = rlp::item_as_bytes(decoded->items[7]);
+        auto s = rlp::item_as_bytes(decoded->items[8]);
+        if (r.size() > 32 || s.size() > 32) {
+            throw std::invalid_argument("Invalid r/s length");
+        }
+        std::vector<uint8_t> sig(65, 0);
+        std::copy(r.end() - std::min<size_t>(32, r.size()), r.end(), sig.begin() + (32 - std::min<size_t>(32, r.size())));
+        std::copy(s.end() - std::min<size_t>(32, s.size()), s.end(), sig.begin() + 32 + (32 - std::min<size_t>(32, s.size())));
+
+        uint8_t recovery_id = 0;
+        if (v >= 35) {
+            // EIP-155: v = chainId*2 + 35 + recoveryId
+            data.chain_id = (v - 35) / 2;
+            recovery_id = static_cast<uint8_t>((v - 35) % 2);
+        } else if (v == 27 || v == 28) {
+            recovery_id = static_cast<uint8_t>(v - 27);
+        } else if (v <= 1) {
+            recovery_id = static_cast<uint8_t>(v);
+        } else {
+            throw std::invalid_argument("Unsupported v value");
+        }
+        sig[64] = recovery_id;
+        data.signature = std::move(sig);
+    }
+
+    Transaction tx(data);
+    // Recover from address when signature present
+    if (tx.validate_signature() && !data.signature.empty()) {
+        // from filled inside validate_signature path below if recovery works — set via recover here
+        auto msg = tx.signing_hash().to_bytes();
+        chainforge::crypto::Secp256k1Signature compact{};
+        std::copy(data.signature.begin(), data.signature.begin() + 64, compact.begin());
+        auto recovered = chainforge::crypto::Signature::ecdsa_secp256k1_recover_public_key(
+            msg, compact, data.signature[64]);
+        if (recovered.success()) {
+            std::vector<uint8_t> pub(recovered.value.begin(), recovered.value.end());
+            auto addr = Address::from_public_key(pub);
+            tx.set_from(addr);
+        }
+    }
+    return tx;
 }
 
 Amount Transaction::calculate_fee() const {
@@ -96,11 +213,31 @@ bool Transaction::is_valid() const {
 }
 
 bool Transaction::validate_signature() const {
-    // Unsigned txs are allowed in local/dev pools; when present, require 65-byte r||s||v.
     if (data_.signature.empty()) {
+        return true; // unsigned allowed for local/dev
+    }
+    if (data_.signature.size() != 65) {
+        return false;
+    }
+
+    chainforge::crypto::Secp256k1Signature compact{};
+    std::copy(data_.signature.begin(), data_.signature.begin() + 64, compact.begin());
+    const uint8_t recovery_id = data_.signature[64];
+    auto msg = signing_hash().to_bytes();
+    auto recovered = chainforge::crypto::Signature::ecdsa_secp256k1_recover_public_key(
+        msg, compact, recovery_id);
+    if (!recovered.success()) {
+        return false;
+    }
+
+    std::vector<uint8_t> pub(recovered.value.begin(), recovered.value.end());
+    Address derived = Address::from_public_key(pub);
+    // If from is zero, accept recovered; else must match.
+    Address from_addr(data_.from);
+    if (from_addr.is_zero()) {
         return true;
     }
-    return data_.signature.size() == 65;
+    return derived == from_addr;
 }
 
 bool Transaction::validate_gas() const {
@@ -108,8 +245,9 @@ bool Transaction::validate_gas() const {
 }
 
 bool Transaction::validate_amount() const {
-    Amount value(data_.value);
-    return !value.is_zero() || is_contract_creation();
+    // Zero-value calls/transfers are valid (e.g. contract calls).
+    (void)data_.value;
+    return true;
 }
 
 size_t Transaction::size() const {

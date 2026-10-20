@@ -6,6 +6,8 @@
 #include "tcp_server.hpp"
 #include "tcp_client.hpp"
 #include "udp_transport.hpp"
+#include "peer_manager.hpp"
+#include "peer_discovery.hpp"
 
 /**
  * @file network.hpp

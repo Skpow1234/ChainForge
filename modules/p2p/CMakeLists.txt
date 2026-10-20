@@ -8,6 +8,7 @@ set(P2P_SOURCES
     src/udp_transport.cpp
     src/peer_address.cpp
     src/peer_discovery.cpp
+    src/peer_manager.cpp
 )
 
 set(P2P_HEADERS
@@ -17,6 +18,7 @@ set(P2P_HEADERS
     include/chainforge/p2p/udp_transport.hpp
     include/chainforge/p2p/peer_address.hpp
     include/chainforge/p2p/peer_discovery.hpp
+    include/chainforge/p2p/peer_manager.hpp
     include/chainforge/p2p/network.hpp
 )
 

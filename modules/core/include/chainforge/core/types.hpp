@@ -46,7 +46,8 @@ struct TransactionData {
     GasPrice gas_price;
     std::vector<uint8_t> data;
     uint64_t nonce;
-    std::vector<uint8_t> signature; // r||s||v (empty = unsigned)
+    std::vector<uint8_t> signature; // r||s||v (65 bytes; empty = unsigned)
+    uint64_t chain_id = 0;          // 0 = legacy (no EIP-155); else EIP-155
 };
 
 // Block structure (removed to avoid incomplete type issues)
