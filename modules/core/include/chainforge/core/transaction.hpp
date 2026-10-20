@@ -83,6 +83,7 @@ public:
     std::string to_string() const;
     std::string to_json() const;
     std::string to_hex() const;
+    static std::optional<Transaction> from_json(const std::string& json_str);
 
 private:
     TransactionData data_;

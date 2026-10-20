@@ -216,6 +216,42 @@ std::string Block::to_json() const {
     return j.dump(2);
 }
 
+std::optional<Block> Block::from_json(const std::string& json_str) {
+    try {
+        const auto j = nlohmann::json::parse(json_str);
+        if (!j.contains("height") || !j.contains("parentHash") || !j.contains("timestamp")) {
+            return std::nullopt;
+        }
+        Block block(j.at("height").get<BlockHeight>(),
+                    Hash(j.at("parentHash").get<std::string>()),
+                    Timestamp(j.at("timestamp").get<uint64_t>()));
+        if (j.contains("nonce")) {
+            block.set_nonce(j.at("nonce").get<BlockNonce>());
+        }
+        if (j.contains("gasLimit")) {
+            block.set_gas_limit(j.at("gasLimit").get<GasLimit>());
+        }
+        if (j.contains("gasPrice")) {
+            block.set_gas_price(j.at("gasPrice").get<GasPrice>());
+        }
+        if (j.contains("chainId")) {
+            block.set_chain_id(j.at("chainId").get<ChainId>());
+        }
+        if (j.contains("transactions") && j.at("transactions").is_array()) {
+            for (const auto& txj : j.at("transactions")) {
+                auto tx = Transaction::from_json(txj.dump());
+                if (!tx) {
+                    return std::nullopt;
+                }
+                block.add_transaction(*tx);
+            }
+        }
+        return block;
+    } catch (...) {
+        return std::nullopt;
+    }
+}
+
 void Block::update_merkle_root() {
     header_.merkle_root = calculate_merkle_root().data();
 }

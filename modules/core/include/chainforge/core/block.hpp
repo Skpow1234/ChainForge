@@ -81,6 +81,7 @@ public:
     // Utility methods
     std::string to_string() const;
     std::string to_json() const;
+    static std::optional<Block> from_json(const std::string& json_str);
 
 private:
     BlockHeader header_;

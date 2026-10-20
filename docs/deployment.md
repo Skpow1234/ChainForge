@@ -52,7 +52,7 @@ curl http://127.0.0.1:8545/health
 curl http://127.0.0.1:8545/ready
 ```
 
-Storage backends: `memory` (default in code if unset), `file` / `rocksdb` (file-backed KV until real RocksDB is linked).
+Storage backends: `memory`, `file` (length-prefixed KV file), `rocksdb` (real RocksDB when `librocksdb` is linked at build time; falls back to file-KV otherwise).
 
 ## 2. Docker images
 

@@ -83,7 +83,82 @@ bool ChainState::write_block(const core::Block& block) {
                          storage::Value(height_s.begin(), height_s.end()));
     auto put3 = db_->put(to_key("meta:height"),
                          storage::Value(height_s.begin(), height_s.end()));
-    return put1.success() && put2.success() && put3.success();
+    if (!(put1.success() && put2.success() && put3.success())) {
+        return false;
+    }
+    db_->flush({});
+    return true;
+}
+
+bool ChainState::load_from_storage() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!db_ || !db_->is_open()) {
+        return false;
+    }
+
+    auto meta = db_->get(to_key("meta:height"));
+    if (!meta.success() || meta.value.empty()) {
+        return false;
+    }
+    const std::string height_s(meta.value.begin(), meta.value.end());
+    uint64_t tip = 0;
+    try {
+        tip = std::stoull(height_s);
+    } catch (...) {
+        return false;
+    }
+
+    blocks_by_hash_.clear();
+    hash_by_height_.clear();
+    txs_by_hash_.clear();
+    balances_.clear();
+    nonces_.clear();
+
+    for (uint64_t h = 0; h <= tip; ++h) {
+        auto raw = db_->get(to_key(height_key(h)));
+        if (!raw.success() || raw.value.empty()) {
+            return false;
+        }
+        const std::string payload(raw.value.begin(), raw.value.end());
+        auto block = core::Block::from_json(payload);
+        if (!block) {
+            return false;
+        }
+        const auto hash = block->calculate_hash();
+        const auto hex = hash.to_hex();
+        blocks_by_hash_[hex] = *block;
+        hash_by_height_[h] = hex;
+        for (const auto& tx : block->transactions()) {
+            txs_by_hash_[normalize_hex(tx.calculate_hash().to_hex())] = tx;
+        }
+    }
+    latest_height_ = tip;
+
+    // Reload account state written under bal: / nonce: prefixes
+    auto it = db_->new_iterator({});
+    if (it) {
+        for (it->seek_to_first(); it->valid(); it->next()) {
+            const std::string key(it->key().begin(), it->key().end());
+            const std::string val(it->value().begin(), it->value().end());
+            if (key.rfind("bal:", 0) == 0) {
+                try {
+                    balances_[key.substr(4)] = std::stoull(val);
+                } catch (...) {
+                }
+            } else if (key.rfind("nonce:", 0) == 0) {
+                try {
+                    nonces_[key.substr(6)] = std::stoull(val);
+                } catch (...) {
+                }
+            } else if (key.rfind("tx:", 0) == 0) {
+                auto tx = core::Transaction::from_json(val);
+                if (tx) {
+                    txs_by_hash_[normalize_hex(tx->calculate_hash().to_hex())] = *tx;
+                }
+            }
+        }
+    }
+    return true;
 }
 
 void ChainState::index_transactions(const core::Block& block) {
@@ -100,6 +175,10 @@ void ChainState::index_transactions(const core::Block& block) {
 bool ChainState::initialize_with_genesis(const core::Block& genesis) {
     std::lock_guard<std::mutex> lock(mutex_);
     if (!genesis.is_genesis()) {
+        return false;
+    }
+    // Already have chain tip in memory (e.g. after load_from_storage)
+    if (!blocks_by_hash_.empty() || !hash_by_height_.empty()) {
         return false;
     }
     if (!write_block(genesis)) {
@@ -207,6 +286,7 @@ bool ChainState::credit(const core::Address& address, uint64_t wei) {
         ss << balances_[key];
         auto s = ss.str();
         db_->put(to_key(balance_key(address)), storage::Value(s.begin(), s.end()));
+        db_->flush({});
     }
     return true;
 }

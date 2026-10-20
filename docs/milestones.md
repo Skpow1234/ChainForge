@@ -23,33 +23,34 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 | Block/tx keccak hashing; merkle/header checks | Done |
 | RLP codec + tx hash/sign/from_rlp | Done |
 | ECDSA recover (secp256k1 recovery module) | Partial |
-| File-backed KV storage (`file`/`rocksdb` alias) | Partial |
+| File-backed KV storage (`file`) | Done |
+| RocksDB backend (`rocksdb`, optional link) | Done |
 | PeerManager scaffolding (M18) | Partial |
 | Node YAML config subset + GET `/health` `/ready` | Done |
+| Parallel CI matrix + sanitizers/Docker/SBOM gate | Done |
+| ChainState reload from durable DB | Done |
 | Extended backlog milestones 61–1086 | Done (tracking) |
 
 ## Next up
 
 | Priority | Milestone | Why |
 |----------|-----------|-----|
-| 1 | Real RocksDB (not file-KV stand-in) (4) | `rocksdb` backend uses file-backed KV today |
-| 2 | ChainState reload from durable DB | Indexes are memory-only across restarts |
-| 3 | Message protocol + sync (19–21) | PeerManager exists; no wire codec yet |
-| 4 | ECDSA sign path as compact r\|\|s (not DER) | Sign still OpenSSL DER-shaped |
-| 5 | Full YAML library / schema validation (9) | Best-effort line parser only |
+| 1 | Message protocol + sync (19–21) | PeerManager exists; no wire codec yet |
+| 2 | ECDSA sign path as compact r\|\|s (not DER) | Sign still OpenSSL DER-shaped |
+| 3 | Full YAML library / schema validation (9) | Best-effort line parser only |
 
 ## Phase 1 — Foundation (1–15)
 
 | ID | Title | Status | Notes |
 |----|--------|--------|-------|
-| 1 | Project setup & build system | Done | CMake, Conan, CI |
-| 2 | Core domain models | Partial | Hashes/addresses improved; RLP still open |
+| 1 | Project setup & build system | Done | CMake, Conan, parallel CI gate |
+| 2 | Core domain models | Partial | Hashes/addresses/RLP; JSON round-trip for reload |
 | 3 | Cryptographic foundation | Partial | Keccak + secp256k1 curves; BLS/recovery open |
-| 4 | Database abstraction layer | Partial | File-KV durable; real RocksDB still open |
+| 4 | Database abstraction layer | Partial | memory + file-KV + optional RocksDB; batch API still thin |
 | 5 | Basic block structure | Partial | Keccak header hash + merkle check |
 | 6 | Transaction pool (mempool) | Partial | Enabled; used by ChainState |
 | 7 | Simple Proof of Work | Partial | Mine/validate via real block hash; E2E in node |
-| 8 | Basic RPC server | Partial | ChainState + RLP raw tx path |
+| 8 | Basic RPC server | Partial | ChainState reload + RLP raw tx path |
 | 9 | Configuration management | Partial | Node loads YAML subset |
 | 10 | Logging system | Partial | Enabled in build |
 | 11 | Metrics collection | Partial | Enabled; HTTP exposer still stubby |

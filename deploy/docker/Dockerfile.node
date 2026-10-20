@@ -80,13 +80,13 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -r -s /bin/false chainforge
 
 # Copy the binary
-COPY --from=builder /app/build/bin/chainforge-node /usr/local/bin/cppchain-node
+COPY --from=builder /app/build/bin/chainforge-node /usr/local/bin/chainforge-node
 
 # Copy runtime dependencies from build stage (including RocksDB)
 COPY --from=builder /app/build/lib/ /usr/local/lib/
 
 # Set ownership
-RUN chown -R chainforge:chainforge /usr/local/bin/cppchain-node /usr/local/lib/
+RUN chown -R chainforge:chainforge /usr/local/bin/chainforge-node /usr/local/lib/ || true
 
 # Switch to non-root user
 USER chainforge
@@ -96,7 +96,8 @@ EXPOSE 8080 8545 8546 30303
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD ["/usr/local/bin/cppchain-node", "--help"] || exit 1
+    CMD ["/usr/local/bin/chainforge-node", "--help"]
 
 # Default command
-CMD ["/usr/local/bin/cppchain-node"]
+ENTRYPOINT ["/usr/local/bin/chainforge-node"]
+CMD ["--help"]

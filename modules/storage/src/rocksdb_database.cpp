@@ -1,4 +1,5 @@
 #include "chainforge/storage/database.hpp"
+#include "chainforge/storage/backend.hpp"
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -373,8 +374,14 @@ std::unique_ptr<Database> create_database(const std::string& backend) {
     if (backend == "memory") {
         return std::make_unique<MemoryDatabase>();
     }
-    if (backend == "file" || backend == "rocksdb") {
-        // RocksDB real backend is gated; file-backed KV is the durable default today.
+    if (backend == "file") {
+        return std::make_unique<FileDatabase>();
+    }
+    if (backend == "rocksdb") {
+        if (auto db = create_rocksdb_database()) {
+            return db;
+        }
+        // Fall back so nodes still boot when RocksDB was not linked.
         return std::make_unique<FileDatabase>();
     }
     return nullptr;

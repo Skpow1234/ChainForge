@@ -106,27 +106,38 @@ int main(int argc, char** argv) {
     }
     {
         chainforge::storage::DatabaseConfig dbcfg;
-        dbcfg.path = cfg.data_dir + "/chain.kv";
+        if (cfg.storage_backend == "rocksdb") {
+            dbcfg.path = cfg.data_dir + "/chaindb";
+        } else if (cfg.storage_backend == "file") {
+            dbcfg.path = cfg.data_dir + "/chain.kv";
+        } else {
+            dbcfg.path = cfg.data_dir + "/memory";
+        }
         dbcfg.create_if_missing = true;
         auto opened = db->open(dbcfg);
         if (!opened.success() && !db->is_open()) {
-            std::cerr << "Failed to open storage\n";
+            std::cerr << "Failed to open storage path=" << dbcfg.path << "\n";
             return 1;
         }
+        std::cout << "  storage path=" << dbcfg.path << "\n";
     }
 
     auto mempool = std::shared_ptr<chainforge::mempool::Mempool>(
         chainforge::mempool::create_mempool());
     auto state = std::make_shared<chainforge::rpc::ChainState>(db, mempool, cfg.chain_id);
 
-    auto genesis = chainforge::core::create_genesis_block(static_cast<chainforge::core::ChainId>(cfg.chain_id));
-    if (!state->initialize_with_genesis(genesis)) {
-        // May already exist when using file backend — try continue if height present
-        if (!state->get_block_by_number(0)) {
+    if (state->load_from_storage()) {
+        std::cout << "Reloaded chain from storage tip=#" << state->latest_height() << "\n";
+        if (auto tip = state->get_block_by_number(state->latest_height())) {
+            std::cout << "  tip hash: 0x" << tip->calculate_hash().to_hex() << "\n";
+        }
+    } else {
+        auto genesis = chainforge::core::create_genesis_block(
+            static_cast<chainforge::core::ChainId>(cfg.chain_id));
+        if (!state->initialize_with_genesis(genesis)) {
             std::cerr << "Failed to initialize genesis\n";
             return 1;
         }
-    } else {
         std::cout << "Genesis: 0x" << genesis.calculate_hash().to_hex() << "\n";
         chainforge::core::Address demo("0x742d35cc6634c0532925a3b844bc454e4438f44e");
         state->credit(demo, 1000000000000000000ULL);

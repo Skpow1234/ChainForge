@@ -288,6 +288,7 @@ std::string Transaction::to_json() const {
     j["gasLimit"] = data_.gas_limit;
     j["gasPrice"] = data_.gas_price;
     j["nonce"] = data_.nonce;
+    j["chainId"] = data_.chain_id;
     {
         std::ostringstream oss;
         oss << "0x" << std::hex << std::setfill('0');
@@ -296,9 +297,69 @@ std::string Transaction::to_json() const {
         }
         j["data"] = oss.str();
     }
+    if (!data_.signature.empty()) {
+        std::ostringstream oss;
+        oss << "0x" << std::hex << std::setfill('0');
+        for (uint8_t b : data_.signature) {
+            oss << std::setw(2) << static_cast<int>(b);
+        }
+        j["signature"] = oss.str();
+    }
     j["hash"] = "0x" + calculate_hash().to_hex();
 
     return j.dump(2);
+}
+
+namespace {
+
+std::vector<uint8_t> parse_hex_bytes(std::string hex) {
+    if (hex.size() >= 2 && hex[0] == '0' && (hex[1] == 'x' || hex[1] == 'X')) {
+        hex.erase(0, 2);
+    }
+    if (hex.size() % 2 != 0) {
+        hex.insert(hex.begin(), '0');
+    }
+    std::vector<uint8_t> out;
+    out.reserve(hex.size() / 2);
+    for (size_t i = 0; i + 1 < hex.size(); i += 2) {
+        out.push_back(static_cast<uint8_t>(std::stoul(hex.substr(i, 2), nullptr, 16)));
+    }
+    return out;
+}
+
+} // namespace
+
+std::optional<Transaction> Transaction::from_json(const std::string& json_str) {
+    try {
+        const auto j = nlohmann::json::parse(json_str);
+        if (!j.contains("from") || !j.contains("to") || !j.contains("value")) {
+            return std::nullopt;
+        }
+        Transaction tx(Address(j.at("from").get<std::string>()),
+                       Address(j.at("to").get<std::string>()),
+                       Amount::from_string(j.at("value").get<std::string>()));
+        if (j.contains("gasLimit")) {
+            tx.set_gas_limit(j.at("gasLimit").get<GasLimit>());
+        }
+        if (j.contains("gasPrice")) {
+            tx.set_gas_price(j.at("gasPrice").get<GasPrice>());
+        }
+        if (j.contains("nonce")) {
+            tx.set_nonce(j.at("nonce").get<uint64_t>());
+        }
+        if (j.contains("chainId")) {
+            tx.set_chain_id(j.at("chainId").get<uint64_t>());
+        }
+        if (j.contains("data") && j.at("data").is_string()) {
+            tx.set_data(parse_hex_bytes(j.at("data").get<std::string>()));
+        }
+        if (j.contains("signature") && j.at("signature").is_string()) {
+            tx.set_signature(parse_hex_bytes(j.at("signature").get<std::string>()));
+        }
+        return tx;
+    } catch (...) {
+        return std::nullopt;
+    }
 }
 
 std::string Transaction::to_hex() const {

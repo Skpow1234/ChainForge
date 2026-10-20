@@ -30,6 +30,8 @@ public:
     uint64_t latest_height() const;
     std::shared_ptr<mempool::Mempool> mempool() const { return mempool_; }
 
+    /// Rebuild in-memory indexes from durable KV. Returns true if chain data was found.
+    bool load_from_storage();
     bool initialize_with_genesis(const core::Block& genesis);
     bool import_block(const core::Block& block);
 
