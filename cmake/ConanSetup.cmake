@@ -1,4 +1,4 @@
-# Conan dependency management setup for ChainForge
+# Conan dependency management setup for Tokiwa
 # Handles Conan v2 integration and dependency resolution
 
 # Find Conan

@@ -1,10 +1,10 @@
-#include "chainforge/core/timestamp.hpp"
+#include "tokiwa/core/timestamp.hpp"
 #include <sstream>
 #include <iomanip>
 #include <ctime>
 #include <regex>
 
-namespace chainforge::core {
+namespace tokiwa::core {
 
 Timestamp::Timestamp(value_type seconds_since_epoch) : seconds_(seconds_since_epoch) {
     validate_timestamp(seconds_since_epoch);
@@ -205,4 +205,4 @@ std::chrono::milliseconds duration_ms_between(const Timestamp& start, const Time
     return std::chrono::milliseconds(seconds * 1000);
 }
 
-} // namespace chainforge::core
+} // namespace tokiwa::core

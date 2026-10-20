@@ -1,9 +1,9 @@
-#include "chainforge/p2p/peer_address.hpp"
+#include "tokiwa/p2p/peer_address.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <algorithm>
 #include <regex>
 
-namespace chainforge {
+namespace tokiwa {
 namespace p2p {
 
 bool PeerAddress::is_valid() const {
@@ -126,5 +126,5 @@ bool is_valid_peer_address(const PeerAddress& addr, bool allow_private) {
 } // namespace address_validation
 
 } // namespace p2p
-} // namespace chainforge
+} // namespace tokiwa
 

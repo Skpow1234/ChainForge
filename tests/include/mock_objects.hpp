@@ -1,14 +1,14 @@
 #pragma once
 
 #include <gmock/gmock.h>
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/serialization/serializer.hpp"
-#include "chainforge/serialization/validator.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/serialization/serializer.hpp"
+#include "tokiwa/serialization/validator.hpp"
 #include <memory>
 #include <vector>
 
-namespace chainforge {
+namespace tokiwa {
 namespace testing {
 
 /**
@@ -360,5 +360,5 @@ public:
 } // namespace stubs
 
 } // namespace testing
-} // namespace chainforge
+} // namespace tokiwa
 

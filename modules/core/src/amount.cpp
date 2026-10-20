@@ -1,11 +1,11 @@
-#include "chainforge/core/amount.hpp"
+#include "tokiwa/core/amount.hpp"
 #include <sstream>
 #include <iomanip>
 #include <cmath>
 #include <limits>
 #include <algorithm>
 
-namespace chainforge::core {
+namespace tokiwa::core {
 
 Amount::Amount(value_type wei) : wei_(wei) {}
 
@@ -214,4 +214,4 @@ Amount max(const Amount& a, const Amount& b) {
     return (a > b) ? a : b;
 }
 
-} // namespace chainforge::core
+} // namespace tokiwa::core

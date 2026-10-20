@@ -6,13 +6,13 @@ set(MEMPOOL_SOURCES
 )
 
 set(MEMPOOL_HEADERS
-    include/chainforge/mempool/mempool.hpp
+    include/tokiwa/mempool/mempool.hpp
     src/mempool_impl.hpp
 )
 
-add_library(chainforge-mempool STATIC ${MEMPOOL_SOURCES} ${MEMPOOL_HEADERS})
+add_library(tokiwa-mempool STATIC ${MEMPOOL_SOURCES} ${MEMPOOL_HEADERS})
 
-target_include_directories(chainforge-mempool
+target_include_directories(tokiwa-mempool
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -20,19 +20,19 @@ target_include_directories(chainforge-mempool
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(chainforge-mempool PRIVATE cxx_std_20)
+target_compile_features(tokiwa-mempool PRIVATE cxx_std_20)
 
 # Link dependencies
-target_link_libraries(chainforge-mempool
+target_link_libraries(tokiwa-mempool
     PUBLIC
-        chainforge-core
+        tokiwa-core
     PRIVATE
-        chainforge-crypto
+        tokiwa-crypto
 )
 
 # Install
-install(TARGETS chainforge-mempool
-    EXPORT ChainForgeTargets
+install(TARGETS tokiwa-mempool
+    EXPORT TokiwaTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

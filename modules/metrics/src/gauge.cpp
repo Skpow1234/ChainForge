@@ -1,7 +1,7 @@
-#include "chainforge/metrics/gauge.hpp"
+#include "tokiwa/metrics/gauge.hpp"
 #include <chrono>
 
-namespace chainforge::metrics {
+namespace tokiwa::metrics {
 
 Gauge::Gauge(prometheus::Gauge& prometheus_gauge, const std::string& name)
     : prometheus_gauge_(prometheus_gauge), name_(name) {
@@ -52,4 +52,4 @@ void GaugeTracker::update(double new_value) {
     }
 }
 
-} // namespace chainforge::metrics
+} // namespace tokiwa::metrics

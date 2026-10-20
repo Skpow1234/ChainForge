@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ChainForge Build Script
+# Tokiwa Build Script
 # This script builds the project using CMake and Conan
 
 set -e  # Exit on any error
@@ -213,7 +213,7 @@ main() {
         esac
     done
     
-    print_status "Starting ChainForge build process..."
+    print_status "Starting Tokiwa build process..."
     print_status "Build type: ${build_type}"
     print_status "Build directory: ${build_dir}"
     

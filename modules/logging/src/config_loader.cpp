@@ -1,4 +1,4 @@
-#include "chainforge/logging/config_loader.hpp"
+#include "tokiwa/logging/config_loader.hpp"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -7,7 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace chainforge::logging {
+namespace tokiwa::logging {
 
 LogConfig ConfigLoader::load_from_yaml(const std::filesystem::path& config_file) {
     // For now, we'll use a simple YAML-to-JSON converter
@@ -106,7 +106,7 @@ LogConfig ConfigLoader::create_default() {
     config.console_level = LogLevel::INFO;
     config.file_level = LogLevel::DEBUG;
     config.log_directory = "logs";
-    config.log_file_pattern = "chainforge.log";
+    config.log_file_pattern = "tokiwa.log";
     config.max_file_size = 10 * 1024 * 1024; // 10MB
     config.max_files = 5;
     config.enable_json_format = true;
@@ -116,7 +116,7 @@ LogConfig ConfigLoader::create_default() {
     config.pretty_print_file = false;
     
     // Default global fields
-    config.global_fields["service"] = "chainforge";
+    config.global_fields["service"] = "tokiwa";
     config.global_fields["version"] = "1.0.0";
     
     return config;
@@ -301,4 +301,4 @@ bool initialize_logging_with_defaults() {
     }
 }
 
-} // namespace chainforge::logging
+} // namespace tokiwa::logging

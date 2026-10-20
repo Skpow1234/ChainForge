@@ -1,4 +1,4 @@
-# Multi-stage build for ChainForge Node
+# Multi-stage build for Tokiwa Node
 # Stage 1: Build environment with Ubuntu and Conan
 FROM ubuntu:22.04 AS builder
 
@@ -51,7 +51,7 @@ COPY . .
 # Build the project
 RUN cd build && \
     cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DTREAT_WARNINGS_AS_ERRORS=OFF && \
-    cmake --build . --target chainforge-node --parallel
+    cmake --build . --target tokiwa-node --parallel
 
 # Stage 2: Runtime environment (minimal Ubuntu with complete C++ runtime)
 FROM ubuntu:22.04 AS runtime
@@ -77,27 +77,27 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN useradd -r -s /bin/false chainforge
+RUN useradd -r -s /bin/false tokiwa
 
 # Copy the binary
-COPY --from=builder /app/build/bin/chainforge-node /usr/local/bin/chainforge-node
+COPY --from=builder /app/build/bin/tokiwa-node /usr/local/bin/tokiwa-node
 
 # Copy runtime dependencies from build stage (including RocksDB)
 COPY --from=builder /app/build/lib/ /usr/local/lib/
 
 # Set ownership
-RUN chown -R chainforge:chainforge /usr/local/bin/chainforge-node /usr/local/lib/ || true
+RUN chown -R tokiwa:tokiwa /usr/local/bin/tokiwa-node /usr/local/lib/ || true
 
 # Switch to non-root user
-USER chainforge
+USER tokiwa
 
 # Expose ports
 EXPOSE 8080 8545 8546 30303
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD ["/usr/local/bin/chainforge-node", "--help"]
+    CMD ["/usr/local/bin/tokiwa-node", "--help"]
 
 # Default command
-ENTRYPOINT ["/usr/local/bin/chainforge-node"]
+ENTRYPOINT ["/usr/local/bin/tokiwa-node"]
 CMD ["--help"]

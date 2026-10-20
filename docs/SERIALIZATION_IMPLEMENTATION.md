@@ -2,7 +2,7 @@
 
 ## Overview
 
-Milestone 14 has been successfully completed. The serialization framework provides protobuf-based serialization and deserialization for all ChainForge blockchain data structures.
+Milestone 14 has been successfully completed. The serialization framework provides protobuf-based serialization and deserialization for all Tokiwa blockchain data structures.
 
 ## Implementation Summary
 
@@ -125,12 +125,12 @@ The serialization module correctly integrates with core types:
 
 ```cpp
 // Core types used:
-- chainforge::core::Block
-- chainforge::core::Transaction
-- chainforge::core::Address
-- chainforge::core::Amount
-- chainforge::core::Timestamp
-- chainforge::core::Hash
+- tokiwa::core::Block
+- tokiwa::core::Transaction
+- tokiwa::core::Address
+- tokiwa::core::Amount
+- tokiwa::core::Timestamp
+- tokiwa::core::Hash
 ```
 
 All methods use the correct API:
@@ -180,7 +180,7 @@ All operations return `Result<T>` for proper error propagation.
 
 1. **Install dependencies** (if not already done):
    ```bash
-   cd ChainForge
+   cd Tokiwa
    conan install . --output-folder=build --build=missing
    ```
 
@@ -191,7 +191,7 @@ All operations return `Result<T>` for proper error propagation.
 
 3. **Build the serialization module**:
    ```bash
-   cmake --build build --target chainforge-serialization
+   cmake --build build --target tokiwa-serialization
    ```
 
 4. **Build and run tests**:
@@ -212,9 +212,9 @@ scripts\build.bat --release --test
 ### Serializing a Transaction
 
 ```cpp
-#include "chainforge/serialization/serialization.hpp"
+#include "tokiwa/serialization/serialization.hpp"
 
-using namespace chainforge::serialization;
+using namespace tokiwa::serialization;
 
 // Create serializer
 auto serializer = create_serializer();

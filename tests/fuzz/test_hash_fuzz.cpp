@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/core/hash.hpp"
 #include <vector>
 #include <random>
 
-namespace chainforge::fuzz::test {
+namespace tokiwa::fuzz::test {
 
 class HashFuzzTest : public ::testing::Test {
 protected:
@@ -313,4 +313,4 @@ TEST_F(HashFuzzTest, HashPerformance) {
     EXPECT_LT(duration.count(), 1000);
 }
 
-} // namespace chainforge::fuzz::test
+} // namespace tokiwa::fuzz::test

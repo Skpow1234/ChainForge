@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include "chainforge/p2p/p2p.hpp"
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
+#include "tokiwa/p2p/p2p.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
 #include <thread>
 #include <chrono>
 #include <vector>
 
-namespace chainforge::integration::test {
+namespace tokiwa::integration::test {
 
 class P2PIntegrationTest : public ::testing::Test {
 protected:
@@ -403,4 +403,4 @@ TEST_F(P2PIntegrationTest, NetworkStress) {
     EXPECT_GT(received_messages.size(), num_messages * 0.9); // At least 90% should be received
 }
 
-} // namespace chainforge::integration::test
+} // namespace tokiwa::integration::test

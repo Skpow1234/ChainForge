@@ -1,9 +1,9 @@
-// types.proto - Basic type definitions for ChainForge serialization
+// types.proto - Basic type definitions for Tokiwa serialization
 syntax = "proto3";
 
-package chainforge.types;
+package tokiwa.types;
 
-option java_package = "com.chainforge.types";
+option java_package = "com.tokiwa.types";
 option java_outer_classname = "TypesProto";
 
 // Hash - Fixed-size 256-bit hash

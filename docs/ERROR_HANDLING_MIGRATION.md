@@ -1,6 +1,6 @@
 # Error Handling Migration Guide
 
-This guide explains how to migrate existing ChainForge modules to use the new `std::expected`-based error handling system.
+This guide explains how to migrate existing Tokiwa modules to use the new `std::expected`-based error handling system.
 
 ## Overview
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "chainforge/rpc/rpc_server.hpp"
+#include "tokiwa/rpc/rpc_server.hpp"
 #include "http_server.hpp"
 #include <unordered_map>
 #include <memory>
 #include <mutex>
 
-namespace chainforge::rpc {
+namespace tokiwa::rpc {
 
 /**
  * JSON-RPC server implementation
@@ -51,4 +51,4 @@ private:
     void add_cors_headers(HttpResponse& response) const;
 };
 
-} // namespace chainforge::rpc
+} // namespace tokiwa::rpc

@@ -12,17 +12,17 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  # ChainForge Node
-  - job_name: 'chainforge-node'
+  # Tokiwa Node
+  - job_name: 'tokiwa-node'
     static_configs:
-      - targets: ['chainforge-node:8080']
+      - targets: ['tokiwa-node:8080']
     metrics_path: '/metrics'
     scrape_interval: 10s
 
-  # ChainForge Explorer
-  - job_name: 'chainforge-explorer'
+  # Tokiwa Explorer
+  - job_name: 'tokiwa-explorer'
     static_configs:
-      - targets: ['chainforge-explorer:8081']
+      - targets: ['tokiwa-explorer:8081']
     metrics_path: '/metrics'
     scrape_interval: 10s
 

@@ -7,9 +7,9 @@ set(SERIALIZATION_SOURCES
 )
 
 set(SERIALIZATION_HEADERS
-    include/chainforge/serialization/serializer.hpp
-    include/chainforge/serialization/validator.hpp
-    include/chainforge/serialization/serialization.hpp
+    include/tokiwa/serialization/serializer.hpp
+    include/tokiwa/serialization/validator.hpp
+    include/tokiwa/serialization/serialization.hpp
 )
 
 # Protobuf files
@@ -28,9 +28,9 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 list(APPEND SERIALIZATION_SOURCES ${PROTO_SRCS})
 list(APPEND SERIALIZATION_HEADERS ${PROTO_HDRS})
 
-add_library(chainforge-serialization STATIC ${SERIALIZATION_SOURCES} ${SERIALIZATION_HEADERS})
+add_library(tokiwa-serialization STATIC ${SERIALIZATION_SOURCES} ${SERIALIZATION_HEADERS})
 
-target_include_directories(chainforge-serialization
+target_include_directories(tokiwa-serialization
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> # For generated protobuf headers
@@ -39,24 +39,24 @@ target_include_directories(chainforge-serialization
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(chainforge-serialization PRIVATE cxx_std_20)
+target_compile_features(tokiwa-serialization PRIVATE cxx_std_20)
 
 # Link dependencies
 find_conan_package(fmt)
 find_conan_package(spdlog)
-target_link_libraries(chainforge-serialization
+target_link_libraries(tokiwa-serialization
     PUBLIC
         protobuf::libprotobuf
         fmt::fmt
         spdlog::spdlog
     PRIVATE
-        chainforge-core
-        chainforge-crypto
+        tokiwa-core
+        tokiwa-crypto
 )
 
 # Install
-install(TARGETS chainforge-serialization
-    EXPORT ChainForgeTargets
+install(TARGETS tokiwa-serialization
+    EXPORT TokiwaTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

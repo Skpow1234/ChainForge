@@ -1,7 +1,7 @@
-#include "chainforge/p2p/tcp_connection.hpp"
+#include "tokiwa/p2p/tcp_connection.hpp"
 #include <spdlog/spdlog.h>
 
-namespace chainforge {
+namespace tokiwa {
 namespace p2p {
 
 std::atomic<uint64_t> TcpConnection::next_connection_id_{1};
@@ -320,5 +320,5 @@ void TcpConnection::set_connection_callback(ConnectionCallback callback) {
 }
 
 } // namespace p2p
-} // namespace chainforge
+} // namespace tokiwa
 

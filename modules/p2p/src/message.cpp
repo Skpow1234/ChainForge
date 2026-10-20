@@ -1,8 +1,8 @@
-#include "chainforge/p2p/message.hpp"
+#include "tokiwa/p2p/message.hpp"
 #include <algorithm>
 #include <cstring>
 
-namespace chainforge::p2p {
+namespace tokiwa::p2p {
 namespace {
 
 void write_be32(uint8_t* dst, uint32_t v) {
@@ -339,4 +339,4 @@ std::optional<NewTxPayload> decode_new_tx(const std::vector<uint8_t>& payload) {
     return p;
 }
 
-} // namespace chainforge::p2p
+} // namespace tokiwa::p2p

@@ -1,11 +1,11 @@
-#include "chainforge/crypto/hash.hpp"
-#include "chainforge/crypto/keccak.hpp"
+#include "tokiwa/crypto/hash.hpp"
+#include "tokiwa/crypto/keccak.hpp"
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
 #include <iomanip>
 #include <sstream>
 
-namespace chainforge::crypto {
+namespace tokiwa::crypto {
 
 CryptoResult<Hash256> Hash::sha256(const ByteVector& data) {
     return internal_sha256(data.data(), data.size());
@@ -212,4 +212,4 @@ CryptoResult<Ripemd160Hash> Hash::internal_ripemd160(const byte_t* data, size_t 
     return CryptoResult<Ripemd160Hash>{result, CryptoError::SUCCESS};
 }
 
-} // namespace chainforge::crypto
+} // namespace tokiwa::crypto

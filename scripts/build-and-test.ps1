@@ -1,5 +1,5 @@
-# ChainForge Complete Build and Test Script for Windows
-# This script builds and tests the entire ChainForge system using Docker
+# Tokiwa Complete Build and Test Script for Windows
+# This script builds and tests the entire Tokiwa system using Docker
 
 param(
     [switch]$SkipInfrastructure,
@@ -110,7 +110,7 @@ function Start-Infrastructure {
 
 # Function to build the application
 function Build-Application {
-    Write-Status "Building ChainForge application..."
+    Write-Status "Building Tokiwa application..."
 
     try {
         docker compose build --no-cache
@@ -132,7 +132,7 @@ function Build-Application {
 
 # Function to test the build
 function Test-Build {
-    Write-Status "Testing ChainForge build..."
+    Write-Status "Testing Tokiwa build..."
 
     try {
         $testScript = @"
@@ -149,12 +149,12 @@ echo 'Building project...'
 cmake --build . --parallel
 
 echo 'Running tests...'
-./bin/cppchain-core-test
+./bin/tokiwa-core-test
 
 echo 'Build and test completed successfully!'
 "@
 
-        $result = docker compose run --rm chainforge-tools bash -c $testScript
+        $result = docker compose run --rm tokiwa-tools bash -c $testScript
 
         if ($LASTEXITCODE -eq 0) {
             Write-Success "Build and test completed successfully"
@@ -162,7 +162,7 @@ echo 'Build and test completed successfully!'
         }
         else {
             Write-Error "Build or test failed"
-            docker compose logs chainforge-tools
+            docker compose logs tokiwa-tools
             return $false
         }
     }
@@ -178,7 +178,7 @@ function Test-RpcServer {
 
     try {
         # Start the node (which includes RPC server)
-        docker compose up -d chainforge-node
+        docker compose up -d tokiwa-node
 
         # Wait for node to start
         Start-Sleep -Seconds 5
@@ -194,7 +194,7 @@ function Test-RpcServer {
 
         $response = Invoke-WebRequest -Uri $rpcUrl -Method POST -ContentType "application/json" -Body $rpcRequest -TimeoutSec 10
 
-        if ($response.Content -match "ChainForge") {
+        if ($response.Content -match "Tokiwa") {
             Write-Success "RPC server is responding correctly"
         }
         else {
@@ -206,13 +206,13 @@ function Test-RpcServer {
     }
     finally {
         # Stop the node
-        docker compose stop chainforge-node 2>$null
+        docker compose stop tokiwa-node 2>$null
     }
 }
 
 # Function to show system information
 function Show-Info {
-    Write-Status "ChainForge Build Information"
+    Write-Status "Tokiwa Build Information"
     Write-Host "==============================" -ForegroundColor $White
     Write-Host "Milestones Completed:" -ForegroundColor $White
     Write-Host "✅ 1. Project Setup & Build System" -ForegroundColor $Green
@@ -225,12 +225,12 @@ function Show-Info {
     Write-Host "✅ 8. Basic RPC Server" -ForegroundColor $Green
     Write-Host "" -ForegroundColor $White
     Write-Host "Modules Available:" -ForegroundColor $White
-    Write-Host "- chainforge-core: Domain models and core types" -ForegroundColor $White
-    Write-Host "- chainforge-crypto: Cryptographic primitives" -ForegroundColor $White
-    Write-Host "- chainforge-storage: Database abstraction (RocksDB)" -ForegroundColor $White
-    Write-Host "- chainforge-consensus: Proof of Work consensus" -ForegroundColor $White
-    Write-Host "- chainforge-mempool: Transaction pool management" -ForegroundColor $White
-    Write-Host "- chainforge-rpc: JSON-RPC server" -ForegroundColor $White
+    Write-Host "- tokiwa-core: Domain models and core types" -ForegroundColor $White
+    Write-Host "- tokiwa-crypto: Cryptographic primitives" -ForegroundColor $White
+    Write-Host "- tokiwa-storage: Database abstraction (RocksDB)" -ForegroundColor $White
+    Write-Host "- tokiwa-consensus: Proof of Work consensus" -ForegroundColor $White
+    Write-Host "- tokiwa-mempool: Transaction pool management" -ForegroundColor $White
+    Write-Host "- tokiwa-rpc: JSON-RPC server" -ForegroundColor $White
     Write-Host "" -ForegroundColor $White
     Write-Host "Services:" -ForegroundColor $White
     Write-Host "- PostgreSQL: Database" -ForegroundColor $White
@@ -238,14 +238,14 @@ function Show-Info {
     Write-Host "- Prometheus: Metrics collection" -ForegroundColor $White
     Write-Host "- Grafana: Metrics visualization" -ForegroundColor $White
     Write-Host "- Jaeger: Distributed tracing" -ForegroundColor $White
-    Write-Host "- ChainForge Node: Blockchain node with RPC" -ForegroundColor $White
-    Write-Host "- ChainForge Explorer: Block explorer (stub)" -ForegroundColor $White
+    Write-Host "- Tokiwa Node: Blockchain node with RPC" -ForegroundColor $White
+    Write-Host "- Tokiwa Explorer: Block explorer (stub)" -ForegroundColor $White
     Write-Host "" -ForegroundColor $White
 }
 
 # Main execution
 function Main {
-    Write-Host "🐳 ChainForge Docker Build and Test (Windows PowerShell)" -ForegroundColor $Green
+    Write-Host "🐳 Tokiwa Docker Build and Test (Windows PowerShell)" -ForegroundColor $Green
     Write-Host "=======================================================" -ForegroundColor $White
     Write-Host ""
 
@@ -271,7 +271,7 @@ function Main {
     }
 
     # Execute build steps
-    Write-Status "Starting ChainForge build process..."
+    Write-Status "Starting Tokiwa build process..."
 
     $success = $true
 
@@ -286,10 +286,10 @@ function Main {
     }
 
     if ($success) {
-        Write-Success "🎉 ChainForge build completed successfully!"
+        Write-Success "🎉 Tokiwa build completed successfully!"
         Write-Status "You can now:"
         Write-Host "  - Run 'docker compose up -d' to start all services" -ForegroundColor $White
-        Write-Host "  - Access Grafana at http://localhost:3000 (admin/chainforge_grafana_pass)" -ForegroundColor $White
+        Write-Host "  - Access Grafana at http://localhost:3000 (admin/tokiwa_grafana_pass)" -ForegroundColor $White
         Write-Host "  - Access Prometheus at http://localhost:9090" -ForegroundColor $White
         Write-Host "  - Access Jaeger at http://localhost:16686" -ForegroundColor $White
         Write-Host "  - Access RPC server at http://localhost:8545" -ForegroundColor $White
@@ -303,7 +303,7 @@ function Main {
         }
     }
     else {
-        Write-Error "❌ ChainForge build failed"
+        Write-Error "❌ Tokiwa build failed"
         Write-Status "Check the logs above for details"
         exit 1
     }

@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include "chainforge/metrics/metrics.hpp"
+#include "tokiwa/metrics/metrics.hpp"
 #include <thread>
 #include <chrono>
 #include <vector>
 
-using namespace chainforge::metrics;
+using namespace tokiwa::metrics;
 
 class MetricsRegistryTest : public ::testing::Test {
 protected:
@@ -164,4 +164,4 @@ TEST_F(MetricsRegistryTest, RegistryPerformance) {
     EXPECT_EQ(registry.size(), num_metrics);
 }
 
-} // namespace chainforge::metrics::test
+} // namespace tokiwa::metrics::test

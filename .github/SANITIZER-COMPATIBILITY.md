@@ -1,4 +1,4 @@
-# Sanitizer Compatibility in ChainForge CI
+# Sanitizer Compatibility in Tokiwa CI
 
 ## Issue Identified
 

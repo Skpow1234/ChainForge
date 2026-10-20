@@ -67,7 +67,7 @@ Low-level TCP socket wrapper providing async read/write operations.
 - Callbacks for data and connection events
 - Unique connection ID for tracking
 
-**Header:** `chainforge/p2p/tcp_connection.hpp`
+**Header:** `tokiwa/p2p/tcp_connection.hpp`
 
 **Example:**
 ```cpp
@@ -100,7 +100,7 @@ TCP server for accepting incoming connections.
 - Accept callbacks
 - Automatic cleanup
 
-**Header:** `chainforge/p2p/tcp_server.hpp`
+**Header:** `tokiwa/p2p/tcp_server.hpp`
 
 **Example:**
 ```cpp
@@ -140,7 +140,7 @@ TCP client for outgoing connections with reconnection support.
 - Connection state callbacks
 - Sync and async connect
 
-**Header:** `chainforge/p2p/tcp_client.hpp`
+**Header:** `tokiwa/p2p/tcp_client.hpp`
 
 **Example:**
 ```cpp
@@ -184,7 +184,7 @@ UDP transport for datagram communication and discovery.
 - Multicast groups
 - Async operations
 
-**Header:** `chainforge/p2p/udp_transport.hpp`
+**Header:** `tokiwa/p2p/udp_transport.hpp`
 
 **Example:**
 ```cpp
@@ -216,7 +216,7 @@ transport.close();
 ### Complete TCP Server Example
 
 ```cpp
-#include "chainforge/p2p/tcp_server.hpp"
+#include "tokiwa/p2p/tcp_server.hpp"
 #include <boost/asio.hpp>
 #include <iostream>
 
@@ -258,7 +258,7 @@ int main() {
 ### Complete TCP Client Example
 
 ```cpp
-#include "chainforge/p2p/tcp_client.hpp"
+#include "tokiwa/p2p/tcp_client.hpp"
 #include <boost/asio.hpp>
 #include <iostream>
 #include <thread>
@@ -312,7 +312,7 @@ int main() {
 ### UDP Discovery Example
 
 ```cpp
-#include "chainforge/p2p/udp_transport.hpp"
+#include "tokiwa/p2p/udp_transport.hpp"
 #include <boost/asio.hpp>
 #include <iostream>
 #include <thread>
@@ -525,7 +525,7 @@ P2P Module (Future)
 
 - **Boost.Asio**: Async I/O library
 - **spdlog**: Logging
-- **chainforge-core**: Error handling types
+- **tokiwa-core**: Error handling types
 
 ## Build Configuration
 
@@ -537,8 +537,8 @@ boost/1.84.0
 CMake configuration in `modules/p2p/CMakeLists.txt`:
 ```cmake
 find_conan_package(boost)
-target_link_libraries(chainforge-p2p PUBLIC boost::boost)
-target_compile_definitions(chainforge-p2p PUBLIC 
+target_link_libraries(tokiwa-p2p PUBLIC boost::boost)
+target_compile_definitions(tokiwa-p2p PUBLIC 
     BOOST_ASIO_NO_DEPRECATED
     BOOST_ASIO_STANDALONE
 )

@@ -1,14 +1,14 @@
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/hash.hpp"
-#include "chainforge/crypto/hash.hpp"
-#include "chainforge/crypto/random.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/hash.hpp"
+#include "tokiwa/crypto/hash.hpp"
+#include "tokiwa/crypto/random.hpp"
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
 
-namespace chainforge::core {
+namespace tokiwa::core {
 namespace {
 
 std::string strip_0x(std::string hex) {
@@ -66,11 +66,11 @@ std::string Address::to_hex() const {
         lower = ss.str();
     }
 
-    auto hash_result = chainforge::crypto::Hash::keccak256(lower);
+    auto hash_result = tokiwa::crypto::Hash::keccak256(lower);
     if (!hash_result.success()) {
         return lower;
     }
-    const auto hash_hex = chainforge::crypto::Hash::to_hex(hash_result.value);
+    const auto hash_hex = tokiwa::crypto::Hash::to_hex(hash_result.value);
 
     std::string checksummed;
     checksummed.reserve(lower.size());
@@ -122,7 +122,7 @@ Address Address::zero() noexcept {
 }
 
 Address Address::random() {
-    auto bytes = chainforge::crypto::Random::generate_bytes(ADDRESS_SIZE);
+    auto bytes = tokiwa::crypto::Random::generate_bytes(ADDRESS_SIZE);
     if (!bytes.success() || bytes.value.size() != ADDRESS_SIZE) {
         return Address::zero();
     }
@@ -133,7 +133,7 @@ Address Address::random() {
 
 Address Address::from_public_key(const std::vector<uint8_t>& public_key) {
     const auto key = normalize_pubkey(public_key);
-    auto keccak = chainforge::crypto::Hash::keccak256(key);
+    auto keccak = tokiwa::crypto::Hash::keccak256(key);
     if (!keccak.success()) {
         throw std::runtime_error("Failed to hash public key for address derivation");
     }
@@ -182,4 +182,4 @@ Address derive_contract_address(const Address& sender, uint64_t nonce) {
     return Address(contract_addr);
 }
 
-} // namespace chainforge::core
+} // namespace tokiwa::core

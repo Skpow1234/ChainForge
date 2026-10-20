@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Test Docker Build Script for ChainForge
+# Test Docker Build Script for Tokiwa
 # This script tests the Docker build process
 
 set -e
@@ -47,26 +47,26 @@ test_docker_build() {
 # Function to clean up test images
 cleanup_test_images() {
     print_status "Cleaning up test images..."
-    docker rmi test-chainforge-node test-chainforge-explorer test-chainforge-tools 2>/dev/null || true
+    docker rmi test-tokiwa-node test-tokiwa-explorer test-tokiwa-tools 2>/dev/null || true
     print_success "Cleanup completed"
 }
 
 # Main execution
 main() {
-    print_status "Starting Docker build tests for ChainForge..."
+    print_status "Starting Docker build tests for Tokiwa..."
     
     # Test each Dockerfile
     local build_success=true
     
-    if ! test_docker_build "deploy/docker/Dockerfile.node" "chainforge-node"; then
+    if ! test_docker_build "deploy/docker/Dockerfile.node" "tokiwa-node"; then
         build_success=false
     fi
     
-    if ! test_docker_build "deploy/docker/Dockerfile.explorer" "chainforge-explorer"; then
+    if ! test_docker_build "deploy/docker/Dockerfile.explorer" "tokiwa-explorer"; then
         build_success=false
     fi
     
-    if ! test_docker_build "deploy/docker/Dockerfile.tools" "chainforge-tools"; then
+    if ! test_docker_build "deploy/docker/Dockerfile.tools" "tokiwa-tools"; then
         build_success=false
     fi
     

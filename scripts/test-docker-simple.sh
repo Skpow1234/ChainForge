@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Simple Docker Build Test for ChainForge
+# Simple Docker Build Test for Tokiwa
 # This script tests if the basic Docker build works
 
 set -e
@@ -48,13 +48,13 @@ test_docker_build() {
 # Function to clean up test images
 cleanup_test_images() {
     print_status "Cleaning up test images..."
-    docker rmi test-chainforge-node test-chainforge-explorer 2>/dev/null || true
+    docker rmi test-tokiwa-node test-tokiwa-explorer 2>/dev/null || true
     print_success "Cleanup completed"
 }
 
 # Main execution
 main() {
-    print_status "Starting simple Docker build tests for ChainForge..."
+    print_status "Starting simple Docker build tests for Tokiwa..."
     
     # Check if Docker is running
     if ! docker info >/dev/null 2>&1; then
@@ -66,14 +66,14 @@ main() {
     
     # Test node build first (most important)
     print_status "Testing node build (this may take a while)..."
-    if ! test_docker_build "deploy/docker/Dockerfile.node" "chainforge-node"; then
+    if ! test_docker_build "deploy/docker/Dockerfile.node" "tokiwa-node"; then
         build_success=false
         print_error "Node build failed. This is critical."
     fi
     
     # Test explorer build
     print_status "Testing explorer build..."
-    if ! test_docker_build "deploy/docker/Dockerfile.explorer" "chainforge-explorer"; then
+    if ! test_docker_build "deploy/docker/Dockerfile.explorer" "tokiwa-explorer"; then
         build_success=false
         print_warning "Explorer build failed, but this is less critical."
     fi
@@ -87,7 +87,7 @@ main() {
         print_status "You can now run: docker-compose up --build"
         print_status "Or test individual services:"
         print_status "  docker-compose up --build postgres redis prometheus grafana"
-        print_status "  docker-compose up --build chainforge-node"
+        print_status "  docker-compose up --build tokiwa-node"
     else
         print_error "Some Docker builds failed. Check the output above for details."
         print_status "Common issues:"

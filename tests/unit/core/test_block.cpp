@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/core/hash.hpp"
 #include <vector>
 
-namespace chainforge::core::test {
+namespace tokiwa::core::test {
 
 class BlockTest : public ::testing::Test {
 protected:
@@ -294,4 +294,4 @@ TEST_F(BlockTest, Hash) {
     EXPECT_NE(std::hash<Block>{}(block1), std::hash<Block>{}(block2));
 }
 
-} // namespace chainforge::core::test
+} // namespace tokiwa::core::test

@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
-#include "chainforge/crypto/hash.hpp"
-#include "chainforge/crypto/keccak.hpp"
+#include "tokiwa/crypto/hash.hpp"
+#include "tokiwa/crypto/keccak.hpp"
 #include <vector>
 #include <random>
 #include <set>
 
-namespace chainforge::crypto::test {
+namespace tokiwa::crypto::test {
 
 class CryptoHashTest : public ::testing::Test {
 protected:
@@ -388,4 +388,4 @@ TEST_F(CryptoHashTest, HashEdgeCases) {
     EXPECT_NE(result_ones_256.value(), result_alt_256.value());
 }
 
-} // namespace chainforge::crypto::test
+} // namespace tokiwa::crypto::test

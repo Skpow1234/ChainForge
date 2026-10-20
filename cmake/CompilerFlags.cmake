@@ -1,4 +1,4 @@
-# Compiler flags configuration for ChainForge
+# Compiler flags configuration for Tokiwa
 # Provides consistent flags across different compilers and build types
 
 include(CheckCXXCompilerFlag)

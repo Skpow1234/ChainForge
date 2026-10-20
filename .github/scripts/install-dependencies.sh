@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ChainForge Dependency Installation Script
+# Tokiwa Dependency Installation Script
 # Handles various failure scenarios gracefully
 
 set -e
@@ -117,7 +117,7 @@ install_conan_deps() {
 
 # Main execution
 main() {
-    print_status "Starting ChainForge dependency installation..."
+    print_status "Starting Tokiwa dependency installation..."
     
     # Install system dependencies
     install_system_deps

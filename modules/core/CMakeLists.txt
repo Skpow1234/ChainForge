@@ -13,21 +13,21 @@ set(CORE_SOURCES
 )
 
 set(CORE_HEADERS
-    include/chainforge/core/types.hpp
-    include/chainforge/core/error.hpp
-    include/chainforge/core/error_utils.hpp
-    include/chainforge/core/hash.hpp
-    include/chainforge/core/address.hpp
-    include/chainforge/core/amount.hpp
-    include/chainforge/core/timestamp.hpp
-    include/chainforge/core/block.hpp
-    include/chainforge/core/transaction.hpp
-    include/chainforge/core/rlp.hpp
+    include/tokiwa/core/types.hpp
+    include/tokiwa/core/error.hpp
+    include/tokiwa/core/error_utils.hpp
+    include/tokiwa/core/hash.hpp
+    include/tokiwa/core/address.hpp
+    include/tokiwa/core/amount.hpp
+    include/tokiwa/core/timestamp.hpp
+    include/tokiwa/core/block.hpp
+    include/tokiwa/core/transaction.hpp
+    include/tokiwa/core/rlp.hpp
 )
 
-add_library(chainforge-core STATIC ${CORE_SOURCES} ${CORE_HEADERS})
+add_library(tokiwa-core STATIC ${CORE_SOURCES} ${CORE_HEADERS})
 
-target_include_directories(chainforge-core
+target_include_directories(tokiwa-core
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -35,14 +35,14 @@ target_include_directories(chainforge-core
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(chainforge-core PRIVATE cxx_std_20)
+target_compile_features(tokiwa-core PRIVATE cxx_std_20)
 
 # Link dependencies
 find_conan_package(fmt)
 find_conan_package(spdlog)
 find_conan_package(nlohmann_json)
-target_link_libraries(chainforge-core PUBLIC fmt::fmt spdlog::spdlog nlohmann_json::nlohmann_json
-                                      PRIVATE chainforge-crypto)
+target_link_libraries(tokiwa-core PUBLIC fmt::fmt spdlog::spdlog nlohmann_json::nlohmann_json
+                                      PRIVATE tokiwa-crypto)
 
 # Fix nlohmann_json include directories (workaround for Conan Debug/Release mismatch)
 # Try multiple approaches to find nlohmann_json headers
@@ -52,7 +52,7 @@ find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
     pkg_check_modules(NLOHMANN_JSON_PKG QUIET nlohmann_json)
     if(NLOHMANN_JSON_PKG_FOUND)
-        target_include_directories(chainforge-core PRIVATE ${NLOHMANN_JSON_PKG_INCLUDE_DIRS})
+        target_include_directories(tokiwa-core PRIVATE ${NLOHMANN_JSON_PKG_INCLUDE_DIRS})
         message(STATUS "Found nlohmann_json via pkg-config: ${NLOHMANN_JSON_PKG_INCLUDE_DIRS}")
     endif()
 endif()
@@ -78,14 +78,14 @@ if(NOT NLOHMANN_JSON_PKG_FOUND)
 
     if(NLOHMANN_JSON_CONAN_INCLUDE_DIR)
         get_filename_component(NLOHMANN_JSON_CONAN_ROOT "${NLOHMANN_JSON_CONAN_INCLUDE_DIR}" DIRECTORY)
-        target_include_directories(chainforge-core PRIVATE ${NLOHMANN_JSON_CONAN_ROOT}/include)
+        target_include_directories(tokiwa-core PRIVATE ${NLOHMANN_JSON_CONAN_ROOT}/include)
         message(STATUS "Found nlohmann_json via Conan path: ${NLOHMANN_JSON_CONAN_ROOT}/include")
     else()
         # Try getting from target property as fallback
         if(TARGET nlohmann_json::nlohmann_json)
             get_target_property(NLOHMANN_JSON_INCLUDE_DIRS nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
             if(NLOHMANN_JSON_INCLUDE_DIRS)
-                target_include_directories(chainforge-core PRIVATE ${NLOHMANN_JSON_INCLUDE_DIRS})
+                target_include_directories(tokiwa-core PRIVATE ${NLOHMANN_JSON_INCLUDE_DIRS})
                 message(STATUS "Found nlohmann_json via target property: ${NLOHMANN_JSON_INCLUDE_DIRS}")
             else()
                 message(WARNING "nlohmann_json target found but no include directories. This may cause compilation errors.")
@@ -97,29 +97,29 @@ if(NOT NLOHMANN_JSON_PKG_FOUND)
 endif()
 
 # Add test binary
-add_executable(cppchain-core-test src/main.cpp)
-target_link_libraries(cppchain-core-test PRIVATE chainforge-core)
+add_executable(tokiwa-core-test src/main.cpp)
+target_link_libraries(tokiwa-core-test PRIVATE tokiwa-core)
 
 # Add error handling examples (only if BUILD_EXAMPLES is ON)
 if(BUILD_EXAMPLES)
     add_executable(error-handling-example examples/error_handling_example.cpp)
-    target_link_libraries(error-handling-example PRIVATE chainforge-core)
+    target_link_libraries(error-handling-example PRIVATE tokiwa-core)
 
     add_executable(simple-error-example examples/simple_error_example.cpp)
-    target_link_libraries(simple-error-example PRIVATE chainforge-core)
+    target_link_libraries(simple-error-example PRIVATE tokiwa-core)
 
     add_executable(error-integration-guide examples/error_integration_guide.cpp)
-    target_link_libraries(error-integration-guide PRIVATE chainforge-core)
+    target_link_libraries(error-integration-guide PRIVATE tokiwa-core)
 endif()
 
 # Install
-set(INSTALL_TARGETS chainforge-core cppchain-core-test)
+set(INSTALL_TARGETS tokiwa-core tokiwa-core-test)
 if(BUILD_EXAMPLES)
     list(APPEND INSTALL_TARGETS error-handling-example simple-error-example error-integration-guide)
 endif()
 
 install(TARGETS ${INSTALL_TARGETS}
-    EXPORT ChainForgeTargets
+    EXPORT TokiwaTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

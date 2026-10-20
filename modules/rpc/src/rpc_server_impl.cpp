@@ -4,7 +4,7 @@
 #include <sstream>
 #include <algorithm>
 
-namespace chainforge::rpc {
+namespace tokiwa::rpc {
 
 // JsonRpcRequest implementation
 std::optional<JsonRpcRequest> JsonRpcRequest::from_json(const std::string& json_str) {
@@ -206,7 +206,7 @@ RpcServerConfig RpcServerImpl::get_config() const {
 
 std::string RpcServerImpl::get_server_info() const {
     std::stringstream ss;
-    ss << "ChainForge RPC Server v0.1.0\n";
+    ss << "Tokiwa RPC Server v0.1.0\n";
     ss << "Host: " << config_.host << "\n";
     ss << "Port: " << config_.port << "\n";
     ss << "Methods registered: " << methods_.size() << "\n";
@@ -223,7 +223,7 @@ HttpResponse RpcServerImpl::handle_http_request(const HttpRequest& request) {
 
     // Health / readiness (Milestone 12)
     if (request.method == "GET" && (request.path == "/health" || request.path == "/livez")) {
-        HttpResponse response = HttpResponse::ok(R"({"status":"ok","service":"chainforge-node"})");
+        HttpResponse response = HttpResponse::ok(R"({"status":"ok","service":"tokiwa-node"})");
         response.content_type = "application/json";
         add_cors_headers(response);
         return response;
@@ -307,4 +307,4 @@ std::unique_ptr<RpcServer> create_rpc_server() {
     return std::make_unique<RpcServerImpl>();
 }
 
-} // namespace chainforge::rpc
+} // namespace tokiwa::rpc

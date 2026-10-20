@@ -1,9 +1,9 @@
-#include "chainforge/core/error.hpp"
+#include "tokiwa/core/error.hpp"
 #include <sstream>
 #include <iomanip>
 #include <cerrno>
 
-namespace chainforge::core {
+namespace tokiwa::core {
 
 std::string ErrorInfo::to_string() const {
     std::ostringstream oss;
@@ -209,4 +209,4 @@ std::string get_user_friendly_message(ErrorCode code) {
     }
 }
 
-} // namespace chainforge::core
+} // namespace tokiwa::core

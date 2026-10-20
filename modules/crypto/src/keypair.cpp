@@ -1,6 +1,6 @@
-#include "chainforge/crypto/keypair.hpp"
-#include "chainforge/crypto/random.hpp"
-#include "chainforge/crypto/hash.hpp"
+#include "tokiwa/crypto/keypair.hpp"
+#include "tokiwa/crypto/random.hpp"
+#include "tokiwa/crypto/hash.hpp"
 #include <openssl/ec.h>
 #include <openssl/bn.h>
 #include <openssl/obj_mac.h>
@@ -9,7 +9,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace chainforge::crypto {
+namespace tokiwa::crypto {
 
 CryptoResult<KeyPair::Secp256k1KeyPair> KeyPair::generate_secp256k1() {
     auto private_key_result = Random::generate_secp256k1_private_key();
@@ -442,4 +442,4 @@ CryptoResult<BlsPublicKey> KeyPair::internal_derive_bls_public_key(const BlsPriv
     return CryptoResult<BlsPublicKey>{public_key, CryptoError::SUCCESS};
 }
 
-} // namespace chainforge::crypto
+} // namespace tokiwa::crypto

@@ -1,6 +1,6 @@
-#include "chainforge/storage/database.hpp"
+#include "tokiwa/storage/database.hpp"
 
-#ifdef CHAINFORGE_HAS_ROCKSDB
+#ifdef TOKIWA_HAS_ROCKSDB
 #include <rocksdb/db.h>
 #include <rocksdb/options.h>
 #include <rocksdb/write_batch.h>
@@ -10,9 +10,9 @@
 #include <memory>
 #include <string>
 
-namespace chainforge::storage {
+namespace tokiwa::storage {
 
-#ifdef CHAINFORGE_HAS_ROCKSDB
+#ifdef TOKIWA_HAS_ROCKSDB
 
 namespace {
 
@@ -118,7 +118,7 @@ public:
         (void)config.compression;
 
         rocksdb::DB* raw = nullptr;
-        const auto path = config.path.empty() ? std::string("./data/chainforge.rdb") : config.path;
+        const auto path = config.path.empty() ? std::string("./data/tokiwa.rdb") : config.path;
         auto st = rocksdb::DB::Open(options, path, &raw);
         if (!st.ok()) {
             return StorageResult<void>{map_status(st)};
@@ -256,7 +256,7 @@ bool rocksdb_backend_available() {
     return true;
 }
 
-#else // !CHAINFORGE_HAS_ROCKSDB
+#else // !TOKIWA_HAS_ROCKSDB
 
 std::unique_ptr<Database> create_rocksdb_database() {
     return nullptr;
@@ -268,4 +268,4 @@ bool rocksdb_backend_available() {
 
 #endif
 
-} // namespace chainforge::storage
+} // namespace tokiwa::storage

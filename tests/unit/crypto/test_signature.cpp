@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include "chainforge/crypto/signature.hpp"
-#include "chainforge/crypto/keypair.hpp"
+#include "tokiwa/crypto/signature.hpp"
+#include "tokiwa/crypto/keypair.hpp"
 #include <vector>
 #include <random>
 
-namespace chainforge::crypto::test {
+namespace tokiwa::crypto::test {
 
 class SignatureTest : public ::testing::Test {
 protected:
@@ -381,4 +381,4 @@ TEST_F(SignatureTest, SignatureWithDifferentMessages) {
     }
 }
 
-} // namespace chainforge::crypto::test
+} // namespace tokiwa::crypto::test

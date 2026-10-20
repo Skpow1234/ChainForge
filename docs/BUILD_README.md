@@ -1,6 +1,6 @@
-# ChainForge Build Guide
+# Tokiwa Build Guide
 
-This guide explains how to build and run the ChainForge blockchain client.
+This guide explains how to build and run the Tokiwa blockchain client.
 
 ## 🎯 Quick Start
 
@@ -26,7 +26,7 @@ This guide explains how to build and run the ChainForge blockchain client.
 
 ```bash
 git clone <repository-url>
-cd ChainForge
+cd Tokiwa
 ```
 
 ### 2. Start Infrastructure
@@ -46,14 +46,14 @@ docker compose up -d postgres redis prometheus grafana jaeger
 docker compose build
 
 # Or build specific service
-docker compose build chainforge-node
+docker compose build tokiwa-node
 ```
 
 ### 4. Run Tests
 
 ```bash
 # Run the build and test suite
-docker compose run --rm chainforge-tools
+docker compose run --rm tokiwa-tools
 
 # Inside the container:
 conan profile detect --force
@@ -61,7 +61,7 @@ conan install . --output-folder=build --build=missing
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 cmake --build . --parallel
-./bin/cppchain-core-test
+./bin/tokiwa-core-test
 ```
 
 ## 🐳 Services Overview
@@ -73,14 +73,14 @@ cmake --build . --parallel
 | **Prometheus** | 9090 | Metrics | <http://localhost:9090> |
 | **Grafana** | 3000 | Dashboards | <http://localhost:3000> |
 | **Jaeger** | 16686 | Tracing | <http://localhost:16686> |
-| **ChainForge Node** | 8545 (RPC), 30303 (P2P) | Blockchain node | <http://localhost:8545> |
-| **ChainForge Explorer** | 4000 | Block explorer | <http://localhost:4000> |
+| **Tokiwa Node** | 8545 (RPC), 30303 (P2P) | Blockchain node | <http://localhost:8545> |
+| **Tokiwa Explorer** | 4000 | Block explorer | <http://localhost:4000> |
 
 ### Default Credentials
 
-- **Grafana**: admin / chainforge_grafana_pass
-- **PostgreSQL**: chainforge / chainforge_pass
-- **Redis**: password: chainforge_redis_pass
+- **Grafana**: admin / tokiwa_grafana_pass
+- **PostgreSQL**: tokiwa / tokiwa_pass
+- **Redis**: password: tokiwa_redis_pass
 
 ## 🔧 Development Setup
 
@@ -128,7 +128,7 @@ ctest --output-on-failure
 ### Grafana Dashboards
 
 1. Open <http://localhost:3000>
-2. Login with admin/chainforge_grafana_pass
+2. Login with admin/tokiwa_grafana_pass
 3. Import dashboard from `deploy/grafana/dashboards/`
 
 ### Prometheus Metrics
@@ -185,10 +185,10 @@ curl -X POST -H "Content-Type: application/json" \
 
 ```bash
 # Run all tests
-docker compose run --rm chainforge-tools ctest --output-on-failure
+docker compose run --rm tokiwa-tools ctest --output-on-failure
 
 # Run specific test
-docker compose run --rm chainforge-tools ctest -R TestName
+docker compose run --rm tokiwa-tools ctest -R TestName
 ```
 
 ### Integration Tests
@@ -196,14 +196,14 @@ docker compose run --rm chainforge-tools ctest -R TestName
 ```bash
 # Test full system
 docker compose up -d
-docker compose run --rm chainforge-tools ./scripts/test-integration.sh
+docker compose run --rm tokiwa-tools ./scripts/test-integration.sh
 ```
 
 ### Performance Benchmarks
 
 ```bash
 # Run benchmarks
-docker compose run --rm chainforge-tools ./bin/cppchain-benchmark
+docker compose run --rm tokiwa-tools ./bin/tokiwa-benchmark
 ```
 
 ## 🚀 Deployment
@@ -218,7 +218,7 @@ docker compose -f docker-compose.prod.yml build
 kubectl apply -f deploy/helm/
 
 # Or use Docker Swarm
-docker stack deploy -c docker-compose.swarm.yml chainforge
+docker stack deploy -c docker-compose.swarm.yml tokiwa
 ```
 
 ### Configuration
@@ -234,8 +234,8 @@ P2P_PORT=30303
 
 # Database
 POSTGRES_HOST=postgres
-POSTGRES_DB=chainforge
-POSTGRES_USER=chainforge
+POSTGRES_DB=tokiwa
+POSTGRES_USER=tokiwa
 
 # Consensus
 DIFFICULTY=1000
@@ -269,7 +269,7 @@ docker compose up -d
 
 ```bash
 # Check node logs
-docker compose logs chainforge-node
+docker compose logs tokiwa-node
 
 # Test connectivity
 curl -v http://localhost:8545
@@ -290,15 +290,15 @@ docker compose up -d postgres
 
 ```bash
 # Run with debug logging
-docker compose run --rm -e LOG_LEVEL=debug chainforge-node
+docker compose run --rm -e LOG_LEVEL=debug tokiwa-node
 
 # Attach debugger
-docker compose run --rm --cap-add=SYS_PTRACE chainforge-tools gdb ./bin/cppchain-node
+docker compose run --rm --cap-add=SYS_PTRACE tokiwa-tools gdb ./bin/tokiwa-node
 ```
 
 ## 📚 Architecture Overview
 
-ChainForge is built with a modular architecture:
+Tokiwa is built with a modular architecture:
 
 - **Core**: Domain models (Block, Transaction, Address, etc.)
 - **Crypto**: Cryptographic primitives (secp256k1, Ed25519, BLS)
@@ -327,7 +327,7 @@ git checkout -b feature/new-feature
 # ... edit code ...
 
 # Test changes
-docker compose run --rm chainforge-tools ctest
+docker compose run --rm tokiwa-tools ctest
 
 # Build and verify
 ./scripts/build-and-test.sh
@@ -338,7 +338,7 @@ git push origin feature/new-feature
 
 ## 📄 License
 
-ChainForge is licensed under the MIT License. See LICENSE file for details.
+Tokiwa is licensed under the MIT License. See LICENSE file for details.
 
 ## 🆘 Support
 

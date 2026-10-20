@@ -1,5 +1,5 @@
 @echo off
-REM ChainForge Build Script for Windows
+REM Tokiwa Build Script for Windows
 REM This script builds the project using CMake and Conan
 
 setlocal enabledelayedexpansion
@@ -154,7 +154,7 @@ REM Install the project
 set "build_dir=%~1"
 if "%build_dir%"=="" set "build_dir=build"
 set "install_prefix=%~2"
-if "%install_prefix%"=="" set "install_prefix=C:\Program Files\ChainForge"
+if "%install_prefix%"=="" set "install_prefix=C:\Program Files\Tokiwa"
 
 call :print_status "Installing project to %install_prefix%..."
 
@@ -190,7 +190,7 @@ REM Main execution
 :main
 set "build_type=Release"
 set "build_dir=build"
-set "install_prefix=C:\Program Files\ChainForge"
+set "install_prefix=C:\Program Files\Tokiwa"
 set "run_tests_flag=false"
 set "install_flag=false"
 set "clean_flag=false"
@@ -241,7 +241,7 @@ if "%~1"=="--help" (
     echo   --debug           Build in Debug mode
     echo   --release         Build in Release mode ^(default^)
     echo   --build-dir DIR   Specify build directory ^(default: build^)
-    echo   --install-prefix  Specify install prefix ^(default: C:\Program Files\ChainForge^)
+    echo   --install-prefix  Specify install prefix ^(default: C:\Program Files\Tokiwa^)
     echo   --test            Run tests after building
     echo   --install         Install after building
     echo   --clean           Clean build directory before building
@@ -252,7 +252,7 @@ shift
 goto :parse_args
 
 :start_build
-call :print_status "Starting ChainForge build process..."
+call :print_status "Starting Tokiwa build process..."
 call :print_status "Build type: %build_type%"
 call :print_status "Build directory: %build_dir%"
 

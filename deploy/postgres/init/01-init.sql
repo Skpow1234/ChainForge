@@ -1,4 +1,4 @@
--- ChainForge Database Initialization
+-- Tokiwa Database Initialization
 -- This script creates the initial database schema
 
 -- Create extensions

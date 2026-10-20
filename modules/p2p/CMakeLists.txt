@@ -14,21 +14,21 @@ set(P2P_SOURCES
 )
 
 set(P2P_HEADERS
-    include/chainforge/p2p/tcp_connection.hpp
-    include/chainforge/p2p/tcp_server.hpp
-    include/chainforge/p2p/tcp_client.hpp
-    include/chainforge/p2p/udp_transport.hpp
-    include/chainforge/p2p/peer_address.hpp
-    include/chainforge/p2p/peer_discovery.hpp
-    include/chainforge/p2p/peer_manager.hpp
-    include/chainforge/p2p/message.hpp
-    include/chainforge/p2p/sync.hpp
-    include/chainforge/p2p/network.hpp
+    include/tokiwa/p2p/tcp_connection.hpp
+    include/tokiwa/p2p/tcp_server.hpp
+    include/tokiwa/p2p/tcp_client.hpp
+    include/tokiwa/p2p/udp_transport.hpp
+    include/tokiwa/p2p/peer_address.hpp
+    include/tokiwa/p2p/peer_discovery.hpp
+    include/tokiwa/p2p/peer_manager.hpp
+    include/tokiwa/p2p/message.hpp
+    include/tokiwa/p2p/sync.hpp
+    include/tokiwa/p2p/network.hpp
 )
 
-add_library(chainforge-p2p STATIC ${P2P_SOURCES} ${P2P_HEADERS})
+add_library(tokiwa-p2p STATIC ${P2P_SOURCES} ${P2P_HEADERS})
 
-target_include_directories(chainforge-p2p
+target_include_directories(tokiwa-p2p
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -36,30 +36,30 @@ target_include_directories(chainforge-p2p
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(chainforge-p2p PRIVATE cxx_std_20)
+target_compile_features(tokiwa-p2p PRIVATE cxx_std_20)
 
 # Find dependencies
 find_conan_package(boost)
 find_conan_package(spdlog)
 
-target_link_libraries(chainforge-p2p
+target_link_libraries(tokiwa-p2p
     PUBLIC
-        chainforge-core
+        tokiwa-core
         boost::boost
     PRIVATE
         spdlog::spdlog
 )
 
 # Add Boost.Asio specific definitions
-target_compile_definitions(chainforge-p2p
+target_compile_definitions(tokiwa-p2p
     PUBLIC
         BOOST_ASIO_NO_DEPRECATED
         BOOST_ASIO_STANDALONE
 )
 
 # Install
-install(TARGETS chainforge-p2p
-    EXPORT ChainForgeTargets
+install(TARGETS tokiwa-p2p
+    EXPORT TokiwaTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

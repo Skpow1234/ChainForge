@@ -1,6 +1,6 @@
-# Grafana Configuration for ChainForge
+# Grafana Configuration for Tokiwa
 
-This directory contains the Grafana configuration for monitoring ChainForge services.
+This directory contains the Grafana configuration for monitoring Tokiwa services.
 
 ## Structure
 
@@ -12,19 +12,19 @@ deploy/grafana/
 │   └── dashboards/
 │       └── dashboards.yml       # Dashboard provisioning config
 ├── dashboards/
-│   └── chainforge/
-│       └── chainforge-overview.json  # Main ChainForge dashboard
+│   └── tokiwa/
+│       └── tokiwa-overview.json  # Main Tokiwa dashboard
 └── README.md                    # This file
 ```
 
 ## Data Sources
 
-- **Prometheus**: Metrics collection from ChainForge services
+- **Prometheus**: Metrics collection from Tokiwa services
 - **Jaeger**: Distributed tracing data
 
 ## Dashboards
 
-- **ChainForge Overview**: Main dashboard showing blockchain metrics
+- **Tokiwa Overview**: Main dashboard showing blockchain metrics
   - Block height
   - Transaction rate
   - Active P2P peers
@@ -32,10 +32,10 @@ deploy/grafana/
 ## Configuration
 
 The configuration is automatically loaded when Grafana starts via Docker Compose.
-Dashboards are placed in the `chainforge` folder for organization.
+Dashboards are placed in the `tokiwa` folder for organization.
 
 ## Access
 
 - **URL**: <http://localhost:3000>
 - **Username**: admin
-- **Password**: chainforge_grafana_pass (set in docker-compose.yml)
+- **Password**: tokiwa_grafana_pass (set in docker-compose.yml)

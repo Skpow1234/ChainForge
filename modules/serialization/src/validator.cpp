@@ -1,14 +1,14 @@
-#include "chainforge/serialization/validator.hpp"
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/amount.hpp"
-#include "chainforge/core/timestamp.hpp"
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/serialization/validator.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/amount.hpp"
+#include "tokiwa/core/timestamp.hpp"
+#include "tokiwa/core/hash.hpp"
 #include <chrono>
 #include <limits>
 
-namespace chainforge {
+namespace tokiwa {
 namespace serialization {
 
 // Error handling helper
@@ -218,4 +218,4 @@ std::unique_ptr<Validator> create_validator() {
 }
 
 } // namespace serialization
-} // namespace chainforge
+} // namespace tokiwa

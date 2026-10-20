@@ -1,11 +1,11 @@
 #pragma once
 
-#include "chainforge/rpc/rpc_server.hpp"
-#include "chainforge/rpc/chain_state.hpp"
+#include "tokiwa/rpc/rpc_server.hpp"
+#include "tokiwa/rpc/chain_state.hpp"
 #include <memory>
 #include <unordered_map>
 
-namespace chainforge::rpc {
+namespace tokiwa::rpc {
 
 class BlockchainRpcMethodsImpl : public BlockchainRpcMethods {
 public:
@@ -39,4 +39,4 @@ private:
     std::string strip_0x(std::string hex) const;
 };
 
-} // namespace chainforge::rpc
+} // namespace tokiwa::rpc

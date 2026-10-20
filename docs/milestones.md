@@ -30,6 +30,7 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 | Node YAML config subset + GET `/health` `/ready` | Done |
 | Parallel CI matrix + sanitizers/Docker/SBOM gate | Done |
 | ChainState reload from durable DB | Done |
+| Rebrand ChainForge → Tokiwa | Done |
 | Extended backlog milestones 61–1086 | Done (tracking) |
 
 ## Next up
@@ -67,7 +68,7 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 | 16 | Network transport layer | Done |
 | 17 | Peer discovery | Done |
 | 18 | Peer management | Partial | `PeerManager` scaffolding |
-| 19 | Message protocol | Done | Versioned `CFP2` frames + payload codecs |
+| 19 | Message protocol | Done | Versioned `TKW1` frames + payload codecs |
 | 20 | Block synchronization | Partial | `SyncSession` Hello/headers/blocks; no live TCP yet |
 | 21 | Transaction propagation | Partial | `NewTx` gossip + duplicate filter |
 | 22–30 | Network security through load balancing | Todo | |

@@ -1,8 +1,8 @@
-#include "chainforge/core/error.hpp"
-#include "chainforge/core/error_utils.hpp"
+#include "tokiwa/core/error.hpp"
+#include "tokiwa/core/error_utils.hpp"
 #include <iostream>
 
-using namespace chainforge::core;
+using namespace tokiwa::core;
 
 // Simple example demonstrating the new error handling system
 int main() {

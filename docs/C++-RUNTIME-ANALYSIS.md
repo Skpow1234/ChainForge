@@ -1,4 +1,4 @@
-# ChainForge C++ Runtime Analysis
+# Tokiwa C++ Runtime Analysis
 
 ## 🎯 **Question: Are We Getting a Complete C++ Runtime with Docker?**
 
@@ -110,7 +110,7 @@ libprotobuf23      # Runtime libraries
 
 ```bash
 # Check what libraries the binary needs
-ldd /usr/local/bin/cppchain-node
+ldd /usr/local/bin/tokiwa-node
 
 # Expected output should show:
 # libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6
@@ -124,9 +124,9 @@ ldd /usr/local/bin/cppchain-node
 
 ```bash
 # Test C++ standard library features
-docker run --rm chainforge-node:latest /bin/bash -c "
+docker run --rm tokiwa-node:latest /bin/bash -c "
   echo 'Testing C++ runtime...'
-  /usr/local/bin/cppchain-node --version
+  /usr/local/bin/tokiwa-node --version
 "
 ```
 
@@ -202,4 +202,4 @@ libboost-program-options1.74.0  # Command line parsing
 2. **Verify runtime**: Check `ldd` output
 3. **Deploy**: `docker-compose up --build`
 
-The Docker setup now provides a **complete, production-ready C++ runtime environment** that will run your ChainForge binaries without any missing dependency issues.
+The Docker setup now provides a **complete, production-ready C++ runtime environment** that will run your Tokiwa binaries without any missing dependency issues.

@@ -1,18 +1,18 @@
 #include <gtest/gtest.h>
-#include "chainforge/logging/logging.hpp"
+#include "tokiwa/logging/logging.hpp"
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <thread>
 #include <chrono>
 
-using namespace chainforge::logging;
+using namespace tokiwa::logging;
 
 class LoggerTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // Create temp directory for test logs
-        test_log_dir_ = std::filesystem::temp_directory_path() / "chainforge_test_logs";
+        test_log_dir_ = std::filesystem::temp_directory_path() / "tokiwa_test_logs";
         std::filesystem::create_directories(test_log_dir_);
         
         // Initialize logging for tests
@@ -206,9 +206,9 @@ TEST_F(LoggerTest, JsonFormat) {
 
 TEST_F(LoggerTest, MacroConvenience) {
     // Test convenience macros
-    CHAINFORGE_LOG_INFO("Info macro test");
-    CHAINFORGE_LOG_DEBUG("Debug macro test with value: {}", 42);
-    CHAINFORGE_LOG_ERROR("Error macro test");
+    TOKIWA_LOG_INFO("Info macro test");
+    TOKIWA_LOG_DEBUG("Debug macro test with value: {}", 42);
+    TOKIWA_LOG_ERROR("Error macro test");
     
     // Flush to ensure messages are written
     LogManager::instance().flush_all();

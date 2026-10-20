@@ -1,10 +1,10 @@
-#include "chainforge/serialization/serializer.hpp"
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/amount.hpp"
-#include "chainforge/core/timestamp.hpp"
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/serialization/serializer.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/amount.hpp"
+#include "tokiwa/core/timestamp.hpp"
+#include "tokiwa/core/hash.hpp"
 
 // Protobuf generated headers (will be generated from .proto files)
 #include "types.pb.h"
@@ -15,7 +15,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/util/json_util.h>
 
-namespace chainforge {
+namespace tokiwa {
 namespace serialization {
 
 // Error handling helper
@@ -75,7 +75,7 @@ SerializationResult<std::unique_ptr<google::protobuf::Message>> ProtobufSerializ
 
 // Block serialization implementation
 SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_block(const Block& block) {
-    chainforge::block::Block proto_block;
+    tokiwa::block::Block proto_block;
     
     // Serialize header
     auto* proto_header = proto_block.mutable_header();
@@ -110,7 +110,7 @@ SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_block(co
         }
         
         // Parse transaction back to protobuf
-        chainforge::transaction::Transaction proto_tx;
+        tokiwa::transaction::Transaction proto_tx;
         if (!proto_tx.ParseFromArray(tx_result.value().data(), 
                                       static_cast<int>(tx_result.value().size()))) {
             return make_serialization_error(
@@ -134,7 +134,7 @@ SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_block(co
 }
 
 SerializationResult<std::unique_ptr<Block>> ProtobufSerializer::deserialize_block(const std::vector<uint8_t>& data) {
-    chainforge::block::Block proto_block;
+    tokiwa::block::Block proto_block;
     
     if (!proto_block.ParseFromArray(data.data(), static_cast<int>(data.size()))) {
         return make_serialization_error(
@@ -187,7 +187,7 @@ SerializationResult<std::unique_ptr<Block>> ProtobufSerializer::deserialize_bloc
 
 // Transaction serialization implementation
 SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_transaction(const Transaction& tx) {
-    chainforge::transaction::Transaction proto_tx;
+    tokiwa::transaction::Transaction proto_tx;
     
     // Set version
     proto_tx.set_version(1);
@@ -245,7 +245,7 @@ SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_transact
 }
 
 SerializationResult<std::unique_ptr<Transaction>> ProtobufSerializer::deserialize_transaction(const std::vector<uint8_t>& data) {
-    chainforge::transaction::Transaction proto_tx;
+    tokiwa::transaction::Transaction proto_tx;
     
     if (!proto_tx.ParseFromArray(data.data(), static_cast<int>(data.size()))) {
         return make_serialization_error(
@@ -302,7 +302,7 @@ SerializationResult<std::unique_ptr<Transaction>> ProtobufSerializer::deserializ
 
 // Address serialization implementation
 SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_address(const Address& addr) {
-    chainforge::types::Address proto_addr;
+    tokiwa::types::Address proto_addr;
 
     // Convert Address to protobuf bytes
     std::vector<uint8_t> addr_bytes = addr.to_bytes();
@@ -312,7 +312,7 @@ SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_address(
 }
 
 SerializationResult<std::unique_ptr<Address>> ProtobufSerializer::deserialize_address(const std::vector<uint8_t>& data) {
-    chainforge::types::Address proto_addr;
+    tokiwa::types::Address proto_addr;
 
     if (!proto_addr.ParseFromArray(data.data(), static_cast<int>(data.size()))) {
         return make_serialization_error(
@@ -336,7 +336,7 @@ SerializationResult<std::unique_ptr<Address>> ProtobufSerializer::deserialize_ad
 
 // Amount serialization implementation
 SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_amount(const Amount& amount) {
-    chainforge::types::Amount proto_amount;
+    tokiwa::types::Amount proto_amount;
 
     // Convert Amount to protobuf as string
     std::string amount_str = std::to_string(amount.wei());
@@ -346,7 +346,7 @@ SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_amount(c
 }
 
 SerializationResult<std::unique_ptr<Amount>> ProtobufSerializer::deserialize_amount(const std::vector<uint8_t>& data) {
-    chainforge::types::Amount proto_amount;
+    tokiwa::types::Amount proto_amount;
 
     if (!proto_amount.ParseFromArray(data.data(), static_cast<int>(data.size()))) {
         return make_serialization_error(
@@ -369,7 +369,7 @@ SerializationResult<std::unique_ptr<Amount>> ProtobufSerializer::deserialize_amo
 
 // Timestamp serialization implementation
 SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_timestamp(const Timestamp& ts) {
-    chainforge::types::Timestamp proto_ts;
+    tokiwa::types::Timestamp proto_ts;
 
     // Convert Timestamp to protobuf
     proto_ts.set_seconds(ts.seconds());
@@ -379,7 +379,7 @@ SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_timestam
 }
 
 SerializationResult<std::unique_ptr<Timestamp>> ProtobufSerializer::deserialize_timestamp(const std::vector<uint8_t>& data) {
-    chainforge::types::Timestamp proto_ts;
+    tokiwa::types::Timestamp proto_ts;
 
     if (!proto_ts.ParseFromArray(data.data(), static_cast<int>(data.size()))) {
         return make_serialization_error(
@@ -394,7 +394,7 @@ SerializationResult<std::unique_ptr<Timestamp>> ProtobufSerializer::deserialize_
 
 // Hash serialization implementation
 SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_hash(const Hash& hash) {
-    chainforge::types::Hash proto_hash;
+    tokiwa::types::Hash proto_hash;
 
     // Convert Hash to protobuf bytes
     std::vector<uint8_t> hash_bytes = hash.to_bytes();
@@ -404,7 +404,7 @@ SerializationResult<std::vector<uint8_t>> ProtobufSerializer::serialize_hash(con
 }
 
 SerializationResult<std::unique_ptr<Hash>> ProtobufSerializer::deserialize_hash(const std::vector<uint8_t>& data) {
-    chainforge::types::Hash proto_hash;
+    tokiwa::types::Hash proto_hash;
 
     if (!proto_hash.ParseFromArray(data.data(), static_cast<int>(data.size()))) {
         return make_serialization_error(
@@ -432,4 +432,4 @@ std::unique_ptr<Serializer> create_serializer() {
 }
 
 } // namespace serialization
-} // namespace chainforge
+} // namespace tokiwa

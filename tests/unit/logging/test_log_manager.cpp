@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "chainforge/logging/logging.hpp"
+#include "tokiwa/logging/logging.hpp"
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -7,13 +7,13 @@
 #include <chrono>
 #include <vector>
 
-using namespace chainforge::logging;
+using namespace tokiwa::logging;
 
 class LogManagerTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // Create temp directory for test logs
-        test_log_dir_ = std::filesystem::temp_directory_path() / "chainforge_log_manager_test";
+        test_log_dir_ = std::filesystem::temp_directory_path() / "tokiwa_log_manager_test";
         std::filesystem::create_directories(test_log_dir_);
         
         // Clear any existing log manager state
@@ -460,4 +460,4 @@ TEST_F(LogManagerTest, LogManagerThreadSafety) {
     }
 }
 
-} // namespace chainforge::logging::test
+} // namespace tokiwa::logging::test

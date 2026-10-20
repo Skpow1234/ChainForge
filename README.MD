@@ -1,4 +1,4 @@
-# ChainForge
+# Tokiwa
 
 C++20 blockchain client skeleton — core models, crypto, serialization, and P2P, with Docker/Helm scaffolding for a future full node and explorer.
 
@@ -38,7 +38,7 @@ Full build options, tests, and IDE notes: [docs/development.md](docs/development
 
 ## Current status
 
-Version **0.1.0**. Default build enables `core`, `crypto`, `serialization`, and `p2p`. Storage, consensus, RPC, mempool, and metrics exist as source but are not wired into the default CMake build; node/explorer apps are still to be composed. Treat credentials in Compose/config as **dev-only**.
+Version **0.1.0** (rebranded from ChainForge → **Tokiwa**). Default build enables core modules including `tokiwa-node`. Treat credentials in Compose/config as **dev-only**.
 
 Honest milestone status: [docs/milestones.md](docs/milestones.md). Extended backlog (500+): [docs/milestones-backlog.md](docs/milestones-backlog.md).
 

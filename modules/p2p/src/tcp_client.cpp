@@ -1,7 +1,7 @@
-#include "chainforge/p2p/tcp_client.hpp"
+#include "tokiwa/p2p/tcp_client.hpp"
 #include <spdlog/spdlog.h>
 
-namespace chainforge {
+namespace tokiwa {
 namespace p2p {
 
 TcpClient::TcpClient(asio::io_context& io_context)
@@ -201,5 +201,5 @@ void TcpClient::schedule_reconnect() {
 }
 
 } // namespace p2p
-} // namespace chainforge
+} // namespace tokiwa
 

@@ -1,9 +1,9 @@
-#include "chainforge/crypto/curve.hpp"
+#include "tokiwa/crypto/curve.hpp"
 #include <algorithm>
 #include <secp256k1.h>
 #include <sodium.h>
 
-namespace chainforge::crypto {
+namespace tokiwa::crypto {
 namespace {
 
 secp256k1_context* secp_ctx() {
@@ -234,4 +234,4 @@ const BlsSignature& Curve::Bls12_381::g2_generator() {
     return gen;
 }
 
-} // namespace chainforge::crypto
+} // namespace tokiwa::crypto

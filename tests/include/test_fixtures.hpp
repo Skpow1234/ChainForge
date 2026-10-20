@@ -1,16 +1,16 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/amount.hpp"
-#include "chainforge/core/timestamp.hpp"
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/amount.hpp"
+#include "tokiwa/core/timestamp.hpp"
+#include "tokiwa/core/hash.hpp"
 #include <memory>
 #include <vector>
 
-namespace chainforge {
+namespace tokiwa {
 namespace testing {
 
 /**
@@ -200,5 +200,5 @@ private:
 };
 
 } // namespace testing
-} // namespace chainforge
+} // namespace tokiwa
 

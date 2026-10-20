@@ -1,6 +1,6 @@
-#include "chainforge/p2p/peer_manager.hpp"
+#include "tokiwa/p2p/peer_manager.hpp"
 
-namespace chainforge::p2p {
+namespace tokiwa::p2p {
 
 PeerManager::PeerManager(size_t max_peers) : max_peers_(max_peers) {}
 
@@ -110,4 +110,4 @@ size_t PeerManager::size() const {
     return peers_.size();
 }
 
-} // namespace chainforge::p2p
+} // namespace tokiwa::p2p

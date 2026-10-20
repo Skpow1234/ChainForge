@@ -1,5 +1,5 @@
-#include "chainforge/storage/database.hpp"
-#include "chainforge/storage/backend.hpp"
+#include "tokiwa/storage/database.hpp"
+#include "tokiwa/storage/backend.hpp"
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -9,7 +9,7 @@
 #include <fstream>
 #include <string>
 
-namespace chainforge::storage {
+namespace tokiwa::storage {
 
 // In-memory iterator implementation
 class MemoryIterator : public Iterator {
@@ -303,7 +303,7 @@ public:
         if (!base.success()) {
             return base;
         }
-        path_ = config.path.empty() ? std::string("./data/chainforge.kv") : config.path;
+        path_ = config.path.empty() ? std::string("./data/tokiwa.kv") : config.path;
         load_from_disk();
         return StorageResult<void>{StorageError::SUCCESS};
     }
@@ -391,4 +391,4 @@ std::unique_ptr<WriteBatch> create_write_batch() {
     return std::make_unique<MemoryWriteBatch>();
 }
 
-} // namespace chainforge::storage
+} // namespace tokiwa::storage

@@ -126,9 +126,9 @@ jobs:
 
       - name: Verify node binary
         run: |
-          test -x build/bin/chainforge-node
-          ./build/bin/chainforge-node --self-check
-          ./build/bin/chainforge-node --help | grep -qi chainforge
+          test -x build/bin/tokiwa-node
+          ./build/bin/tokiwa-node --self-check
+          ./build/bin/tokiwa-node --help | grep -qi tokiwa
 
       - name: Run tests
         run: |
@@ -155,10 +155,10 @@ jobs:
         if: matrix.build_type == 'Release' && matrix.compiler == 'gcc-12'
         uses: actions/upload-artifact@v4
         with:
-          name: chainforge-linux-amd64
+          name: tokiwa-linux-amd64
           path: |
-            build/bin/chainforge-node
-            build/bin/cppchain-core-test
+            build/bin/tokiwa-node
+            build/bin/tokiwa-core-test
           if-no-files-found: warn
           retention-days: 7
 
@@ -208,7 +208,7 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
             -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined"
           cmake --build build --parallel
-          ./build/bin/chainforge-node --self-check
+          ./build/bin/tokiwa-node --self-check
           cd build && ctest --output-on-failure --parallel "$(nproc)" || true
 
   # ---------------------------------------------------------------------------
@@ -230,22 +230,22 @@ jobs:
           docker compose up -d postgres redis prometheus grafana jaeger
           for i in $(seq 1 30); do
             docker compose ps
-            docker compose exec -T postgres pg_isready -U chainforge && break
+            docker compose exec -T postgres pg_isready -U tokiwa && break
             sleep 2
           done
-          docker compose exec -T postgres pg_isready -U chainforge
+          docker compose exec -T postgres pg_isready -U tokiwa
 
       - name: Build node image
         run: |
           docker build -f deploy/docker/Dockerfile.node \
             --target runtime \
-            -t chainforge/chainforge-node:ci \
+            -t tokiwa/tokiwa-node:ci \
             .
 
       - name: Smoke node image
         run: |
-          docker run --rm chainforge/chainforge-node:ci --self-check
-          docker run --rm chainforge/chainforge-node:ci --help
+          docker run --rm tokiwa/tokiwa-node:ci --self-check
+          docker run --rm tokiwa/tokiwa-node:ci --help
 
       - name: Tear down
         if: always()
@@ -265,7 +265,7 @@ jobs:
       - name: Download binaries
         uses: actions/download-artifact@v4
         with:
-          name: chainforge-linux-amd64
+          name: tokiwa-linux-amd64
           path: artifacts
 
       - name: Install Syft

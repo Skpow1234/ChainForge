@@ -12,13 +12,13 @@ Ports and URLs from `docker-compose.yml`, `config/config.yaml`, and the RPC modu
 | Grafana | 3000 | Dashboards | http://localhost:3000 |
 | Jaeger UI | 16686 | Trace UI | http://localhost:16686 |
 | Jaeger collector | 14268, 14250, 6831/udp, 6832/udp | Trace ingest | — |
-| chainforge-node | 8080 | Node metrics | http://localhost:8080/metrics |
-| chainforge-node | 8545 | JSON-RPC | http://localhost:8545 |
-| chainforge-node | 8546 | WebSocket RPC | `ws://localhost:8546` |
-| chainforge-node | 30303 TCP/UDP | P2P | — |
-| chainforge-explorer | 8081 | Explorer metrics | http://localhost:8081/metrics |
-| chainforge-explorer | 4000 | Explorer HTTP API | http://localhost:4000 |
-| chainforge-explorer | 4001 | Explorer WebSocket | `ws://localhost:4001` |
+| tokiwa-node | 8080 | Node metrics | http://localhost:8080/metrics |
+| tokiwa-node | 8545 | JSON-RPC | http://localhost:8545 |
+| tokiwa-node | 8546 | WebSocket RPC | `ws://localhost:8546` |
+| tokiwa-node | 30303 TCP/UDP | P2P | — |
+| tokiwa-explorer | 8081 | Explorer metrics | http://localhost:8081/metrics |
+| tokiwa-explorer | 4000 | Explorer HTTP API | http://localhost:4000 |
+| tokiwa-explorer | 4001 | Explorer WebSocket | `ws://localhost:4001` |
 
 ## Config defaults (`config/config.yaml`)
 
@@ -29,7 +29,7 @@ Ports and URLs from `docker-compose.yml`, `config/config.yaml`, and the RPC modu
 | WebSocket | `0.0.0.0:8546` |
 | Metrics | `0.0.0.0:8080`, path `/metrics` |
 | P2P discovery | `30303` |
-| Postgres | `localhost:5432` / db `chainforge` |
+| Postgres | `localhost:5432` / db `tokiwa` |
 | Redis | `localhost:6379` |
 | Jaeger traces | `http://localhost:14268/api/traces` |
 
@@ -60,12 +60,12 @@ curl -X POST http://localhost:8545 \
 | `eth_getTransactionByHash` | Transaction by hash |
 | `eth_getTransactionReceipt` | Transaction receipt |
 
-Implementation lives under `modules/rpc/` and is composed by `chainforge-node` via `ChainState` (storage + mempool). `eth_sendRawTransaction` accepts legacy/EIP-155 RLP hex.
+Implementation lives under `modules/rpc/` and is composed by `tokiwa-node` via `ChainState` (storage + mempool). `eth_sendRawTransaction` accepts legacy/EIP-155 RLP hex.
 
 ```bash
 # After building:
-./build/bin/chainforge-node --self-check
-./build/bin/chainforge-node --config config/config.yaml --mine-once
+./build/bin/tokiwa-node --self-check
+./build/bin/tokiwa-node --config config/config.yaml --mine-once
 curl http://127.0.0.1:8545/health
 curl http://127.0.0.1:8545/ready
 ```
@@ -80,4 +80,4 @@ curl http://127.0.0.1:8545/ready
 | Node metrics | http://localhost:8080/metrics |
 | Explorer metrics | http://localhost:8081/metrics |
 
-Default Grafana login (dev only): `admin` / `chainforge_grafana_pass`. See [Deployment](./deployment.md) for credentials and how to override them.
+Default Grafana login (dev only): `admin` / `tokiwa_grafana_pass`. See [Deployment](./deployment.md) for credentials and how to override them.

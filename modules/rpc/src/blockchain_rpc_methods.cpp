@@ -1,10 +1,10 @@
 #include "blockchain_rpc_methods.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/hash.hpp"
 #include <sstream>
 #include <ctime>
 
-namespace chainforge::rpc {
+namespace tokiwa::rpc {
 
 BlockchainRpcMethodsImpl::BlockchainRpcMethodsImpl(std::shared_ptr<ChainState> state)
     : state_(std::move(state)) {}
@@ -256,7 +256,7 @@ JsonRpcResponse BlockchainRpcMethodsImpl::eth_gasPrice(const nlohmann::json& /*p
 
 JsonRpcResponse BlockchainRpcMethodsImpl::web3_clientVersion(const nlohmann::json& /*params*/) {
     JsonRpcResponse response;
-    response.result = "ChainForge/v0.1.0";
+    response.result = "Tokiwa/v0.1.0";
     return response;
 }
 
@@ -283,4 +283,4 @@ void register_blockchain_rpc_methods(RpcServer& server, BlockchainRpcMethods& me
     server.register_method("web3_clientVersion", [&](const nlohmann::json& p) { return methods.web3_clientVersion(p); });
 }
 
-} // namespace chainforge::rpc
+} // namespace tokiwa::rpc

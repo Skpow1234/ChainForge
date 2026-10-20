@@ -1,17 +1,17 @@
 apiVersion: v2
-name: chainforge-explorer
-description: ChainForge blockchain explorer
+name: tokiwa-explorer
+description: Tokiwa blockchain explorer
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
 keywords:
   - blockchain
-  - chainforge
+  - tokiwa
   - explorer
   - api
-home: https://github.com/Skpow1234/ChainForge
+home: https://github.com/Skpow1234/Tokiwa
 sources:
-  - https://github.com/Skpow1234/ChainForge
+  - https://github.com/Skpow1234/Tokiwa
 maintainers:
   - name: Juan Hurtado
     email: jfhvjfhv0015@gmail.com

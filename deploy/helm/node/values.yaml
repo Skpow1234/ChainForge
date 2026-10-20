@@ -1,8 +1,8 @@
-# Default values for chainforge-node
+# Default values for tokiwa-node
 replicaCount: 1
 
 image:
-  repository: chainforge/chainforge-node
+  repository: tokiwa/tokiwa-node
   tag: "0.1.0"
   pullPolicy: IfNotPresent
 
@@ -67,7 +67,7 @@ tolerations: []
 
 affinity: {}
 
-# ChainForge specific configuration
+# Tokiwa specific configuration
 config:
   network:
     chainId: 1337

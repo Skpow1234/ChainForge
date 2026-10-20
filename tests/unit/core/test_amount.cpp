@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/amount.hpp"
+#include "tokiwa/core/amount.hpp"
 #include <limits>
 
-namespace chainforge::core::test {
+namespace tokiwa::core::test {
 
 class AmountTest : public ::testing::Test {
 protected:
@@ -162,4 +162,4 @@ TEST_F(AmountTest, CopyAndMove) {
     EXPECT_TRUE(original.is_zero()); // Moved-from state
 }
 
-} // namespace chainforge::core::test
+} // namespace tokiwa::core::test

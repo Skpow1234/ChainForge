@@ -1,7 +1,7 @@
 # Project structure
 
 ```
-ChainForge/
+Tokiwa/
 ├─ CMakeLists.txt          # Root CMake configuration
 ├─ conanfile.txt           # Conan dependencies
 ├─ CMakePresets.json       # CMake presets
@@ -10,17 +10,18 @@ ChainForge/
 ├─ .github/workflows/      # CI/CD pipelines
 ├─ docs/                   # Project documentation (you are here)
 ├─ config/                 # Runtime YAML config
-├─ modules/                # Libraries
+├─ modules/                # Libraries (headers under include/tokiwa/…)
 │  ├─ core/                # Domain models
 │  ├─ crypto/              # Cryptographic primitives
-│  ├─ serialization/       # Protobuf serialization
+│  ├─ serialization/       # Protobuf / RLP helpers
 │  ├─ p2p/                 # Peer-to-peer networking
-│  ├─ storage/             # DB abstraction (not in default build)
-│  ├─ consensus/           # Consensus (not in default build)
-│  ├─ mempool/             # Tx pool (not in default build)
-│  ├─ rpc/                 # JSON-RPC (not in default build)
-│  ├─ logging/             # Logging (not in default build)
-│  └─ metrics/             # Metrics (not in default build)
+│  ├─ storage/             # DB abstraction (memory / file / RocksDB)
+│  ├─ consensus/           # Consensus
+│  ├─ mempool/             # Tx pool
+│  ├─ rpc/                 # JSON-RPC + ChainState
+│  ├─ logging/             # Logging
+│  ├─ metrics/             # Metrics
+│  └─ node/                # tokiwa-node binary
 ├─ tests/                  # Unit / integration / fuzz tests
 ├─ scripts/                # Build/test helpers
 └─ deploy/                 # Deployment assets
@@ -31,4 +32,4 @@ ChainForge/
    └─ postgres/            # DB init scripts
 ```
 
-Planned but not yet in-tree as packages: `modules/node`, `modules/explorer`, `modules/execution`, `tools/`.
+Planned but not yet in-tree as packages: `modules/explorer`, `modules/execution`, `tools/`.

@@ -1,12 +1,12 @@
-#include "chainforge/core/error.hpp"
-#include "chainforge/core/error_utils.hpp"
+#include "tokiwa/core/error.hpp"
+#include "tokiwa/core/error_utils.hpp"
 #include <iostream>
 #include <memory>
 
-using namespace chainforge::core;
+using namespace tokiwa::core;
 
 // Example: Migrating existing storage module to use std::expected
-namespace chainforge::storage {
+namespace tokiwa::storage {
 
 // Old way (using custom Result type)
 // StorageResult<Value> get(const Key& key);
@@ -29,7 +29,7 @@ Result<Value> get_new(const Key& key) {
 }
 
 // Example: Migrating crypto operations
-namespace chainforge::crypto {
+namespace tokiwa::crypto {
 
 Result<Hash256> hash_data_new(const ByteVector& data) {
     if (data.empty()) {
@@ -55,10 +55,10 @@ Result<bool> verify_signature_new(const ByteVector& data, const ByteVector& sign
     return errors::success(true);
 }
 
-} // namespace chainforge::crypto
+} // namespace tokiwa::crypto
 
 // Example: Migrating P2P operations
-namespace chainforge::p2p {
+namespace tokiwa::p2p {
 
 Result<void> send_message_new(const std::string& peer_id, const ByteVector& message) {
     if (peer_id.empty()) {
@@ -81,10 +81,10 @@ Result<void> send_message_new(const std::string& peer_id, const ByteVector& mess
     return errors::success();
 }
 
-} // namespace chainforge::p2p
+} // namespace tokiwa::p2p
 
 // Example: Migrating consensus operations
-namespace chainforge::consensus {
+namespace tokiwa::consensus {
 
 Result<bool> validate_block_new(const Block& block) {
     if (block.height == 0) {
@@ -103,7 +103,7 @@ Result<bool> validate_block_new(const Block& block) {
     return errors::success(true);
 }
 
-} // namespace chainforge::consensus
+} // namespace tokiwa::consensus
 
 // Example: Error handling patterns in real code
 class DatabaseService {
@@ -305,9 +305,9 @@ void demonstrate_error_handling() {
     }
 }
 
-} // namespace chainforge::storage
+} // namespace tokiwa::storage
 
 int main() {
-    chainforge::storage::demonstrate_error_handling();
+    tokiwa::storage::demonstrate_error_handling();
     return 0;
 }

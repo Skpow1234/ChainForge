@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/crypto/keypair.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/crypto/keypair.hpp"
 #include <vector>
 #include <random>
 #include <set>
 
-namespace chainforge::fuzz::test {
+namespace tokiwa::fuzz::test {
 
 class TransactionFuzzTest : public ::testing::Test {
 protected:
@@ -416,4 +416,4 @@ TEST_F(TransactionFuzzTest, TransactionThreadSafety) {
     }
 }
 
-} // namespace chainforge::fuzz::test
+} // namespace tokiwa::fuzz::test

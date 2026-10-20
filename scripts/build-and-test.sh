@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# ChainForge Complete Build and Test Script
-# This script builds and tests the entire ChainForge system using Docker
+# Tokiwa Complete Build and Test Script
+# This script builds and tests the entire Tokiwa system using Docker
 
 set -e
 
-echo "🚀 ChainForge Complete Build and Test Script"
+echo "🚀 Tokiwa Complete Build and Test Script"
 echo "============================================="
 
 # Colors for output
@@ -96,7 +96,7 @@ start_infrastructure() {
 
 # Function to build the application
 build_application() {
-    print_status "Building ChainForge application..."
+    print_status "Building Tokiwa application..."
 
     # Build the Docker images
     docker compose build --no-cache
@@ -112,10 +112,10 @@ build_application() {
 
 # Function to test the build
 test_build() {
-    print_status "Testing ChainForge build..."
+    print_status "Testing Tokiwa build..."
 
     # Run the tools container to build and test
-    if docker compose run --rm chainforge-tools /bin/bash -c "
+    if docker compose run --rm tokiwa-tools /bin/bash -c "
         set -e
         echo 'Installing dependencies...'
         conan profile detect --force
@@ -129,7 +129,7 @@ test_build() {
         cmake --build . --parallel
 
         echo 'Running tests...'
-        ./bin/cppchain-core-test
+        ./bin/tokiwa-core-test
 
         echo 'Build and test completed successfully!'
     "; then
@@ -137,7 +137,7 @@ test_build() {
         return 0
     else
         print_error "Build or test failed"
-        docker compose logs chainforge-tools
+        docker compose logs tokiwa-tools
         return 1
     fi
 }
@@ -147,7 +147,7 @@ test_rpc_server() {
     print_status "Testing RPC server..."
 
     # Start the node (which includes RPC server)
-    docker compose up -d chainforge-node
+    docker compose up -d tokiwa-node
 
     # Wait for node to start
     sleep 5
@@ -165,19 +165,19 @@ test_rpc_server() {
 
     if curl -s -X POST -H "Content-Type: application/json" \
          --data "$rpc_request" \
-         "$rpc_url" | grep -q "ChainForge"; then
+         "$rpc_url" | grep -q "Tokiwa"; then
         print_success "RPC server is responding correctly"
     else
         print_warning "RPC server test inconclusive (may not be fully implemented yet)"
     fi
 
     # Stop the node
-    docker compose stop chainforge-node
+    docker compose stop tokiwa-node
 }
 
 # Function to show system information
 show_info() {
-    print_status "ChainForge Build Information"
+    print_status "Tokiwa Build Information"
     echo "=============================="
     echo "Milestones Completed:"
     echo "✅ 1. Project Setup & Build System"
@@ -190,12 +190,12 @@ show_info() {
     echo "✅ 8. Basic RPC Server"
     echo ""
     echo "Modules Available:"
-    echo "- chainforge-core: Domain models and core types"
-    echo "- chainforge-crypto: Cryptographic primitives"
-    echo "- chainforge-storage: Database abstraction (RocksDB)"
-    echo "- chainforge-consensus: Proof of Work consensus"
-    echo "- chainforge-mempool: Transaction pool management"
-    echo "- chainforge-rpc: JSON-RPC server"
+    echo "- tokiwa-core: Domain models and core types"
+    echo "- tokiwa-crypto: Cryptographic primitives"
+    echo "- tokiwa-storage: Database abstraction (RocksDB)"
+    echo "- tokiwa-consensus: Proof of Work consensus"
+    echo "- tokiwa-mempool: Transaction pool management"
+    echo "- tokiwa-rpc: JSON-RPC server"
     echo ""
     echo "Services:"
     echo "- PostgreSQL: Database"
@@ -203,14 +203,14 @@ show_info() {
     echo "- Prometheus: Metrics collection"
     echo "- Grafana: Metrics visualization"
     echo "- Jaeger: Distributed tracing"
-    echo "- ChainForge Node: Blockchain node with RPC"
-    echo "- ChainForge Explorer: Block explorer (stub)"
+    echo "- Tokiwa Node: Blockchain node with RPC"
+    echo "- Tokiwa Explorer: Block explorer (stub)"
     echo ""
 }
 
 # Main execution
 main() {
-    echo "🐳 ChainForge Docker Build and Test"
+    echo "🐳 Tokiwa Docker Build and Test"
     echo "==================================="
     echo ""
 
@@ -225,16 +225,16 @@ main() {
     trap cleanup EXIT
 
     # Execute build steps
-    print_status "Starting ChainForge build process..."
+    print_status "Starting Tokiwa build process..."
 
     if start_infrastructure && \
        build_application && \
        test_build; then
 
-        print_success "🎉 ChainForge build completed successfully!"
+        print_success "🎉 Tokiwa build completed successfully!"
         print_status "You can now:"
         echo "  - Run 'docker compose up -d' to start all services"
-        echo "  - Access Grafana at http://localhost:3000 (admin/chainforge_grafana_pass)"
+        echo "  - Access Grafana at http://localhost:3000 (admin/tokiwa_grafana_pass)"
         echo "  - Access Prometheus at http://localhost:9090"
         echo "  - Access Jaeger at http://localhost:16686"
         echo "  - Access RPC server at http://localhost:8545"
@@ -248,7 +248,7 @@ main() {
         fi
 
     else
-        print_error "❌ ChainForge build failed"
+        print_error "❌ Tokiwa build failed"
         print_status "Check the logs above for details"
         exit 1
     fi

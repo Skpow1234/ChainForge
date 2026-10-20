@@ -1,8 +1,8 @@
-#include "chainforge/metrics/internal/simple_metrics.hpp"
+#include "tokiwa/metrics/internal/simple_metrics.hpp"
 #include <algorithm>
 #include <sstream>
 
-namespace chainforge::metrics::internal {
+namespace tokiwa::metrics::internal {
 
 SimpleHistogram::SimpleHistogram(const std::vector<double>& buckets) 
     : buckets_(buckets), count_(0), sum_(0.0) {
@@ -139,4 +139,4 @@ std::string SimpleRegistry::export_metrics() const {
     return oss.str();
 }
 
-} // namespace chainforge::metrics::internal
+} // namespace tokiwa::metrics::internal

@@ -1,10 +1,10 @@
-#include "chainforge/core/error.hpp"
-#include "chainforge/core/error_utils.hpp"
+#include "tokiwa/core/error.hpp"
+#include "tokiwa/core/error_utils.hpp"
 #include <iostream>
 #include <random>
 #include <thread>
 
-using namespace chainforge::core;
+using namespace tokiwa::core;
 
 // Example function that can fail
 Result<int> risky_operation(int input) {
@@ -164,7 +164,7 @@ void fallback_example() {
 }
 
 int main() {
-    std::cout << "=== ChainForge Error Handling Examples ===\n\n";
+    std::cout << "=== Tokiwa Error Handling Examples ===\n\n";
     
     // Basic error handling
     std::cout << "1. Basic Error Handling:\n";

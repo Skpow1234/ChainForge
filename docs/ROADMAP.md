@@ -1,8 +1,8 @@
-# ChainForge Development Roadmap
+# Tokiwa Development Roadmap
 
 ## Overview
 
-This roadmap outlines the development milestones for ChainForge, a production-grade crypto/blockchain client skeleton in modern C++ (C++20/23). The roadmap is organized into phases with specific milestones, each containing problem statements, solutions, features, acceptance criteria, touchpoints, and tests.
+This roadmap outlines the development milestones for Tokiwa, a production-grade crypto/blockchain client skeleton in modern C++ (C++20/23). The roadmap is organized into phases with specific milestones, each containing problem statements, solutions, features, acceptance criteria, touchpoints, and tests.
 
 
 ### Status tracking
@@ -21,7 +21,7 @@ Default build now includes crypto/core/serialization/p2p/logging/metrics/storage
 
 - Real Keccak-256 sponge (Ethereum padding) and core hash wiring
 - secp256k1 curve operations via libsecp256k1 (stubs removed)
-- Enabled storage/consensus/mempool/rpc/logging/metrics + `chainforge-node`
+- Enabled storage/consensus/mempool/rpc/logging/metrics + `tokiwa-node`
 - PoW demo mining shortcuts removed
 - Extended backlog: [milestones-backlog.md](./milestones-backlog.md)
 
@@ -908,6 +908,6 @@ Default build now includes crypto/core/serialization/p2p/logging/metrics/storage
 
 ## Conclusion
 
-This roadmap provides a comprehensive path to building ChainForge as a production-grade blockchain client. Each milestone builds upon previous ones, ensuring a solid foundation while adding advanced capabilities. The phased approach allows for iterative development and early validation of core functionality.
+This roadmap provides a comprehensive path to building Tokiwa as a production-grade blockchain client. Each milestone builds upon previous ones, ensuring a solid foundation while adding advanced capabilities. The phased approach allows for iterative development and early validation of core functionality.
 
 Regular reviews and adjustments to this roadmap will ensure it remains aligned with technical capabilities, market demands, and business objectives.

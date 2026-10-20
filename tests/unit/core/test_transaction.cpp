@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/amount.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/amount.hpp"
 #include <vector>
 
-namespace chainforge::core::test {
+namespace tokiwa::core::test {
 
 class TransactionTest : public ::testing::Test {
 protected:
@@ -326,4 +326,4 @@ TEST_F(TransactionTest, TransactionValidationWithInvalidData) {
     EXPECT_EQ(result.error().code, ErrorCode::TRANSACTION_TOO_LARGE);
 }
 
-} // namespace chainforge::core::test
+} // namespace tokiwa::core::test

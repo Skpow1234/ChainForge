@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/error.hpp"
-#include "chainforge/core/error_utils.hpp"
+#include "tokiwa/core/error.hpp"
+#include "tokiwa/core/error_utils.hpp"
 #include <thread>
 #include <chrono>
 
-using namespace chainforge::core;
+using namespace tokiwa::core;
 
 class ErrorHandlingTest : public ::testing::Test {
 protected:

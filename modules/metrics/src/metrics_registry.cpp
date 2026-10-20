@@ -1,10 +1,10 @@
-#include "chainforge/metrics/metrics_registry.hpp"
-#include "chainforge/metrics/counter.hpp"
-#include "chainforge/metrics/gauge.hpp"
-#include "chainforge/metrics/histogram.hpp"
+#include "tokiwa/metrics/metrics_registry.hpp"
+#include "tokiwa/metrics/counter.hpp"
+#include "tokiwa/metrics/gauge.hpp"
+#include "tokiwa/metrics/histogram.hpp"
 #include <sstream>
 
-namespace chainforge::metrics {
+namespace tokiwa::metrics {
 
 MetricsRegistry& MetricsRegistry::instance() {
     static MetricsRegistry instance;
@@ -179,4 +179,4 @@ MetricsRegistry& get_metrics_registry() {
     return MetricsRegistry::instance();
 }
 
-} // namespace chainforge::metrics
+} // namespace tokiwa::metrics

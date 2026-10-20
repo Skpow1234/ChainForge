@@ -803,7 +803,7 @@ Status summary for 1–60: [milestones.md](./milestones.md). Specs for 1–60: [
 - **Why / hint**: hardcoded 1.0.0
 - **Acceptance**: Measurable improvement landed with tests or docs as appropriate
 
-### Milestone 193: Unify chainforge naming [Todo]
+### Milestone 193: Unify tokiwa naming [Todo]
 
 - **Area**: Build
 - **Why / hint**: underscore vs hyphen
@@ -824,7 +824,7 @@ Status summary for 1–60: [milestones.md](./milestones.md). Specs for 1–60: [
 ### Milestone 196: Node metrics catalog wiring [Todo]
 
 - **Area**: Metrics
-- **Why / hint**: chainforge_metrics
+- **Why / hint**: tokiwa_metrics
 - **Acceptance**: Measurable improvement landed with tests or docs as appropriate
 
 ### Milestone 197: Prometheus alerting rules [Todo]
@@ -974,7 +974,7 @@ Status summary for 1–60: [milestones.md](./milestones.md). Specs for 1–60: [
 ### Milestone 221: Dockerfile real node binary [Done]
 
 - **Area**: Deploy
-- **Why / hint**: DONE chainforge-node
+- **Why / hint**: DONE tokiwa-node
 - **Acceptance**: Measurable improvement landed with tests or docs as appropriate
 
 ### Milestone 222: Explorer Dockerfile real target [Todo]
@@ -3389,7 +3389,7 @@ Status summary for 1–60: [milestones.md](./milestones.md). Specs for 1–60: [
 - **Why / hint**: no XOR stubs
 - **Acceptance**: Measurable improvement landed with tests or docs as appropriate
 
-### Milestone 624: Feature macro CHAINFORGE_HAS_BLS [Todo]
+### Milestone 624: Feature macro TOKIWA_HAS_BLS [Todo]
 
 - **Area**: Build
 - **Why / hint**: optional

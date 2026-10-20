@@ -12,8 +12,8 @@
 ## Local setup
 
 ```bash
-git clone https://github.com/Skpow1234/ChainForge.git
-cd ChainForge
+git clone https://github.com/Skpow1234/Tokiwa.git
+cd Tokiwa
 
 conan install . --output-folder=build --build=missing
 cd build

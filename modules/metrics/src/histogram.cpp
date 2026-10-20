@@ -1,6 +1,6 @@
-#include "chainforge/metrics/histogram.hpp"
+#include "tokiwa/metrics/histogram.hpp"
 
-namespace chainforge::metrics {
+namespace tokiwa::metrics {
 
 Histogram::Histogram(prometheus::Histogram& prometheus_histogram, const std::string& name)
     : prometheus_histogram_(prometheus_histogram), name_(name) {
@@ -82,4 +82,4 @@ namespace buckets {
     };
 } // namespace buckets
 
-} // namespace chainforge::metrics
+} // namespace tokiwa::metrics

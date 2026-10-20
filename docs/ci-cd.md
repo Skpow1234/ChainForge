@@ -31,13 +31,13 @@ cmake -S . -B build -G Ninja \
   -DBUILD_TESTING=ON \
   -DTREAT_WARNINGS_AS_ERRORS=OFF
 cmake --build build --parallel
-./build/bin/chainforge-node --self-check
+./build/bin/tokiwa-node --self-check
 cd build && ctest --output-on-failure --parallel
 ```
 
 ## Artifacts
 
-- `chainforge-linux-amd64` — Release `chainforge-node` (7-day retention)
+- `tokiwa-linux-amd64` — Release `tokiwa-node` (7-day retention)
 - `sbom` — Syft JSON + SPDX (30-day retention)
 
 See [deployment.md](./deployment.md) for images and Helm.

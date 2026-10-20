@@ -6,15 +6,15 @@
  */
 
 #include <gtest/gtest.h>
-#include "chainforge/p2p/tcp_connection.hpp"
-#include "chainforge/p2p/tcp_server.hpp"
-#include "chainforge/p2p/tcp_client.hpp"
-#include "chainforge/p2p/udp_transport.hpp"
+#include "tokiwa/p2p/tcp_connection.hpp"
+#include "tokiwa/p2p/tcp_server.hpp"
+#include "tokiwa/p2p/tcp_client.hpp"
+#include "tokiwa/p2p/udp_transport.hpp"
 #include <thread>
 #include <chrono>
 #include <atomic>
 
-using namespace chainforge::p2p;
+using namespace tokiwa::p2p;
 using namespace std::chrono_literals;
 
 // Test fixture with io_context

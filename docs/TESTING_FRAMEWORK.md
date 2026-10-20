@@ -1,8 +1,8 @@
-# ChainForge Testing Framework
+# Tokiwa Testing Framework
 
 ## Overview
 
-The ChainForge testing framework provides a comprehensive, production-grade testing infrastructure built on Google Test (gtest/gmock). It includes test fixtures, helpers, mock objects, custom matchers, parameterized tests, and code coverage reporting.
+The Tokiwa testing framework provides a comprehensive, production-grade testing infrastructure built on Google Test (gtest/gmock). It includes test fixtures, helpers, mock objects, custom matchers, parameterized tests, and code coverage reporting.
 
 ## Table of Contents
 
@@ -46,7 +46,7 @@ The ChainForge testing framework provides a comprehensive, production-grade test
 #include <gtest/gtest.h>
 #include "test_fixtures.hpp"
 
-using namespace chainforge::testing;
+using namespace tokiwa::testing;
 
 TEST_F(BlockchainTestFixture, CreateTransaction) {
     // Fixture provides: test_address_from, test_address_to, test_amount
@@ -316,7 +316,7 @@ TEST(MyTest, TrackCalls) {
 Domain-specific assertion helpers:
 
 ```cpp
-using namespace chainforge::testing::matchers;
+using namespace tokiwa::testing::matchers;
 
 // Amount in range
 EXPECT_TRUE(AmountInRange(amount, 1000, 10000));
@@ -599,7 +599,7 @@ See `tests/unit/test_framework_demo.cpp` for comprehensive examples of all frame
 #include "test_helpers.hpp"
 #include "mock_objects.hpp"
 
-using namespace chainforge::testing;
+using namespace tokiwa::testing;
 
 class TransactionPoolTest : public BlockchainTestFixture {
 protected:
@@ -647,7 +647,7 @@ TEST_F(PerformanceTestFixture, PoolAddPerformance) {
 
 ## Summary
 
-The ChainForge testing framework provides:
+The Tokiwa testing framework provides:
 
 ✅ **Comprehensive** - All testing needs covered
 ✅ **Easy to Use** - Intuitive API with minimal boilerplate

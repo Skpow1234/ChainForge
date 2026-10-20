@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include "chainforge/metrics/metrics.hpp"
+#include "tokiwa/metrics/metrics.hpp"
 #include <thread>
 #include <chrono>
 
-using namespace chainforge::metrics;
+using namespace tokiwa::metrics;
 
 class MetricsTest : public ::testing::Test {
 protected:
@@ -209,11 +209,11 @@ TEST_F(MetricsTest, MetricsServer) {
     EXPECT_EQ(get_metrics_url(), "");
 }
 
-TEST_F(MetricsTest, ChainForgeMetrics) {
-    // Initialize ChainForge metrics
-    initialize_chainforge_metrics();
+TEST_F(MetricsTest, TokiwaMetrics) {
+    // Initialize Tokiwa metrics
+    initialize_tokiwa_metrics();
     
-    auto& metrics = get_chainforge_metrics();
+    auto& metrics = get_tokiwa_metrics();
     
     // Test block metrics
     auto blocks_counter = metrics.blocks_processed_total();
@@ -246,20 +246,20 @@ TEST_F(MetricsTest, ChainForgeMetrics) {
 
 TEST_F(MetricsTest, ConvenienceMacros) {
     // Initialize so macros work
-    initialize_chainforge_metrics();
+    initialize_tokiwa_metrics();
     
     // Test counter macros
-    CHAINFORGE_COUNTER_INC("test_macro_counter");
-    CHAINFORGE_COUNTER_ADD("test_macro_counter", 5);
+    TOKIWA_COUNTER_INC("test_macro_counter");
+    TOKIWA_COUNTER_ADD("test_macro_counter", 5);
     
     // Test gauge macros  
-    CHAINFORGE_GAUGE_SET("test_macro_gauge", 42);
-    CHAINFORGE_GAUGE_INC("test_macro_gauge");
-    CHAINFORGE_GAUGE_DEC("test_macro_gauge");
+    TOKIWA_GAUGE_SET("test_macro_gauge", 42);
+    TOKIWA_GAUGE_INC("test_macro_gauge");
+    TOKIWA_GAUGE_DEC("test_macro_gauge");
     
     // Test histogram timer macro
     {
-        CHAINFORGE_HISTOGRAM_TIMER("test_macro_histogram");
+        TOKIWA_HISTOGRAM_TIMER("test_macro_histogram");
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     

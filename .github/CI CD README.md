@@ -1,6 +1,6 @@
-# ChainForge CI/CD
+# Tokiwa CI/CD
 
-This directory contains the CI/CD configuration and scripts for ChainForge.
+This directory contains the CI/CD configuration and scripts for Tokiwa.
 
 ## CI Pipeline Issues & Fixes
 

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
-project(ChainForge VERSION 0.1.0 LANGUAGES CXX)
+project(Tokiwa VERSION 0.1.0 LANGUAGES CXX)
 
 # Set project properties
-set(ChainForge_VERSION_MAJOR 0)
-set(ChainForge_VERSION_MINOR 1)
-set(ChainForge_VERSION_PATCH 0)
+set(Tokiwa_VERSION_MAJOR 0)
+set(Tokiwa_VERSION_MINOR 1)
+set(Tokiwa_VERSION_PATCH 0)
 
 # Add cmake module path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -44,33 +44,33 @@ include(CMakePackageConfigHelpers)
 
 # Write package config files
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/ChainForgeConfigVersion.cmake"
-    VERSION ${ChainForge_VERSION}
+    "${CMAKE_CURRENT_BINARY_DIR}/TokiwaConfigVersion.cmake"
+    VERSION ${Tokiwa_VERSION}
     COMPATIBILITY SameMajorVersion
 )
 
 configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ChainForgeConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/ChainForgeConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ChainForge
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/TokiwaConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/TokiwaConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Tokiwa
 )
 
 # Install package config files
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/ChainForgeConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/ChainForgeConfigVersion.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ChainForge
+    "${CMAKE_CURRENT_BINARY_DIR}/TokiwaConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/TokiwaConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Tokiwa
 )
 
 # Install export targets
-install(EXPORT ChainForgeTargets
-    FILE ChainForgeTargets.cmake
-    NAMESPACE ChainForge::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ChainForge
+install(EXPORT TokiwaTargets
+    FILE TokiwaTargets.cmake
+    NAMESPACE Tokiwa::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Tokiwa
 )
 
 # Print configuration summary
-message(STATUS "ChainForge ${ChainForge_VERSION}")
+message(STATUS "Tokiwa ${Tokiwa_VERSION}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "Build testing: ${BUILD_TESTING}")

@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/core/hash.hpp"
 #include <vector>
 
-namespace chainforge::core::test {
+namespace tokiwa::core::test {
 
 class HashTest : public ::testing::Test {
 protected:
@@ -89,4 +89,4 @@ TEST_F(HashTest, BytesConversion) {
     EXPECT_EQ(bytes[1], 0xBB);
 }
 
-} // namespace chainforge::core::test
+} // namespace tokiwa::core::test

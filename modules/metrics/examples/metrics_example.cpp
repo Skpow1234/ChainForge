@@ -1,12 +1,12 @@
-#include "chainforge/metrics/metrics.hpp"
-#include "chainforge/logging/logging.hpp"
+#include "tokiwa/metrics/metrics.hpp"
+#include "tokiwa/logging/logging.hpp"
 #include <iostream>
 #include <thread>
 #include <chrono>
 #include <random>
 
-using namespace chainforge::metrics;
-using namespace chainforge::logging;
+using namespace tokiwa::metrics;
+using namespace tokiwa::logging;
 
 void demonstrate_basic_metrics() {
     std::cout << "\n=== Basic Metrics Demo ===" << std::endl;
@@ -74,7 +74,7 @@ void demonstrate_histogram_timer() {
     
     // Using convenience macro
     {
-        CHAINFORGE_HISTOGRAM_TIMER("macro_processing_time");
+        TOKIWA_HISTOGRAM_TIMER("macro_processing_time");
         std::cout << "Processing with macro timer..." << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
@@ -99,11 +99,11 @@ void demonstrate_gauge_tracker() {
     std::cout << "Memory freed, current usage: " << memory_usage->value() << " MB" << std::endl;
 }
 
-void demonstrate_chainforge_metrics() {
-    std::cout << "\n=== ChainForge Metrics Demo ===" << std::endl;
+void demonstrate_tokiwa_metrics() {
+    std::cout << "\n=== Tokiwa Metrics Demo ===" << std::endl;
     
-    initialize_chainforge_metrics();
-    auto& metrics = get_chainforge_metrics();
+    initialize_tokiwa_metrics();
+    auto& metrics = get_tokiwa_metrics();
     
     // Simulate blockchain operations
     for (int block = 1; block <= 5; ++block) {
@@ -169,8 +169,8 @@ void demonstrate_metrics_logging_integration() {
     std::cout << "Logged 4 messages with automatic metrics collection" << std::endl;
     
     // Use convenience macros
-    CHAINFORGE_COUNTER_INC("custom_events");
-    CHAINFORGE_GAUGE_SET("system_load", 0.75);
+    TOKIWA_COUNTER_INC("custom_events");
+    TOKIWA_GAUGE_SET("system_load", 0.75);
     
     LogManager::instance().shutdown();
 }
@@ -179,17 +179,17 @@ void demonstrate_convenience_macros() {
     std::cout << "\n=== Convenience Macros Demo ===" << std::endl;
     
     // Counter macros
-    CHAINFORGE_COUNTER_INC("api_calls");
-    CHAINFORGE_COUNTER_ADD("bytes_processed", 1024);
+    TOKIWA_COUNTER_INC("api_calls");
+    TOKIWA_COUNTER_ADD("bytes_processed", 1024);
     
     // Gauge macros
-    CHAINFORGE_GAUGE_SET("cpu_usage", 65.5);
-    CHAINFORGE_GAUGE_INC("active_sessions");
-    CHAINFORGE_GAUGE_DEC("active_sessions");
+    TOKIWA_GAUGE_SET("cpu_usage", 65.5);
+    TOKIWA_GAUGE_INC("active_sessions");
+    TOKIWA_GAUGE_DEC("active_sessions");
     
     // Histogram timer macro
     {
-        CHAINFORGE_HISTOGRAM_TIMER("operation_duration");
+        TOKIWA_HISTOGRAM_TIMER("operation_duration");
         std::cout << "Performing timed operation..." << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(15));
     }
@@ -199,7 +199,7 @@ void demonstrate_convenience_macros() {
 
 int main() {
     try {
-        std::cout << "ChainForge Metrics System Demo" << std::endl;
+        std::cout << "Tokiwa Metrics System Demo" << std::endl;
         std::cout << "===============================" << std::endl;
         
         // Start metrics server
@@ -217,7 +217,7 @@ int main() {
         demonstrate_basic_metrics();
         demonstrate_histogram_timer();
         demonstrate_gauge_tracker();
-        demonstrate_chainforge_metrics();
+        demonstrate_tokiwa_metrics();
         demonstrate_metrics_logging_integration();
         demonstrate_convenience_macros();
         

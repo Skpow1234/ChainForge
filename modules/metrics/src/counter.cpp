@@ -1,7 +1,7 @@
-#include "chainforge/metrics/counter.hpp"
+#include "tokiwa/metrics/counter.hpp"
 #include <stdexcept>
 
-namespace chainforge::metrics {
+namespace tokiwa::metrics {
 
 Counter::Counter(std::shared_ptr<internal::SimpleCounter> simple_counter, const std::string& name)
     : simple_counter_(simple_counter), name_(name) {
@@ -38,4 +38,4 @@ CounterTimer::~CounterTimer() {
     }
 }
 
-} // namespace chainforge::metrics
+} // namespace tokiwa::metrics

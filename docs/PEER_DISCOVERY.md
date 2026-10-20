@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Milestone 17: Peer Discovery** has been successfully completed. The implementation provides comprehensive peer discovery mechanisms for finding and connecting to other nodes in the ChainForge blockchain network.
+**Milestone 17: Peer Discovery** has been successfully completed. The implementation provides comprehensive peer discovery mechanisms for finding and connecting to other nodes in the Tokiwa blockchain network.
 
 ## Table of Contents
 
@@ -65,7 +65,7 @@
 
 Represents a network endpoint with metadata.
 
-**Header:** `chainforge/p2p/peer_address.hpp`
+**Header:** `tokiwa/p2p/peer_address.hpp`
 
 **Structure:**
 ```cpp
@@ -116,7 +116,7 @@ struct PeerInfo {
 
 Main discovery manager coordinating all discovery mechanisms.
 
-**Header:** `chainforge/p2p/peer_discovery.hpp`
+**Header:** `tokiwa/p2p/peer_discovery.hpp`
 
 **Key Methods:**
 - `start()` - Start discovery
@@ -151,9 +151,9 @@ Hard-coded list of well-known peers for initial connection.
 ```cpp
 BootstrapConfig config;
 config.static_nodes = {
-    PeerAddress("seed1.chainforge.io", 8333),
-    PeerAddress("seed2.chainforge.io", 8333),
-    PeerAddress("seed3.chainforge.io", 8333)
+    PeerAddress("seed1.tokiwa.io", 8333),
+    PeerAddress("seed2.tokiwa.io", 8333),
+    PeerAddress("seed3.tokiwa.io", 8333)
 };
 ```
 
@@ -169,9 +169,9 @@ Discover peers via DNS A/AAAA record lookups.
 **Configuration:**
 ```cpp
 config.dns_seeds = {
-    "dnsseed.chainforge.io",
-    "seed.chainforge.network",
-    "nodes.chainforge.org"
+    "dnsseed.tokiwa.io",
+    "seed.tokiwa.network",
+    "nodes.tokiwa.org"
 };
 ```
 
@@ -182,7 +182,7 @@ config.dns_seeds = {
 
 **Example:**
 ```cpp
-auto peers = DnsSeedResolver::resolve("dnsseed.chainforge.io", 8333);
+auto peers = DnsSeedResolver::resolve("dnsseed.tokiwa.io", 8333);
 for (const auto& peer : peers) {
     discovery.add_peer(peer);
 }
@@ -242,7 +242,7 @@ auto received_peers = PeerExchange::deserialize_peers(data);
 ### Basic Discovery Setup
 
 ```cpp
-#include "chainforge/p2p/peer_discovery.hpp"
+#include "tokiwa/p2p/peer_discovery.hpp"
 
 asio::io_context io_context;
 

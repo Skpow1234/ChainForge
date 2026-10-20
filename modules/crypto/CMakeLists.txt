@@ -11,18 +11,18 @@ set(CRYPTO_SOURCES
 )
 
 set(CRYPTO_HEADERS
-    include/chainforge/crypto/random.hpp
-    include/chainforge/crypto/hash.hpp
-    include/chainforge/crypto/signature.hpp
-    include/chainforge/crypto/keypair.hpp
-    include/chainforge/crypto/curve.hpp
-    include/chainforge/crypto/keccak.hpp
-    include/chainforge/crypto/types.hpp
+    include/tokiwa/crypto/random.hpp
+    include/tokiwa/crypto/hash.hpp
+    include/tokiwa/crypto/signature.hpp
+    include/tokiwa/crypto/keypair.hpp
+    include/tokiwa/crypto/curve.hpp
+    include/tokiwa/crypto/keccak.hpp
+    include/tokiwa/crypto/types.hpp
 )
 
-add_library(chainforge-crypto STATIC ${CRYPTO_SOURCES} ${CRYPTO_HEADERS})
+add_library(tokiwa-crypto STATIC ${CRYPTO_SOURCES} ${CRYPTO_HEADERS})
 
-target_include_directories(chainforge-crypto
+target_include_directories(tokiwa-crypto
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -30,13 +30,13 @@ target_include_directories(chainforge-crypto
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(chainforge-crypto PRIVATE cxx_std_20)
+target_compile_features(tokiwa-crypto PRIVATE cxx_std_20)
 
 # Temporarily disable deprecated warnings for OpenSSL 3.0 migration
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(chainforge-crypto PRIVATE -Wno-deprecated-declarations)
+    target_compile_options(tokiwa-crypto PRIVATE -Wno-deprecated-declarations)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(chainforge-crypto PRIVATE /wd4996)
+    target_compile_options(tokiwa-crypto PRIVATE /wd4996)
 endif()
 
 # Link dependencies
@@ -63,7 +63,7 @@ endif()
 
 # secp256k1 include directories are handled by the imported target
 
-target_link_libraries(chainforge-crypto
+target_link_libraries(tokiwa-crypto
     PUBLIC
         fmt::fmt
         spdlog::spdlog
@@ -81,7 +81,7 @@ find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
     pkg_check_modules(LIBSODIUM_PKG QUIET libsodium)
     if(LIBSODIUM_PKG_FOUND)
-        target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_PKG_INCLUDE_DIRS})
+        target_include_directories(tokiwa-crypto PRIVATE ${LIBSODIUM_PKG_INCLUDE_DIRS})
         message(STATUS "Found libsodium via pkg-config: ${LIBSODIUM_PKG_INCLUDE_DIRS}")
     endif()
 endif()
@@ -110,7 +110,7 @@ if(NOT LIBSODIUM_PKG_FOUND)
 
     if(LIBSODIUM_CONAN_INCLUDE_DIR)
         get_filename_component(LIBSODIUM_CONAN_ROOT "${LIBSODIUM_CONAN_INCLUDE_DIR}" DIRECTORY)
-        target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_CONAN_ROOT}/include)
+        target_include_directories(tokiwa-crypto PRIVATE ${LIBSODIUM_CONAN_ROOT}/include)
         message(STATUS "Found libsodium via Conan path: ${LIBSODIUM_CONAN_ROOT}/include")
     else()
         # Last resort: try to extract from broken target property
@@ -120,11 +120,11 @@ if(NOT LIBSODIUM_PKG_FOUND)
             # Extract the actual path by removing the generator expression
             if(LIBSODIUM_INCLUDE_DIRS AND LIBSODIUM_INCLUDE_DIRS MATCHES "\\$<.*:(.*)>")
                 set(LIBSODIUM_REAL_PATH "${CMAKE_MATCH_1}")
-                target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_REAL_PATH})
+                target_include_directories(tokiwa-crypto PRIVATE ${LIBSODIUM_REAL_PATH})
                 message(STATUS "Found libsodium via target property extraction: ${LIBSODIUM_REAL_PATH}")
             elseif(LIBSODIUM_INCLUDE_DIRS)
                 # Try using it as-is (may work for some cases)
-                target_include_directories(chainforge-crypto PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+                target_include_directories(tokiwa-crypto PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
                 message(STATUS "Found libsodium via target property (may be generator expression): ${LIBSODIUM_INCLUDE_DIRS}")
             else()
                 message(WARNING "libsodium target found but no include directories. This may cause compilation errors.")
@@ -136,8 +136,8 @@ if(NOT LIBSODIUM_PKG_FOUND)
 endif()
 
 # Install
-install(TARGETS chainforge-crypto
-    EXPORT ChainForgeTargets
+install(TARGETS tokiwa-crypto
+    EXPORT TokiwaTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

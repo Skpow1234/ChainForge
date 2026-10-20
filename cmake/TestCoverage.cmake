@@ -1,4 +1,4 @@
-# Test Coverage Configuration for ChainForge
+# Test Coverage Configuration for Tokiwa
 # Provides coverage reporting using gcov/lcov or llvm-cov
 
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)

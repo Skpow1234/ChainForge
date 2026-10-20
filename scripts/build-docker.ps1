@@ -1,5 +1,5 @@
-# ChainForge Docker Build Script for Windows
-Write-Host "🐳 Building ChainForge with Docker..." -ForegroundColor Green
+# Tokiwa Docker Build Script for Windows
+Write-Host "🐳 Building Tokiwa with Docker..." -ForegroundColor Green
 
 # Function to clean up
 function Cleanup {
@@ -26,7 +26,7 @@ try {
 
     # Test the build
     Write-Host "🧪 Testing build..." -ForegroundColor Blue
-    docker compose run --rm chainforge-tools powershell.exe -Command "
+    docker compose run --rm tokiwa-tools powershell.exe -Command "
         Write-Host 'Testing Conan install...' -ForegroundColor Blue
         conan profile detect --force
         conan install . --output-folder=build --build=missing
@@ -39,7 +39,7 @@ try {
         cmake --build . --parallel
 
         Write-Host 'Testing binary execution...' -ForegroundColor Blue
-        .\bin\cppchain-core-test.exe
+        .\bin\tokiwa-core-test.exe
     "
 
     Write-Host "✅ Build and test completed successfully!" -ForegroundColor Green
@@ -49,4 +49,4 @@ catch {
     exit 1
 }
 
-Write-Host "🎉 ChainForge build verification complete!" -ForegroundColor Green
+Write-Host "🎉 Tokiwa build verification complete!" -ForegroundColor Green

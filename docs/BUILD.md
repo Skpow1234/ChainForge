@@ -1,6 +1,6 @@
-# ChainForge Build System
+# Tokiwa Build System
 
-This document describes how to build ChainForge using the CMake + Conan v2 build system.
+This document describes how to build Tokiwa using the CMake + Conan v2 build system.
 
 ## Prerequisites
 
@@ -62,7 +62,7 @@ pip install conan
 
 ```bash
 git clone <repository-url>
-cd ChainForge
+cd Tokiwa
 ```
 
 ### 2. Build the Project
@@ -158,14 +158,14 @@ cmake .. -DUSE_SANITIZERS=ON
 ## Project Structure
 
 ```bash
-ChainForge/
+Tokiwa/
 ├── CMakeLists.txt              # Main CMake configuration
 ├── CMakePresets.json           # CMake presets for different configurations
 ├── conanfile.txt               # Conan dependencies
 ├── cmake/                      # CMake modules
 │   ├── CompilerFlags.cmake     # Compiler flags configuration
 │   ├── ConanSetup.cmake        # Conan integration
-│   └── ChainForgeConfig.cmake.in # Package configuration template
+│   └── TokiwaConfig.cmake.in # Package configuration template
 ├── modules/                    # Source modules
 │   ├── core/                   # Core domain models
 │   ├── crypto/                 # Cryptographic primitives
@@ -178,7 +178,7 @@ ChainForge/
 
 ## Dependencies
 
-ChainForge uses Conan v2 for dependency management. Key dependencies include:
+Tokiwa uses Conan v2 for dependency management. Key dependencies include:
 
 - **Core Libraries**: OpenSSL, Boost, Protobuf, FlatBuffers
 - **Logging**: spdlog, fmt
@@ -315,7 +315,7 @@ ctest --output-on-failure --verbose
 
 1. Check the build logs in the `build/` directory
 2. Verify all prerequisites are installed
-3. Check the [ChainForge documentation](README.md)
+3. Check the [Tokiwa documentation](README.md)
 4. Open an issue on GitHub with build logs
 
 ## Performance Optimization
@@ -351,7 +351,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fprofile-use"
 
 ## Next Steps
 
-After successfully building ChainForge:
+After successfully building Tokiwa:
 
 1. **Run Tests**: Verify everything works with `./build.sh --test`
 2. **Explore Modules**: Check out the different modules in `modules/`

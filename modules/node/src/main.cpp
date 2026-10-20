@@ -1,19 +1,19 @@
-#include "chainforge/node/config.hpp"
-#include "chainforge/crypto/hash.hpp"
-#include "chainforge/crypto/signature.hpp"
-#include "chainforge/crypto/keypair.hpp"
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/amount.hpp"
-#include "chainforge/storage/database.hpp"
-#include "chainforge/consensus/consensus.hpp"
-#include "chainforge/mempool/mempool.hpp"
-#include "chainforge/rpc/rpc_server.hpp"
-#include "chainforge/rpc/chain_state.hpp"
-#include "chainforge/p2p/peer_manager.hpp"
-#include "chainforge/p2p/sync.hpp"
-#include "chainforge/core/hash.hpp"
-#include "chainforge/core/transaction.hpp"
+#include "tokiwa/node/config.hpp"
+#include "tokiwa/crypto/hash.hpp"
+#include "tokiwa/crypto/signature.hpp"
+#include "tokiwa/crypto/keypair.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/amount.hpp"
+#include "tokiwa/storage/database.hpp"
+#include "tokiwa/consensus/consensus.hpp"
+#include "tokiwa/mempool/mempool.hpp"
+#include "tokiwa/rpc/rpc_server.hpp"
+#include "tokiwa/rpc/chain_state.hpp"
+#include "tokiwa/p2p/peer_manager.hpp"
+#include "tokiwa/p2p/sync.hpp"
+#include "tokiwa/core/hash.hpp"
+#include "tokiwa/core/transaction.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -28,7 +28,7 @@ namespace {
 
 void print_help(const char* argv0) {
     std::cout
-        << "ChainForge node\n"
+        << "Tokiwa node\n"
         << "Usage: " << argv0 << " [options]\n"
         << "  --help              Show help\n"
         << "  --config PATH       YAML config (default: config/config.yaml)\n"
@@ -38,7 +38,7 @@ void print_help(const char* argv0) {
 }
 
 int self_check() {
-    using chainforge::crypto::Hash;
+    using tokiwa::crypto::Hash;
     const auto empty_keccak = Hash::keccak256(std::string{});
     if (!empty_keccak.success()) return 1;
     const std::string expected =
@@ -48,52 +48,52 @@ int self_check() {
         return 1;
     }
     std::vector<uint8_t> fake_pub(64, 0x11);
-    auto addr = chainforge::core::Address::from_public_key(fake_pub);
+    auto addr = tokiwa::core::Address::from_public_key(fake_pub);
 
     std::string proto_err;
-    if (!chainforge::p2p::protocol_self_check(&proto_err)) {
+    if (!tokiwa::p2p::protocol_self_check(&proto_err)) {
         std::cerr << "p2p protocol self-check failed: " << proto_err << "\n";
         return 1;
     }
 
     // Compact ECDSA r||s (+ recoverable r||s||v) round-trip
     {
-        auto kp = chainforge::crypto::KeyPair::generate_secp256k1();
+        auto kp = tokiwa::crypto::KeyPair::generate_secp256k1();
         if (!kp.success()) {
             std::cerr << "ecdsa keygen self-check failed\n";
             return 1;
         }
         const std::vector<uint8_t> msg = {'c', 'f', 'g'};
-        auto sig = chainforge::crypto::Signature::ecdsa_secp256k1_sign(msg, kp.value.private_key);
+        auto sig = tokiwa::crypto::Signature::ecdsa_secp256k1_sign(msg, kp.value.private_key);
         if (!sig.success() || sig.value.size() != 64) {
             std::cerr << "ecdsa compact sign self-check failed\n";
             return 1;
         }
-        auto ver = chainforge::crypto::Signature::ecdsa_secp256k1_verify(
+        auto ver = tokiwa::crypto::Signature::ecdsa_secp256k1_verify(
             msg, sig.value, kp.value.public_key);
         if (!ver.success() || !ver.value) {
             std::cerr << "ecdsa compact verify self-check failed\n";
             return 1;
         }
-        auto sig65 = chainforge::crypto::Signature::ecdsa_secp256k1_sign_recoverable(
+        auto sig65 = tokiwa::crypto::Signature::ecdsa_secp256k1_sign_recoverable(
             msg, kp.value.private_key);
         if (!sig65.success()) {
             std::cerr << "ecdsa recoverable sign self-check failed\n";
             return 1;
         }
-        chainforge::crypto::Secp256k1Signature compact{};
+        tokiwa::crypto::Secp256k1Signature compact{};
         std::copy(sig65.value.begin(), sig65.value.begin() + 64, compact.begin());
-        auto rec = chainforge::crypto::Signature::ecdsa_secp256k1_recover_public_key(
+        auto rec = tokiwa::crypto::Signature::ecdsa_secp256k1_recover_public_key(
             msg, compact, sig65.value[64]);
         if (!rec.success() || rec.value != kp.value.public_key) {
             std::cerr << "ecdsa recover self-check failed\n";
             return 1;
         }
 
-        chainforge::core::Address to("0x742d35cc6634c0532925a3b844bc454e4438f44e");
-        chainforge::core::Transaction tx(
-            chainforge::core::Address::zero(), to,
-            chainforge::core::Amount::from_wei(1));
+        tokiwa::core::Address to("0x742d35cc6634c0532925a3b844bc454e4438f44e");
+        tokiwa::core::Transaction tx(
+            tokiwa::core::Address::zero(), to,
+            tokiwa::core::Amount::from_wei(1));
         tx.set_chain_id(1337);
         tx.set_nonce(0);
         std::vector<uint8_t> sk(kp.value.private_key.begin(), kp.value.private_key.end());
@@ -108,11 +108,11 @@ int self_check() {
     return 0;
 }
 
-chainforge::p2p::ChainView make_chain_view(
-    const std::shared_ptr<chainforge::rpc::ChainState>& state) {
-    chainforge::p2p::ChainView view;
+tokiwa::p2p::ChainView make_chain_view(
+    const std::shared_ptr<tokiwa::rpc::ChainState>& state) {
+    tokiwa::p2p::ChainView view;
     view.chain_id = state->chain_id();
-    view.agent = "chainforge-node";
+    view.agent = "tokiwa-node";
     view.tip_height = [state] { return state->latest_height(); };
     view.tip_hash = [state] {
         auto tip = state->get_block_by_number(state->latest_height());
@@ -132,18 +132,18 @@ chainforge::p2p::ChainView make_chain_view(
     view.block_json_by_hash = [state](const std::vector<uint8_t>& hash32)
         -> std::optional<std::string> {
         if (hash32.size() != 32) return std::nullopt;
-        chainforge::core::Hash hash(hash32);
+        tokiwa::core::Hash hash(hash32);
         auto block = state->get_block_by_hash(hash);
         if (!block) return std::nullopt;
         return block->to_json();
     };
     view.import_block_json = [state](const std::string& json) {
-        auto block = chainforge::core::Block::from_json(json);
+        auto block = tokiwa::core::Block::from_json(json);
         if (!block) return false;
         return state->import_block(*block);
     };
     view.accept_tx_json = [state](const std::string& json) {
-        auto tx = chainforge::core::Transaction::from_json(json);
+        auto tx = tokiwa::core::Transaction::from_json(json);
         if (!tx) return false;
         state->submit_transaction(*tx);
         return true;
@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
         return self_check();
     }
 
-    auto cfg = chainforge::node::load_node_config(config_path);
+    auto cfg = tokiwa::node::load_node_config(config_path);
     if (rpc_port_override) {
         cfg.rpc_port = *rpc_port_override;
     }
@@ -199,19 +199,19 @@ int main(int argc, char** argv) {
         cfg.rpc_host = "127.0.0.1";
     }
 
-    std::cout << "ChainForge node starting (config=" << config_path << ")\n";
+    std::cout << "Tokiwa node starting (config=" << config_path << ")\n";
     std::cout << "  chain_id=" << cfg.chain_id
               << " storage=" << cfg.storage_backend
               << " rpc=" << cfg.rpc_host << ":" << cfg.rpc_port << "\n";
 
-    auto db = std::shared_ptr<chainforge::storage::Database>(
-        chainforge::storage::create_database(cfg.storage_backend));
+    auto db = std::shared_ptr<tokiwa::storage::Database>(
+        tokiwa::storage::create_database(cfg.storage_backend));
     if (!db) {
         std::cerr << "Failed to create storage backend: " << cfg.storage_backend << "\n";
         return 1;
     }
     {
-        chainforge::storage::DatabaseConfig dbcfg;
+        tokiwa::storage::DatabaseConfig dbcfg;
         if (cfg.storage_backend == "rocksdb") {
             dbcfg.path = cfg.data_dir + "/chaindb";
         } else if (cfg.storage_backend == "file") {
@@ -228,9 +228,9 @@ int main(int argc, char** argv) {
         std::cout << "  storage path=" << dbcfg.path << "\n";
     }
 
-    auto mempool = std::shared_ptr<chainforge::mempool::Mempool>(
-        chainforge::mempool::create_mempool());
-    auto state = std::make_shared<chainforge::rpc::ChainState>(db, mempool, cfg.chain_id);
+    auto mempool = std::shared_ptr<tokiwa::mempool::Mempool>(
+        tokiwa::mempool::create_mempool());
+    auto state = std::make_shared<tokiwa::rpc::ChainState>(db, mempool, cfg.chain_id);
 
     if (state->load_from_storage()) {
         std::cout << "Reloaded chain from storage tip=#" << state->latest_height() << "\n";
@@ -238,35 +238,35 @@ int main(int argc, char** argv) {
             std::cout << "  tip hash: 0x" << tip->calculate_hash().to_hex() << "\n";
         }
     } else {
-        auto genesis = chainforge::core::create_genesis_block(
-            static_cast<chainforge::core::ChainId>(cfg.chain_id));
+        auto genesis = tokiwa::core::create_genesis_block(
+            static_cast<tokiwa::core::ChainId>(cfg.chain_id));
         if (!state->initialize_with_genesis(genesis)) {
             std::cerr << "Failed to initialize genesis\n";
             return 1;
         }
         std::cout << "Genesis: 0x" << genesis.calculate_hash().to_hex() << "\n";
-        chainforge::core::Address demo("0x742d35cc6634c0532925a3b844bc454e4438f44e");
+        tokiwa::core::Address demo("0x742d35cc6634c0532925a3b844bc454e4438f44e");
         state->credit(demo, 1000000000000000000ULL);
     }
 
-    chainforge::p2p::PeerManager peers(cfg.max_peers);
-    peers.add_peer(chainforge::p2p::PeerAddress("127.0.0.1", 30303));
-    auto sync = std::make_shared<chainforge::p2p::SyncSession>(make_chain_view(state));
+    tokiwa::p2p::PeerManager peers(cfg.max_peers);
+    peers.add_peer(tokiwa::p2p::PeerAddress("127.0.0.1", 30303));
+    auto sync = std::make_shared<tokiwa::p2p::SyncSession>(make_chain_view(state));
     auto hello = sync->make_hello();
-    auto hello_wire = chainforge::p2p::encode_message(hello);
+    auto hello_wire = tokiwa::p2p::encode_message(hello);
     std::cout << "P2P peer manager: " << peers.size() << " peer(s)"
-              << " protocol=v" << int(chainforge::p2p::PROTOCOL_VERSION)
+              << " protocol=v" << int(tokiwa::p2p::PROTOCOL_VERSION)
               << " hello_frame=" << hello_wire.size() << "B\n";
 
-    auto consensus = chainforge::consensus::create_pow_consensus(cfg.difficulty);
+    auto consensus = tokiwa::consensus::create_pow_consensus(cfg.difficulty);
     if (mine_once && consensus) {
         auto parent = state->get_block_by_number(state->latest_height());
         if (parent) {
-            auto tmpl = chainforge::core::create_block(
+            auto tmpl = tokiwa::core::create_block(
                 parent->height() + 1,
                 parent->calculate_hash(),
-                chainforge::core::Timestamp::now());
-            tmpl.set_chain_id(static_cast<chainforge::core::ChainId>(cfg.chain_id));
+                tokiwa::core::Timestamp::now());
+            tmpl.set_chain_id(static_cast<tokiwa::core::ChainId>(cfg.chain_id));
             tmpl.set_gas_limit(8'000'000);
             auto result = consensus->mine_block(tmpl);
             if (result.success) {
@@ -280,13 +280,13 @@ int main(int argc, char** argv) {
         }
     }
 
-    chainforge::rpc::RpcServerConfig rpc_config;
+    tokiwa::rpc::RpcServerConfig rpc_config;
     rpc_config.host = cfg.rpc_host;
     rpc_config.port = cfg.rpc_port;
 
-    auto rpc = chainforge::rpc::create_rpc_server();
-    auto methods = chainforge::rpc::create_blockchain_rpc_methods(state);
-    chainforge::rpc::register_blockchain_rpc_methods(*rpc, *methods);
+    auto rpc = tokiwa::rpc::create_rpc_server();
+    auto methods = tokiwa::rpc::create_blockchain_rpc_methods(state);
+    tokiwa::rpc::register_blockchain_rpc_methods(*rpc, *methods);
 
     if (!rpc->start(rpc_config)) {
         std::cerr << "Failed to start RPC\n";

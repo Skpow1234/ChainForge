@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/address.hpp"
+#include "tokiwa/core/address.hpp"
 #include <vector>
 #include <string>
 
-namespace chainforge::core::test {
+namespace tokiwa::core::test {
 
 class AddressTest : public ::testing::Test {
 protected:
@@ -104,4 +104,4 @@ TEST_F(AddressTest, CopyAndMove) {
     EXPECT_TRUE(original.is_zero()); // Moved-from state
 }
 
-} // namespace chainforge::core::test
+} // namespace tokiwa::core::test

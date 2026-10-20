@@ -1,6 +1,6 @@
-# Prometheus Configuration for ChainForge
+# Prometheus Configuration for Tokiwa
 
-This directory contains the Prometheus configuration for monitoring ChainForge services.
+This directory contains the Prometheus configuration for monitoring Tokiwa services.
 
 ## Files
 
@@ -14,15 +14,15 @@ The `prometheus.yml` file configures:
 - **Global settings**: 15s scrape interval
 - **Targets**:
   - Prometheus itself (localhost:9090)
-  - ChainForge Node (chainforge-node:8080)
-  - ChainForge Explorer (chainforge-explorer:8081)
+  - Tokiwa Node (tokiwa-node:8080)
+  - Tokiwa Explorer (tokiwa-explorer:8081)
   - PostgreSQL (postgres:5432)
   - Redis (redis:6379)
 
 ## Metrics Endpoints
 
-- **ChainForge Node**: `/metrics` on port 8080
-- **ChainForge Explorer**: `/metrics` on port 8081
+- **Tokiwa Node**: `/metrics` on port 8080
+- **Tokiwa Explorer**: `/metrics` on port 8081
 
 ## Access
 

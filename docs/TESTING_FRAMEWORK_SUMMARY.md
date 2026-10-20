@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Milestone 15: Basic Testing Framework** has been successfully completed. The ChainForge testing framework provides a comprehensive, production-grade testing infrastructure that supports all testing needs from unit tests to performance benchmarks.
+**Milestone 15: Basic Testing Framework** has been successfully completed. The Tokiwa testing framework provides a comprehensive, production-grade testing infrastructure that supports all testing needs from unit tests to performance benchmarks.
 
 ## Implementation Components
 

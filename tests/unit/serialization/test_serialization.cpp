@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include "chainforge/serialization/serialization.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/amount.hpp"
-#include "chainforge/core/timestamp.hpp"
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/serialization/serialization.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/amount.hpp"
+#include "tokiwa/core/timestamp.hpp"
+#include "tokiwa/core/hash.hpp"
 #include <vector>
 #include <memory>
 
@@ -12,18 +12,18 @@ namespace {
 class SerializationTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        serializer_ = chainforge::serialization::create_serializer();
-        validator_ = chainforge::serialization::create_validator();
+        serializer_ = tokiwa::serialization::create_serializer();
+        validator_ = tokiwa::serialization::create_validator();
     }
 
-    std::unique_ptr<chainforge::serialization::Serializer> serializer_;
-    std::unique_ptr<chainforge::serialization::Validator> validator_;
+    std::unique_ptr<tokiwa::serialization::Serializer> serializer_;
+    std::unique_ptr<tokiwa::serialization::Validator> validator_;
 };
 
 // Test serialization and deserialization of basic types
 TEST_F(SerializationTest, AddressSerialization) {
     // Create a test address
-    chainforge::Address original_addr; // Default constructed
+    tokiwa::Address original_addr; // Default constructed
 
     // Serialize
     auto serialize_result = serializer_->serialize_address(original_addr);
@@ -46,7 +46,7 @@ TEST_F(SerializationTest, AddressSerialization) {
 
 TEST_F(SerializationTest, AmountSerialization) {
     // Create a test amount
-    chainforge::Amount original_amount; // Default constructed
+    tokiwa::Amount original_amount; // Default constructed
 
     // Serialize
     auto serialize_result = serializer_->serialize_amount(original_amount);
@@ -69,7 +69,7 @@ TEST_F(SerializationTest, AmountSerialization) {
 
 TEST_F(SerializationTest, TimestampSerialization) {
     // Create a test timestamp
-    chainforge::Timestamp original_ts; // Default constructed
+    tokiwa::Timestamp original_ts; // Default constructed
 
     // Serialize
     auto serialize_result = serializer_->serialize_timestamp(original_ts);
@@ -92,7 +92,7 @@ TEST_F(SerializationTest, TimestampSerialization) {
 
 TEST_F(SerializationTest, HashSerialization) {
     // Create a test hash
-    chainforge::Hash original_hash; // Default constructed
+    tokiwa::Hash original_hash; // Default constructed
 
     // Serialize
     auto serialize_result = serializer_->serialize_hash(original_hash);
@@ -121,7 +121,7 @@ TEST_F(SerializationTest, ValidateSerializedData) {
     ASSERT_FALSE(empty_result.has_value()) << "Empty data should fail validation";
 
     // Test with valid serialized data
-    chainforge::Address addr;
+    tokiwa::Address addr;
     auto serialize_result = serializer_->serialize_address(addr);
     ASSERT_TRUE(serialize_result.has_value());
 
@@ -142,7 +142,7 @@ TEST_F(SerializationTest, InvalidDataHandling) {
 // Test round-trip consistency
 TEST_F(SerializationTest, RoundTripConsistency) {
     // Test that serialize -> deserialize -> serialize produces the same result
-    chainforge::Address original_addr;
+    tokiwa::Address original_addr;
 
     // First round
     auto first_serialize = serializer_->serialize_address(original_addr);

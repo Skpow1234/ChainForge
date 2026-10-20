@@ -1,8 +1,8 @@
-#include "chainforge/logging/performance_logger.hpp"
+#include "tokiwa/logging/performance_logger.hpp"
 #include <fmt/format.h>
 #include <thread>
 
-namespace chainforge::logging {
+namespace tokiwa::logging {
 
 ScopedTimer::ScopedTimer(Logger& logger, const std::string& operation, LogLevel level)
     : logger_(logger)
@@ -188,4 +188,4 @@ void PerformanceMetrics::reset() {
     logger_.info("Performance metrics reset");
 }
 
-} // namespace chainforge::logging
+} // namespace tokiwa::logging

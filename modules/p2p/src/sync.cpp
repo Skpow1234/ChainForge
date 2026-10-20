@@ -1,9 +1,9 @@
-#include "chainforge/p2p/sync.hpp"
+#include "tokiwa/p2p/sync.hpp"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
 
-namespace chainforge::p2p {
+namespace tokiwa::p2p {
 
 SyncSession::SyncSession(ChainView view) : view_(std::move(view)) {}
 
@@ -402,4 +402,4 @@ bool protocol_self_check(std::string* error_out) {
     return true;
 }
 
-} // namespace chainforge::p2p
+} // namespace tokiwa::p2p

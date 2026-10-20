@@ -1,8 +1,8 @@
-#include "chainforge/node/config.hpp"
+#include "tokiwa/node/config.hpp"
 #include <fstream>
 #include <sstream>
 
-namespace chainforge::node {
+namespace tokiwa::node {
 namespace {
 
 std::string trim(std::string s) {
@@ -75,4 +75,4 @@ NodeConfig load_node_config(const std::string& path) {
     return cfg;
 }
 
-} // namespace chainforge::node
+} // namespace tokiwa::node

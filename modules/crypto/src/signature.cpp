@@ -1,9 +1,9 @@
-#include "chainforge/crypto/signature.hpp"
-#include "chainforge/crypto/hash.hpp"
+#include "tokiwa/crypto/signature.hpp"
+#include "tokiwa/crypto/hash.hpp"
 #include <secp256k1.h>
 #if __has_include(<secp256k1_recovery.h>)
 #include <secp256k1_recovery.h>
-#define CHAINFORGE_HAS_SECP_RECOVERY 1
+#define TOKIWA_HAS_SECP_RECOVERY 1
 #endif
 #include <sodium.h>
 #include <iomanip>
@@ -12,7 +12,7 @@
 #include <cstring>
 #include <algorithm>
 
-namespace chainforge::crypto {
+namespace tokiwa::crypto {
 namespace {
 
 secp256k1_context* secp_sign_ctx() {
@@ -73,7 +73,7 @@ CryptoResult<std::array<byte_t, 65>> Signature::ecdsa_secp256k1_sign_recoverable
         return CryptoResult<std::array<byte_t, 65>>{{}, CryptoError::INVALID_KEY};
     }
 
-#if defined(CHAINFORGE_HAS_SECP_RECOVERY)
+#if defined(TOKIWA_HAS_SECP_RECOVERY)
     secp256k1_ecdsa_recoverable_signature rsig;
     if (secp256k1_ecdsa_sign_recoverable(ctx, &rsig, digest.value.data(), private_key.data(),
                                          nullptr, nullptr) != 1) {
@@ -136,7 +136,7 @@ CryptoResult<Secp256k1PublicKey> Signature::ecdsa_secp256k1_recover_public_key(
     uint8_t recovery_id,
     bool compressed
 ) {
-#if !defined(CHAINFORGE_HAS_SECP_RECOVERY)
+#if !defined(TOKIWA_HAS_SECP_RECOVERY)
     (void)message; (void)signature; (void)recovery_id; (void)compressed;
     return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::UNSUPPORTED_ALGORITHM};
 #else
@@ -444,4 +444,4 @@ CryptoResult<bool> Signature::internal_bls_verify(
     return CryptoResult<bool>{true, CryptoError::SUCCESS};
 }
 
-} // namespace chainforge::crypto
+} // namespace tokiwa::crypto

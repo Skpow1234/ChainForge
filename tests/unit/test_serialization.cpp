@@ -1,15 +1,15 @@
 #include <gtest/gtest.h>
-#include "chainforge/serialization/serialization.hpp"
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/amount.hpp"
-#include "chainforge/core/timestamp.hpp"
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/serialization/serialization.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/amount.hpp"
+#include "tokiwa/core/timestamp.hpp"
+#include "tokiwa/core/hash.hpp"
 
-using namespace chainforge;
-using namespace chainforge::core;
-using namespace chainforge::serialization;
+using namespace tokiwa;
+using namespace tokiwa::core;
+using namespace tokiwa::serialization;
 
 class SerializationTest : public ::testing::Test {
 protected:

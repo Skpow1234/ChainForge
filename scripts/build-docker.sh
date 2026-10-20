@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# ChainForge Docker Build Script
+# Tokiwa Docker Build Script
 set -e
 
-echo "🐳 Building ChainForge with Docker..."
+echo "🐳 Building Tokiwa with Docker..."
 
 # Function to clean up
 cleanup() {
@@ -28,7 +28,7 @@ sleep 30
 
 # Test the build
 echo "🧪 Testing build..."
-if docker compose run --rm chainforge-tools /bin/bash -c "
+if docker compose run --rm tokiwa-tools /bin/bash -c "
     echo 'Testing Conan install...' &&
     conan profile detect --force &&
     conan install . --output-folder=build --build=missing &&
@@ -38,7 +38,7 @@ if docker compose run --rm chainforge-tools /bin/bash -c "
     echo 'Testing CMake build...' &&
     cmake --build . --parallel &&
     echo 'Testing binary execution...' &&
-    ./bin/cppchain-core-test
+    ./bin/tokiwa-core-test
 "; then
     echo "✅ Build and test completed successfully!"
 else
@@ -46,4 +46,4 @@ else
     exit 1
 fi
 
-echo "🎉 ChainForge build verification complete!"
+echo "🎉 Tokiwa build verification complete!"

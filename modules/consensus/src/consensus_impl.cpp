@@ -1,5 +1,5 @@
-#include "chainforge/consensus/consensus.hpp"
-#include "chainforge/core/hash.hpp"
+#include "tokiwa/consensus/consensus.hpp"
+#include "tokiwa/core/hash.hpp"
 #include <algorithm>
 #include <thread>
 #include <future>
@@ -7,7 +7,7 @@
 #include <limits>
 #include <cmath>
 
-namespace chainforge::consensus {
+namespace tokiwa::consensus {
 
 ProofOfWork::ProofOfWork(Difficulty initial_difficulty)
     : current_difficulty_(initial_difficulty)
@@ -50,7 +50,7 @@ const DifficultyParams& ProofOfWork::get_difficulty_params() const {
     return difficulty_params_;
 }
 
-MiningResult ProofOfWork::mine_block(const chainforge::core::Block& block_template) {
+MiningResult ProofOfWork::mine_block(const tokiwa::core::Block& block_template) {
     std::lock_guard<std::mutex> lock(mining_mutex_);
     mining_active_ = true;
     stop_requested_ = false;
@@ -61,7 +61,7 @@ MiningResult ProofOfWork::mine_block(const chainforge::core::Block& block_templa
     return result;
 }
 
-MiningResult ProofOfWork::mine_block_async(const chainforge::core::Block& block_template,
+MiningResult ProofOfWork::mine_block_async(const tokiwa::core::Block& block_template,
                                          std::function<void(MiningResult)> callback) {
     // For simplicity, we'll implement this synchronously for now
     // In a real implementation, this would use a thread pool or async framework
@@ -72,7 +72,7 @@ MiningResult ProofOfWork::mine_block_async(const chainforge::core::Block& block_
     return result;
 }
 
-MiningResult ProofOfWork::perform_mining(const chainforge::core::Block& block_template) {
+MiningResult ProofOfWork::perform_mining(const tokiwa::core::Block& block_template) {
     using clock = std::chrono::high_resolution_clock;
     auto start_time = clock::now();
 
@@ -126,27 +126,27 @@ MiningResult ProofOfWork::perform_mining(const chainforge::core::Block& block_te
     return MiningResult{
         false,          // success
         0,              // nonce
-        chainforge::core::Hash{}, // block_hash
+        tokiwa::core::Hash{}, // block_hash
         mining_time,    // mining_time
         attempts        // attempts
     };
 }
 
-chainforge::core::Hash ProofOfWork::calculate_block_hash(const chainforge::core::Block& block, uint64_t nonce) const {
+tokiwa::core::Hash ProofOfWork::calculate_block_hash(const tokiwa::core::Block& block, uint64_t nonce) const {
     // Keep mining hash identical to Block::calculate_hash (nonce in header)
-    chainforge::core::Block candidate = block;
+    tokiwa::core::Block candidate = block;
     candidate.set_nonce(nonce);
     return candidate.calculate_hash();
 }
 
-bool ProofOfWork::meets_difficulty_target(const chainforge::core::Hash& hash, Difficulty difficulty) const {
+bool ProofOfWork::meets_difficulty_target(const tokiwa::core::Hash& hash, Difficulty difficulty) const {
     // Simplified difficulty check: hash value must be less than target
     // In Bitcoin, difficulty is encoded as a target value where hash < target
     auto hash_difficulty = hash_to_difficulty(hash);
     return hash_difficulty >= difficulty;
 }
 
-Difficulty ProofOfWork::hash_to_difficulty(const chainforge::core::Hash& hash) const {
+Difficulty ProofOfWork::hash_to_difficulty(const tokiwa::core::Hash& hash) const {
     // Convert hash to difficulty representation
     // Lower hash values = higher difficulty
     const auto& bytes = hash.to_bytes();
@@ -163,7 +163,7 @@ Difficulty ProofOfWork::hash_to_difficulty(const chainforge::core::Hash& hash) c
     return std::numeric_limits<Difficulty>::max() / hash_value;
 }
 
-bool ProofOfWork::validate_block(const chainforge::core::Block& block) const {
+bool ProofOfWork::validate_block(const tokiwa::core::Block& block) const {
     if (!block.is_valid()) {
         return false;
     }
@@ -176,7 +176,7 @@ bool ProofOfWork::validate_block(const chainforge::core::Block& block) const {
     return meets_difficulty_target(actual, current_difficulty_);
 }
 
-bool ProofOfWork::validate_proof_of_work(const chainforge::core::Hash& block_hash,
+bool ProofOfWork::validate_proof_of_work(const tokiwa::core::Hash& block_hash,
                                        uint64_t /*nonce*/,
                                        Difficulty difficulty) const {
     // Without the full header, only check the hash meets the difficulty target.
@@ -234,7 +234,7 @@ std::unique_ptr<ProofOfWork> create_pow_consensus(Difficulty initial_difficulty)
 // PoW utility functions
 namespace pow {
 
-Difficulty difficulty_from_target(const chainforge::core::Hash& target) {
+Difficulty difficulty_from_target(const tokiwa::core::Hash& target) {
     // Convert target hash to difficulty
     const auto& bytes = target.to_bytes();
     Difficulty target_value = 0;
@@ -247,7 +247,7 @@ Difficulty difficulty_from_target(const chainforge::core::Hash& target) {
     return std::numeric_limits<Difficulty>::max() / target_value;
 }
 
-chainforge::core::Hash target_from_difficulty(Difficulty difficulty) {
+tokiwa::core::Hash target_from_difficulty(Difficulty difficulty) {
     if (difficulty == 0) difficulty = 1;
 
     Difficulty target_value = std::numeric_limits<Difficulty>::max() / difficulty;
@@ -257,7 +257,7 @@ chainforge::core::Hash target_from_difficulty(Difficulty difficulty) {
         target_bytes[24 + i] = static_cast<uint8_t>((target_value >> ((7 - i) * 8)) & 0xFF);
     }
 
-    return chainforge::core::Hash(target_bytes);
+    return tokiwa::core::Hash(target_bytes);
 }
 
 uint64_t estimate_mining_time_seconds(Difficulty difficulty, double hash_rate_hps) {
@@ -324,4 +324,4 @@ Difficulty ethereum_style_adjustment(const std::vector<uint64_t>& recent_block_t
 
 } // namespace pow
 
-} // namespace chainforge::consensus
+} // namespace tokiwa::consensus

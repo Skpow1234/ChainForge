@@ -1,6 +1,6 @@
 /**
  * @file test_framework_demo.cpp
- * @brief Demonstration of the ChainForge testing framework features
+ * @brief Demonstration of the Tokiwa testing framework features
  * 
  * This file showcases all the testing capabilities:
  * - Test fixtures
@@ -16,8 +16,8 @@
 #include "test_helpers.hpp"
 #include "mock_objects.hpp"
 
-using namespace chainforge;
-using namespace chainforge::testing;
+using namespace tokiwa;
+using namespace tokiwa::testing;
 using ::testing::Return;
 using ::testing::_;
 

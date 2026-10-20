@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #endif
 
-namespace chainforge::rpc {
+namespace tokiwa::rpc {
 
 class HttpServer::SocketImpl {
 public:
@@ -337,4 +337,4 @@ void HttpServer::parse_headers(const std::vector<std::string>& header_lines,
     }
 }
 
-} // namespace chainforge::rpc
+} // namespace tokiwa::rpc

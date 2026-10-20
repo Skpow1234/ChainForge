@@ -1,11 +1,11 @@
-#include "chainforge/metrics/metrics_server.hpp"
-#include "chainforge/metrics/metrics_registry.hpp"
+#include "tokiwa/metrics/metrics_server.hpp"
+#include "tokiwa/metrics/metrics_registry.hpp"
 #include <sstream>
 #include <stdexcept>
 #include <mutex>
 #include <iostream>
 
-namespace chainforge::metrics {
+namespace tokiwa::metrics {
 
 bool MetricsServerConfig::is_valid() const {
     return port > 0 && port <= 65535 && !host.empty() && !path.empty();
@@ -122,4 +122,4 @@ std::string get_metrics_url() {
     return "";
 }
 
-} // namespace chainforge::metrics
+} // namespace tokiwa::metrics

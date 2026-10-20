@@ -1,4 +1,4 @@
-# ChainForge Docker Fixes
+# Tokiwa Docker Fixes
 
 ## Problem Description
 
@@ -96,18 +96,18 @@ docker-compose up --build
 
 # Run specific services
 docker-compose up --build postgres redis prometheus grafana
-docker-compose up --build chainforge-node
-docker-compose up --build chainforge-explorer
+docker-compose up --build tokiwa-node
+docker-compose up --build tokiwa-explorer
 ```
 
 ### **Development Tools**
 
 ```bash
 # Run development tools container
-docker-compose --profile tools up chainforge-tools
+docker-compose --profile tools up tokiwa-tools
 
 # Or run interactively
-docker run -it --rm -v $(pwd):/app chainforge-tools:latest
+docker run -it --rm -v $(pwd):/app tokiwa-tools:latest
 ```
 
 ## Build Process
@@ -117,13 +117,13 @@ docker run -it --rm -v $(pwd):/app chainforge-tools:latest
 - Ubuntu 22.04 base
 - Install build tools (CMake, Ninja, Conan)
 - Install development libraries
-- Build ChainForge binaries
+- Build Tokiwa binaries
 
 ### **2. Runtime Stage**
 
 - Minimal Ubuntu 22.04
 - Only runtime dependencies
-- Non-root user (`chainforge`)
+- Non-root user (`tokiwa`)
 - Optimized for production
 
 ### **3. Dependencies**
@@ -152,16 +152,16 @@ docker run -it --rm -v $(pwd):/app chainforge-tools:latest
 
 ```bash
 # Check build logs
-docker-compose build --no-cache chainforge-node
+docker-compose build --no-cache tokiwa-node
 
 # Inspect image layers
-docker history chainforge-node:latest
+docker history tokiwa-node:latest
 
 # Run container interactively
-docker run -it --rm chainforge-node:latest /bin/bash
+docker run -it --rm tokiwa-node:latest /bin/bash
 
 # Check container logs
-docker-compose logs chainforge-node
+docker-compose logs tokiwa-node
 ```
 
 ## Performance Metrics
@@ -214,4 +214,4 @@ The Docker fixes resolve the core reliability issues while improving security, p
 - **Optimized images** through multi-stage builds
 - **Easier debugging** with standard base images
 
-You can now confidently build and deploy ChainForge containers without the permission errors that were plaguing the original setup.
+You can now confidently build and deploy Tokiwa containers without the permission errors that were plaguing the original setup.

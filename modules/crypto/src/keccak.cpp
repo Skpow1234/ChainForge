@@ -1,11 +1,11 @@
-#include "chainforge/crypto/keccak.hpp"
-#include "chainforge/crypto/hash.hpp"
+#include "tokiwa/crypto/keccak.hpp"
+#include "tokiwa/crypto/hash.hpp"
 #include <algorithm>
 #include <cstring>
 #include <iomanip>
 #include <sstream>
 
-namespace chainforge::crypto {
+namespace tokiwa::crypto {
 namespace {
 
 // Keccak-f[1600] round constants
@@ -292,4 +292,4 @@ CryptoResult<Hash256> Keccak::internal_keccak(const byte_t* data, size_t length,
     return CryptoResult<Hash256>{out, CryptoError::SUCCESS};
 }
 
-} // namespace chainforge::crypto
+} // namespace tokiwa::crypto

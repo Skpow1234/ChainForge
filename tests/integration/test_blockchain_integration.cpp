@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/core/address.hpp"
-#include "chainforge/core/amount.hpp"
-#include "chainforge/crypto/keypair.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/core/address.hpp"
+#include "tokiwa/core/amount.hpp"
+#include "tokiwa/crypto/keypair.hpp"
 #include <vector>
 
-namespace chainforge::integration::test {
+namespace tokiwa::integration::test {
 
 class BlockchainIntegrationTest : public ::testing::Test {
 protected:
@@ -419,4 +419,4 @@ TEST_F(BlockchainIntegrationTest, LargeBlockHandling) {
     EXPECT_TRUE(validation_result.has_value());
 }
 
-} // namespace chainforge::integration::test
+} // namespace tokiwa::integration::test

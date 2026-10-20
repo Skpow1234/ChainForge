@@ -1,8 +1,8 @@
-#include "chainforge/crypto/random.hpp"
+#include "tokiwa/crypto/random.hpp"
 #include <algorithm>
 #include <stdexcept>
 
-namespace chainforge::crypto {
+namespace tokiwa::crypto {
 
 // Thread-local random device and generator
 thread_local std::random_device Random::random_device_;
@@ -132,4 +132,4 @@ std::random_device& Random::get_random_device() {
     return random_device_;
 }
 
-} // namespace chainforge::crypto
+} // namespace tokiwa::crypto

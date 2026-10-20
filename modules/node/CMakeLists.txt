@@ -5,27 +5,27 @@ set(NODE_SOURCES
     src/config.cpp
 )
 
-add_executable(chainforge-node ${NODE_SOURCES})
+add_executable(tokiwa-node ${NODE_SOURCES})
 
-target_include_directories(chainforge-node
+target_include_directories(tokiwa-node
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_compile_features(chainforge-node PRIVATE cxx_std_20)
+target_compile_features(tokiwa-node PRIVATE cxx_std_20)
 
-target_link_libraries(chainforge-node
+target_link_libraries(tokiwa-node
     PRIVATE
-        chainforge-core
-        chainforge-crypto
-        chainforge-storage
-        chainforge-consensus
-        chainforge-mempool
-        chainforge-rpc
-        chainforge-p2p
+        tokiwa-core
+        tokiwa-crypto
+        tokiwa-storage
+        tokiwa-consensus
+        tokiwa-mempool
+        tokiwa-rpc
+        tokiwa-p2p
 )
 
-install(TARGETS chainforge-node
-    EXPORT ChainForgeTargets
+install(TARGETS tokiwa-node
+    EXPORT TokiwaTargets
     RUNTIME DESTINATION bin
 )

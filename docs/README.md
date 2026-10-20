@@ -1,4 +1,4 @@
-# ChainForge Documentation
+# Tokiwa Documentation
 
 Index for project docs. Start with the [root README](../README.md) for a quick overview.
 

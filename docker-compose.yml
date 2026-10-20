@@ -2,29 +2,29 @@ services:
   # Database layer
   postgres:
     image: postgres:15-alpine
-    container_name: chainforge-postgres
+    container_name: tokiwa-postgres
     environment:
-      POSTGRES_DB: chainforge
-      POSTGRES_USER: chainforge
-      POSTGRES_PASSWORD: chainforge_pass
+      POSTGRES_DB: tokiwa
+      POSTGRES_USER: tokiwa
+      POSTGRES_PASSWORD: tokiwa_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./deploy/postgres/init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chainforge"]
+      test: ["CMD-SHELL", "pg_isready -U tokiwa"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - chainforge-network
+      - tokiwa-network
 
   # Caching layer
   redis:
     image: redis:7-alpine
-    container_name: chainforge-redis
-    command: redis-server --appendonly yes --requirepass chainforge_redis_pass
+    container_name: tokiwa-redis
+    command: redis-server --appendonly yes --requirepass tokiwa_redis_pass
     volumes:
       - redis_data:/data
     ports:
@@ -35,12 +35,12 @@ services:
       timeout: 3s
       retries: 5
     networks:
-      - chainforge-network
+      - tokiwa-network
 
   # Metrics collection
   prometheus:
     image: prom/prometheus:v2.48.0
-    container_name: chainforge-prometheus
+    container_name: tokiwa-prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -54,14 +54,14 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - chainforge-network
+      - tokiwa-network
 
   # Metrics visualization
   grafana:
     image: grafana/grafana:10.2.0
-    container_name: chainforge-grafana
+    container_name: tokiwa-grafana
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: chainforge_grafana_pass
+      GF_SECURITY_ADMIN_PASSWORD: tokiwa_grafana_pass
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - grafana_data:/var/lib/grafana
@@ -72,12 +72,12 @@ services:
     depends_on:
       - prometheus
     networks:
-      - chainforge-network
+      - tokiwa-network
 
   # Distributed tracing
   jaeger:
     image: jaegertracing/all-in-one:1.53
-    container_name: chainforge-jaeger
+    container_name: tokiwa-jaeger
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
     ports:
@@ -87,15 +87,15 @@ services:
       - "6831:6831/udp"  # UDP collector
       - "6832:6832/udp"  # UDP collector
     networks:
-      - chainforge-network
+      - tokiwa-network
 
-  # C++ Chain Node (will be built from source)
-  chainforge-node:
+  # Tokiwa node (built from source)
+  tokiwa-node:
     build:
       context: .
       dockerfile: deploy/docker/Dockerfile.node
       target: runtime
-    container_name: chainforge-node
+    container_name: tokiwa-node
     environment:
       NODE_ENV: development
       LOG_LEVEL: debug
@@ -120,21 +120,21 @@ services:
       jaeger:
         condition: service_started
     networks:
-      - chainforge-network
+      - tokiwa-network
     restart: unless-stopped
 
   # Blockchain Explorer (will be built from source)
-  chainforge-explorer:
+  tokiwa-explorer:
     build:
       context: .
       dockerfile: deploy/docker/Dockerfile.explorer
       target: runtime
-    container_name: chainforge-explorer
+    container_name: tokiwa-explorer
     environment:
       EXPLORER_ENV: development
       LOG_LEVEL: debug
-      REDIS_URL: redis://:chainforge_redis_pass@redis:6379
-      POSTGRES_URL: postgresql://chainforge:chainforge_pass@postgres:5432/chainforge
+      REDIS_URL: redis://:tokiwa_redis_pass@redis:6379
+      POSTGRES_URL: postgresql://tokiwa:tokiwa_pass@postgres:5432/tokiwa
       PROMETHEUS_PORT: 8081
     volumes:
       - ./config:/app/config
@@ -147,18 +147,18 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      chainforge-node:
+      tokiwa-node:
         condition: service_started
     networks:
-      - chainforge-network
+      - tokiwa-network
     restart: unless-stopped
 
   # Development tools
-  chainforge-tools:
+  tokiwa-tools:
     build:
       context: .
       dockerfile: deploy/docker/Dockerfile.tools
-    container_name: chainforge-tools
+    container_name: tokiwa-tools
     volumes:
       - ./tools:/app/tools
       - ./config:/app/config
@@ -166,7 +166,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - chainforge-network
+      - tokiwa-network
     profiles:
       - tools
 
@@ -183,7 +183,7 @@ volumes:
     driver: local
 
 networks:
-  chainforge-network:
+  tokiwa-network:
     driver: bridge
     ipam:
       config:

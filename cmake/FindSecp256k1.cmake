@@ -1,5 +1,5 @@
 # FindSecp256k1.cmake - Find or build secp256k1 library
-# This module provides secp256k1 as an imported target for ChainForge
+# This module provides secp256k1 as an imported target for Tokiwa
 # Follows production-grade practices for blockchain projects
 
 include(ExternalProject)
@@ -103,12 +103,12 @@ if(NOT TARGET secp256k1::secp256k1)
         # For built-from-source, use the CMake target directly
         add_library(secp256k1::secp256k1 ALIAS secp256k1)
         
-        # Add secp256k1 to the export set so it can be exported with ChainForgeTargets
+        # Add secp256k1 to the export set so it can be exported with TokiwaTargets
         set_target_properties(secp256k1 PROPERTIES
             EXPORT_NAME secp256k1
         )
         install(TARGETS secp256k1
-            EXPORT ChainForgeTargets
+            EXPORT TokiwaTargets
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib
             RUNTIME DESTINATION bin

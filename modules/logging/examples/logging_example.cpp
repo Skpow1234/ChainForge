@@ -1,9 +1,9 @@
-#include "chainforge/logging/logging.hpp"
+#include "tokiwa/logging/logging.hpp"
 #include <thread>
 #include <chrono>
 #include <iostream>
 
-using namespace chainforge::logging;
+using namespace tokiwa::logging;
 
 void demonstrate_basic_logging() {
     std::cout << "\n=== Basic Logging Demo ===" << std::endl;
@@ -56,7 +56,7 @@ void demonstrate_performance_logging() {
     
     // RAII timer example
     {
-        CHAINFORGE_PERF_TIMER(logger, "database_operation");
+        TOKIWA_PERF_TIMER(logger, "database_operation");
         
         // Simulate database work
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -86,10 +86,10 @@ void demonstrate_performance_logging() {
 void demonstrate_convenience_macros() {
     std::cout << "\n=== Convenience Macros Demo ===" << std::endl;
     
-    CHAINFORGE_LOG_INFO("Application startup complete");
-    CHAINFORGE_LOG_DEBUG("Debug info: version={}, build={}", "1.0.0", "abc123");
-    CHAINFORGE_LOG_WARN("Resource usage is high: {}%", 85);
-    CHAINFORGE_LOG_ERROR("Failed to connect to service: {}", "database");
+    TOKIWA_LOG_INFO("Application startup complete");
+    TOKIWA_LOG_DEBUG("Debug info: version={}, build={}", "1.0.0", "abc123");
+    TOKIWA_LOG_WARN("Resource usage is high: {}%", 85);
+    TOKIWA_LOG_ERROR("Failed to connect to service: {}", "database");
 }
 
 void demonstrate_different_loggers() {
@@ -110,7 +110,7 @@ void demonstrate_different_loggers() {
 
 int main() {
     try {
-        std::cout << "ChainForge Logging System Demo" << std::endl;
+        std::cout << "Tokiwa Logging System Demo" << std::endl;
         std::cout << "===============================" << std::endl;
         
         // Initialize logging with defaults
@@ -129,7 +129,7 @@ int main() {
         demonstrate_different_loggers();
         
         std::cout << "\n=== Demo Complete ===" << std::endl;
-        std::cout << "Check the 'logs/chainforge.log' file for JSON formatted output" << std::endl;
+        std::cout << "Check the 'logs/tokiwa.log' file for JSON formatted output" << std::endl;
         
         // Flush all logs before shutdown
         LogManager::instance().flush_all();

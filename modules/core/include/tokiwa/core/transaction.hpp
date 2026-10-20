@@ -1,0 +1,120 @@
+#pragma once
+
+#include "types.hpp"
+#include "hash.hpp"
+#include "address.hpp"
+#include "amount.hpp"
+#include <vector>
+#include <memory>
+#include <optional>
+
+namespace tokiwa::core {
+
+/**
+ * Transaction class representing a blockchain transaction
+ * Contains transaction data and validation logic
+ */
+class Transaction {
+public:
+    // Constructors
+    Transaction() = default;
+    Transaction(const Address& from, const Address& to, const Amount& value);
+    Transaction(const TransactionData& data);
+    
+    // Copy and move
+    Transaction(const Transaction&) = default;
+    Transaction(Transaction&&) = default;
+    Transaction& operator=(const Transaction&) = default;
+    Transaction& operator=(Transaction&&) = default;
+    
+    // Destructor
+    ~Transaction() = default;
+    
+    // Accessors
+    const TransactionData& data() const noexcept { return data_; }
+    TransactionData& data() noexcept { return data_; }
+    
+    // Field accessors
+    Address from() const noexcept { return Address(data_.from); }
+    Address to() const noexcept { return Address(data_.to); }
+    Amount value() const noexcept { return Amount::from_wei(data_.value); }
+    GasLimit gas_limit() const noexcept { return data_.gas_limit; }
+    GasPrice gas_price() const noexcept { return data_.gas_price; }
+    const std::vector<uint8_t>& payload() const noexcept { return data_.data; }
+    uint64_t nonce() const noexcept { return data_.nonce; }
+    
+    // Setters
+    void set_from(const Address& from);
+    void set_to(const Address& to);
+    void set_value(const Amount& value);
+    void set_gas_limit(GasLimit gas_limit);
+    void set_gas_price(GasPrice gas_price);
+    void set_data(const std::vector<uint8_t>& data);
+    void set_nonce(uint64_t nonce);
+    void set_signature(const std::vector<uint8_t>& signature);
+    void set_chain_id(uint64_t chain_id);
+
+    uint64_t chain_id() const noexcept { return data_.chain_id; }
+    const std::vector<uint8_t>& signature() const noexcept { return data_.signature; }
+
+    /// Sign with secp256k1 private key (32 bytes). Stores compact r||s||v (65 bytes)
+    /// and sets `from` from the recovered address when successful.
+    bool sign(const std::vector<uint8_t>& private_key);
+
+    // Transaction operations
+    Hash calculate_hash() const;
+    /// keccak256(rlp(unsigned legacy or EIP-155 signing payload))
+    Hash signing_hash() const;
+    std::vector<uint8_t> rlp_encode_unsigned() const;
+    std::vector<uint8_t> rlp_encode_signed() const;
+    static Transaction from_rlp(const std::vector<uint8_t>& rlp_bytes);
+    Amount calculate_fee() const;
+    bool is_contract_creation() const noexcept;
+    bool is_contract_call() const noexcept;
+    bool is_transfer() const noexcept;
+    
+    // Validation
+    bool is_valid() const;
+    bool validate_signature() const;
+    bool validate_gas() const;
+    bool validate_amount() const;
+    
+    // Size and capacity
+    size_t size() const;
+    bool is_too_large() const;
+    
+    // Utility methods
+    std::string to_string() const;
+    std::string to_json() const;
+    std::string to_hex() const;
+    static std::optional<Transaction> from_json(const std::string& json_str);
+
+private:
+    TransactionData data_;
+    mutable std::optional<Hash> cached_hash_;
+    
+    // Helper methods
+    void invalidate_cache();
+    bool validate_addresses() const;
+    bool validate_nonce() const;
+};
+
+// Free functions
+std::ostream& operator<<(std::ostream& os, const Transaction& transaction);
+bool operator==(const Transaction& lhs, const Transaction& rhs);
+bool operator!=(const Transaction& lhs, const Transaction& rhs);
+
+// Transaction creation helpers
+Transaction create_transfer_transaction(const Address& from, const Address& to, const Amount& value);
+Transaction create_contract_transaction(const Address& from, const std::vector<uint8_t>& contract_data);
+Transaction create_contract_call_transaction(const Address& from, const Address& contract, const std::vector<uint8_t>& call_data);
+
+// Transaction validation
+bool is_valid_transaction(const Transaction& transaction);
+bool is_valid_transaction_data(const TransactionData& data);
+
+// Gas calculation
+GasLimit estimate_gas(const Transaction& transaction);
+Amount calculate_transaction_fee(const Transaction& transaction);
+
+} // namespace tokiwa::core

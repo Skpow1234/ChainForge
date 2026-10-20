@@ -7,13 +7,13 @@ set(STORAGE_SOURCES
 )
 
 set(STORAGE_HEADERS
-    include/chainforge/storage/database.hpp
-    include/chainforge/storage/backend.hpp
+    include/tokiwa/storage/database.hpp
+    include/tokiwa/storage/backend.hpp
 )
 
-add_library(chainforge-storage STATIC ${STORAGE_SOURCES} ${STORAGE_HEADERS})
+add_library(tokiwa-storage STATIC ${STORAGE_SOURCES} ${STORAGE_HEADERS})
 
-target_include_directories(chainforge-storage
+target_include_directories(tokiwa-storage
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -21,32 +21,32 @@ target_include_directories(chainforge-storage
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_compile_features(chainforge-storage PRIVATE cxx_std_20)
+target_compile_features(tokiwa-storage PRIVATE cxx_std_20)
 
-option(CHAINFORGE_USE_ROCKSDB "Enable RocksDB storage backend when available" ON)
+option(TOKIWA_USE_ROCKSDB "Enable RocksDB storage backend when available" ON)
 
-set(CHAINFORGE_HAS_ROCKSDB OFF)
-if(CHAINFORGE_USE_ROCKSDB)
+set(TOKIWA_HAS_ROCKSDB OFF)
+if(TOKIWA_USE_ROCKSDB)
     find_path(ROCKSDB_INCLUDE_DIR NAMES rocksdb/db.h)
     find_library(ROCKSDB_LIBRARY NAMES rocksdb)
     if(ROCKSDB_INCLUDE_DIR AND ROCKSDB_LIBRARY)
-        set(CHAINFORGE_HAS_ROCKSDB ON)
-        target_compile_definitions(chainforge-storage PRIVATE CHAINFORGE_HAS_ROCKSDB=1)
-        target_include_directories(chainforge-storage PRIVATE ${ROCKSDB_INCLUDE_DIR})
-        target_link_libraries(chainforge-storage PRIVATE ${ROCKSDB_LIBRARY})
+        set(TOKIWA_HAS_ROCKSDB ON)
+        target_compile_definitions(tokiwa-storage PRIVATE TOKIWA_HAS_ROCKSDB=1)
+        target_include_directories(tokiwa-storage PRIVATE ${ROCKSDB_INCLUDE_DIR})
+        target_link_libraries(tokiwa-storage PRIVATE ${ROCKSDB_LIBRARY})
         message(STATUS "Storage: RocksDB enabled (${ROCKSDB_LIBRARY})")
     else()
         message(STATUS "Storage: RocksDB not found; file-KV used for rocksdb backend")
     endif()
 endif()
 
-target_link_libraries(chainforge-storage
+target_link_libraries(tokiwa-storage
     PRIVATE
-        chainforge-core
+        tokiwa-core
 )
 
-install(TARGETS chainforge-storage
-    EXPORT ChainForgeTargets
+install(TARGETS tokiwa-storage
+    EXPORT TokiwaTargets
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

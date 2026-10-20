@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chainforge/rpc/rpc_server.hpp"
+#include "tokiwa/rpc/rpc_server.hpp"
 #include <string>
 #include <thread>
 #include <atomic>
@@ -8,7 +8,7 @@
 #include <condition_variable>
 #include <unordered_map>
 
-namespace chainforge::rpc {
+namespace tokiwa::rpc {
 
 /**
  * Simple HTTP server implementation
@@ -56,4 +56,4 @@ private:
     void handle_connection(int client_socket);
 };
 
-} // namespace chainforge::rpc
+} // namespace tokiwa::rpc

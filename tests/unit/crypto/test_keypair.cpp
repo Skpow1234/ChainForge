@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include "chainforge/crypto/keypair.hpp"
-#include "chainforge/crypto/signature.hpp"
+#include "tokiwa/crypto/keypair.hpp"
+#include "tokiwa/crypto/signature.hpp"
 #include <vector>
 
-namespace chainforge::crypto::test {
+namespace tokiwa::crypto::test {
 
 class KeyPairTest : public ::testing::Test {
 protected:
@@ -322,4 +322,4 @@ TEST_F(KeyPairTest, KeyPairWithCorruptedPrivateKey) {
     EXPECT_FALSE(validation_result.value());
 }
 
-} // namespace chainforge::crypto::test
+} // namespace tokiwa::crypto::test

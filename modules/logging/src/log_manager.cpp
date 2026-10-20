@@ -1,12 +1,12 @@
-#include "chainforge/logging/log_manager.hpp"
-#include "chainforge/logging/json_formatter.hpp"
+#include "tokiwa/logging/log_manager.hpp"
+#include "tokiwa/logging/json_formatter.hpp"
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <filesystem>
 #include <iostream>
 
-namespace chainforge::logging {
+namespace tokiwa::logging {
 
 LogManager& LogManager::instance() {
     static LogManager instance;
@@ -179,11 +179,11 @@ Logger& get_logger(const std::string& name) {
 }
 
 Logger& get_default_logger() {
-    return LogManager::instance().get_logger("chainforge");
+    return LogManager::instance().get_logger("tokiwa");
 }
 
 Logger& get_performance_logger() {
     return LogManager::instance().get_performance_logger();
 }
 
-} // namespace chainforge::logging
+} // namespace tokiwa::logging

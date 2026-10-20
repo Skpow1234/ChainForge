@@ -1,4 +1,4 @@
-# Multi-stage build for ChainForge Explorer
+# Multi-stage build for Tokiwa Explorer
 # Stage 1: Build environment with Ubuntu and Conan
 FROM ubuntu:22.04 AS builder
 
@@ -46,7 +46,7 @@ COPY . .
 # Build the project
 RUN cd build && \
     cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DTREAT_WARNINGS_AS_ERRORS=OFF && \
-    cmake --build . --target cppchain-core-test --parallel
+    cmake --build . --target tokiwa-core-test --parallel
 
 # Stage 2: Runtime environment (minimal Ubuntu with complete C++ runtime)
 FROM ubuntu:22.04 AS runtime
@@ -72,26 +72,26 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN useradd -r -s /bin/false chainforge
+RUN useradd -r -s /bin/false tokiwa
 
 # Copy the binary
-COPY --from=builder /app/build/bin/cppchain-core-test /usr/local/bin/cppchain-explorer
+COPY --from=builder /app/build/bin/tokiwa-core-test /usr/local/bin/tokiwa-explorer
 
 # Copy runtime dependencies from build stage (including RocksDB)
 COPY --from=builder /app/build/lib/ /usr/local/lib/
 
 # Set ownership
-RUN chown -R chainforge:chainforge /usr/local/bin/cppchain-explorer /usr/local/lib/
+RUN chown -R tokiwa:tokiwa /usr/local/bin/tokiwa-explorer /usr/local/lib/
 
 # Switch to non-root user
-USER chainforge
+USER tokiwa
 
 # Expose ports
 EXPOSE 8081 4000 4001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD ["/usr/local/bin/cppchain-explorer", "--help"] || exit 1
+    CMD ["/usr/local/bin/tokiwa-explorer", "--help"] || exit 1
 
 # Default command
-CMD ["/usr/local/bin/cppchain-explorer"]
+CMD ["/usr/local/bin/tokiwa-explorer"]

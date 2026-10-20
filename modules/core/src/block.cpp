@@ -1,10 +1,10 @@
-#include "chainforge/core/block.hpp"
-#include "chainforge/core/transaction.hpp"
+#include "tokiwa/core/block.hpp"
+#include "tokiwa/core/transaction.hpp"
 #include <sstream>
 #include <algorithm>
 #include <nlohmann/json.hpp>
 
-namespace chainforge::core {
+namespace tokiwa::core {
 
 Block::Block(BlockHeight height, const Hash& parent_hash, const Timestamp& timestamp)
     : header_{height, parent_hash.data(), Hash::zero().data(), timestamp.seconds(), 0, 8000000, 1, 1},
@@ -308,4 +308,4 @@ bool is_valid_block_header(const BlockHeader& header) {
            header.chain_id > 0;
 }
 
-} // namespace chainforge::core
+} // namespace tokiwa::core

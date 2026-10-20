@@ -1,13 +1,13 @@
-#include "chainforge/core/transaction.hpp"
-#include "chainforge/core/rlp.hpp"
-#include "chainforge/crypto/signature.hpp"
+#include "tokiwa/core/transaction.hpp"
+#include "tokiwa/core/rlp.hpp"
+#include "tokiwa/crypto/signature.hpp"
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
 #include <stdexcept>
 #include <nlohmann/json.hpp>
 
-namespace chainforge::core {
+namespace tokiwa::core {
 
 Transaction::Transaction(const Address& from, const Address& to, const Amount& value)
     : data_{from.data(), to.data(), value.wei(), 21000, 1, {}, 0, {}, 0} {}
@@ -60,14 +60,14 @@ void Transaction::set_chain_id(uint64_t chain_id) {
 }
 
 bool Transaction::sign(const std::vector<uint8_t>& private_key) {
-    if (private_key.size() != chainforge::crypto::SECP256K1_PRIVATE_KEY_SIZE) {
+    if (private_key.size() != tokiwa::crypto::SECP256K1_PRIVATE_KEY_SIZE) {
         return false;
     }
-    chainforge::crypto::Secp256k1PrivateKey sk{};
+    tokiwa::crypto::Secp256k1PrivateKey sk{};
     std::copy(private_key.begin(), private_key.end(), sk.begin());
 
     const auto digest = signing_hash().to_bytes();
-    auto signed65 = chainforge::crypto::Signature::ecdsa_secp256k1_sign_recoverable(digest, sk);
+    auto signed65 = tokiwa::crypto::Signature::ecdsa_secp256k1_sign_recoverable(digest, sk);
     if (!signed65.success()) {
         return false;
     }
@@ -75,9 +75,9 @@ bool Transaction::sign(const std::vector<uint8_t>& private_key) {
     std::vector<uint8_t> sig(signed65.value.begin(), signed65.value.end());
     set_signature(sig);
 
-    chainforge::crypto::Secp256k1Signature compact{};
+    tokiwa::crypto::Secp256k1Signature compact{};
     std::copy(sig.begin(), sig.begin() + 64, compact.begin());
-    auto recovered = chainforge::crypto::Signature::ecdsa_secp256k1_recover_public_key(
+    auto recovered = tokiwa::crypto::Signature::ecdsa_secp256k1_recover_public_key(
         digest, compact, sig[64]);
     if (recovered.success()) {
         std::vector<uint8_t> pub(recovered.value.begin(), recovered.value.end());
@@ -203,9 +203,9 @@ Transaction Transaction::from_rlp(const std::vector<uint8_t>& rlp_bytes) {
     if (tx.validate_signature() && !data.signature.empty()) {
         // from filled inside validate_signature path below if recovery works — set via recover here
         auto msg = tx.signing_hash().to_bytes();
-        chainforge::crypto::Secp256k1Signature compact{};
+        tokiwa::crypto::Secp256k1Signature compact{};
         std::copy(data.signature.begin(), data.signature.begin() + 64, compact.begin());
-        auto recovered = chainforge::crypto::Signature::ecdsa_secp256k1_recover_public_key(
+        auto recovered = tokiwa::crypto::Signature::ecdsa_secp256k1_recover_public_key(
             msg, compact, data.signature[64]);
         if (recovered.success()) {
             std::vector<uint8_t> pub(recovered.value.begin(), recovered.value.end());
@@ -247,11 +247,11 @@ bool Transaction::validate_signature() const {
         return false;
     }
 
-    chainforge::crypto::Secp256k1Signature compact{};
+    tokiwa::crypto::Secp256k1Signature compact{};
     std::copy(data_.signature.begin(), data_.signature.begin() + 64, compact.begin());
     const uint8_t recovery_id = data_.signature[64];
     auto msg = signing_hash().to_bytes();
-    auto recovered = chainforge::crypto::Signature::ecdsa_secp256k1_recover_public_key(
+    auto recovered = tokiwa::crypto::Signature::ecdsa_secp256k1_recover_public_key(
         msg, compact, recovery_id);
     if (!recovered.success()) {
         return false;
@@ -476,4 +476,4 @@ Amount calculate_transaction_fee(const Transaction& transaction) {
     return transaction.calculate_fee();
 }
 
-} // namespace chainforge::core
+} // namespace tokiwa::core

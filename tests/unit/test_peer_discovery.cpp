@@ -6,12 +6,12 @@
  */
 
 #include <gtest/gtest.h>
-#include "chainforge/p2p/peer_address.hpp"
-#include "chainforge/p2p/peer_discovery.hpp"
+#include "tokiwa/p2p/peer_address.hpp"
+#include "tokiwa/p2p/peer_discovery.hpp"
 #include <thread>
 #include <chrono>
 
-using namespace chainforge::p2p;
+using namespace tokiwa::p2p;
 using namespace std::chrono_literals;
 
 // ============================================================================

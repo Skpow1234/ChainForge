@@ -1,4 +1,4 @@
-# Tests configuration for ChainForge
+# Tests configuration for Tokiwa
 
 # Find Google Test
 find_conan_package(gtest)
@@ -81,7 +81,7 @@ add_executable(serialization_tests
 # Link test dependencies
 target_link_libraries(core_tests
     PRIVATE
-        chainforge-core
+        tokiwa-core
         GTest::gtest
         GTest::gtest_main
         Threads::Threads
@@ -90,8 +90,8 @@ target_link_libraries(core_tests
 # Link framework test dependencies
 target_link_libraries(framework_tests
     PRIVATE
-        chainforge-core
-        chainforge-serialization
+        tokiwa-core
+        tokiwa-serialization
         GTest::gtest
         GTest::gtest_main
         Threads::Threads
@@ -106,8 +106,8 @@ target_include_directories(framework_tests
 # Link network test dependencies
 target_link_libraries(network_tests
     PRIVATE
-        chainforge-core
-        chainforge-p2p
+        tokiwa-core
+        tokiwa-p2p
         GTest::gtest
         GTest::gtest_main
         Threads::Threads
@@ -116,8 +116,8 @@ target_link_libraries(network_tests
 # Link discovery test dependencies
 target_link_libraries(discovery_tests
     PRIVATE
-        chainforge-core
-        chainforge-p2p
+        tokiwa-core
+        tokiwa-p2p
         GTest::gtest
         GTest::gtest_main
         Threads::Threads
@@ -126,8 +126,8 @@ target_link_libraries(discovery_tests
 # Disabled until crypto module is fully implemented
 # target_link_libraries(crypto_tests
 #     PRIVATE
-#         chainforge-crypto
-#         chainforge-core
+#         tokiwa-crypto
+#         tokiwa-core
 #         GTest::gtest
 #         GTest::gtest_main
 # )
@@ -135,8 +135,8 @@ target_link_libraries(discovery_tests
 # Link serialization test dependencies
 target_link_libraries(serialization_tests
     PRIVATE
-        chainforge-serialization
-        chainforge-core
+        tokiwa-serialization
+        tokiwa-core
         GTest::gtest
         GTest::gtest_main
 )
@@ -144,7 +144,7 @@ target_link_libraries(serialization_tests
 # Disabled until logging module is implemented
 # target_link_libraries(logging_tests
 #     PRIVATE
-#         chainforge_logging
+#         tokiwa_logging
 #         GTest::gtest
 #         GTest::gtest_main
 # )
@@ -152,17 +152,17 @@ target_link_libraries(serialization_tests
 # Disabled until modules are fully implemented
 # target_link_libraries(integration_tests
 #     PRIVATE
-#         chainforge-core
-#         chainforge-crypto
-#         chainforge-p2p
+#         tokiwa-core
+#         tokiwa-crypto
+#         tokiwa-p2p
 #         GTest::gtest
 #         GTest::gtest_main
 # )
 
 # target_link_libraries(fuzz_tests
 #     PRIVATE
-#         chainforge-core
-#         chainforge-crypto
+#         tokiwa-core
+#         tokiwa-crypto
 #         GTest::gtest
 #         GTest::gtest_main
 # )
@@ -170,7 +170,7 @@ target_link_libraries(serialization_tests
 # Disabled until metrics module is implemented
 # target_link_libraries(metrics_tests
 #     PRIVATE
-#         chainforge_metrics
+#         tokiwa_metrics
 #         GTest::gtest
 #         GTest::gtest_main
 # )

@@ -1,10 +1,10 @@
-#include "chainforge/rpc/chain_state.hpp"
+#include "tokiwa/rpc/chain_state.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cctype>
 #include <sstream>
 
-namespace chainforge::rpc {
+namespace tokiwa::rpc {
 namespace {
 
 storage::Key to_key(const std::string& s) {
@@ -39,7 +39,7 @@ ChainState::ChainState(std::shared_ptr<storage::Database> db,
     : db_(std::move(db)), mempool_(std::move(mempool)), chain_id_(chain_id) {
     if (db_ && !db_->is_open()) {
         storage::DatabaseConfig cfg;
-        cfg.path = "./data/chainforge";
+        cfg.path = "./data/tokiwa";
         cfg.create_if_missing = true;
         db_->open(cfg);
     }
@@ -302,4 +302,4 @@ core::Hash ChainState::submit_transaction(const core::Transaction& tx) {
     return hash;
 }
 
-} // namespace chainforge::rpc
+} // namespace tokiwa::rpc

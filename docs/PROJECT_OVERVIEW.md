@@ -1,8 +1,8 @@
-# ChainForge Project Overview
+# Tokiwa Project Overview
 
 ## Executive Summary
 
-ChainForge is a production-grade crypto/blockchain client skeleton built in modern C++ (C++20/23). The project aims to provide a robust, secure, and performant foundation for blockchain applications with enterprise-grade features including comprehensive monitoring, security hardening, and production deployment capabilities.
+Tokiwa is a production-grade crypto/blockchain client skeleton built in modern C++ (C++20/23). The project aims to provide a robust, secure, and performant foundation for blockchain applications with enterprise-grade features including comprehensive monitoring, security hardening, and production deployment capabilities.
 
 ## Project Vision
 
@@ -46,7 +46,7 @@ ChainForge is a production-grade crypto/blockchain client skeleton built in mode
 
 ```bash
 ┌─────────────────────────────────────────────────────────────┐
-│                    ChainForge System                       │
+│                    Tokiwa System                       │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
 │  │   Explorer  │  │     Node    │  │    Tools    │        │
@@ -302,12 +302,12 @@ ChainForge is a production-grade crypto/blockchain client skeleton built in mode
 
 ## Conclusion
 
-ChainForge represents a significant opportunity to advance the state of blockchain technology through modern C++ development practices, comprehensive security measures, and enterprise-grade features. The project's success will be measured not only by technical achievements but also by its impact on the broader blockchain ecosystem and developer community.
+Tokiwa represents a significant opportunity to advance the state of blockchain technology through modern C++ development practices, comprehensive security measures, and enterprise-grade features. The project's success will be measured not only by technical achievements but also by its impact on the broader blockchain ecosystem and developer community.
 
-By focusing on security, performance, and developer experience, ChainForge aims to become the go-to platform for building production blockchain applications, contributing to the broader adoption and evolution of blockchain technology.
+By focusing on security, performance, and developer experience, Tokiwa aims to become the go-to platform for building production blockchain applications, contributing to the broader adoption and evolution of blockchain technology.
 
 ---
 
 **Document Version**: 1.0  
 **Last Updated**: 2024  
-**Maintained By**: ChainForge Team
+**Maintained By**: Tokiwa Team

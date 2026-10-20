@@ -1,6 +1,6 @@
 # Deployment
 
-ChainForge can be run locally with Docker Compose, packaged via multi-stage Dockerfiles, or deployed to Kubernetes with Helm. Application images currently build the core demo binary as a stand-in until a full `node` / `explorer` target exists.
+Tokiwa can be run locally with Docker Compose, packaged via multi-stage Dockerfiles, or deployed to Kubernetes with Helm. Application images currently build the core demo binary as a stand-in until a full `node` / `explorer` target exists.
 
 ## 1. Docker Compose (local / lab)
 
@@ -15,10 +15,10 @@ docker compose up -d postgres redis prometheus grafana jaeger
 
 # Build images
 docker compose build
-docker compose build chainforge-node
+docker compose build tokiwa-node
 
 # Optional tools profile
-docker compose --profile tools up -d chainforge-tools
+docker compose --profile tools up -d tokiwa-tools
 ```
 
 | Compose service | Dockerfile | Notes |
@@ -26,9 +26,9 @@ docker compose --profile tools up -d chainforge-tools
 | `postgres` | official image | Init SQL under `deploy/postgres/init/` |
 | `redis` | official image | Password required in URL |
 | `prometheus` / `grafana` / `jaeger` | official images | Config under `deploy/` |
-| `chainforge-node` | `deploy/docker/Dockerfile.node` | Ports 8080, 8545, 8546, 30303 |
-| `chainforge-explorer` | `deploy/docker/Dockerfile.explorer` | Ports 8081, 4000, 4001 |
-| `chainforge-tools` | `deploy/docker/Dockerfile.tools` | Profile `tools` |
+| `tokiwa-node` | `deploy/docker/Dockerfile.node` | Ports 8080, 8545, 8546, 30303 |
+| `tokiwa-explorer` | `deploy/docker/Dockerfile.explorer` | Ports 8081, 4000, 4001 |
+| `tokiwa-tools` | `deploy/docker/Dockerfile.tools` | Profile `tools` |
 
 Config is mounted from `./config` into the containers. Port map: [endpoints.md](./endpoints.md).
 
@@ -36,9 +36,9 @@ Config is mounted from `./config` into the containers. Port map: [endpoints.md](
 
 | System | User / secret |
 |--------|----------------|
-| Grafana | `admin` / `chainforge_grafana_pass` |
-| PostgreSQL | `chainforge` / `chainforge_pass` |
-| Redis | password `chainforge_redis_pass` |
+| Grafana | `admin` / `tokiwa_grafana_pass` |
+| PostgreSQL | `tokiwa` / `tokiwa_pass` |
+| Redis | password `tokiwa_redis_pass` |
 
 Prefer env files or secret managers; do not reuse these defaults outside localhost.
 
@@ -46,7 +46,7 @@ Prefer env files or secret managers; do not reuse these defaults outside localho
 
 ```bash
 # After Conan + CMake build:
-./build/bin/chainforge-node --config config/config.yaml --mine-once
+./build/bin/tokiwa-node --config config/config.yaml --mine-once
 # Health (same port as RPC):
 curl http://127.0.0.1:8545/health
 curl http://127.0.0.1:8545/ready
@@ -65,8 +65,8 @@ Multi-stage builds under `deploy/docker/`:
 Typical flow:
 
 ```bash
-docker build -f deploy/docker/Dockerfile.node --target runtime -t chainforge/chainforge-node:0.1.0 .
-docker build -f deploy/docker/Dockerfile.explorer --target runtime -t chainforge/chainforge-explorer:0.1.0 .
+docker build -f deploy/docker/Dockerfile.node --target runtime -t tokiwa/tokiwa-node:0.1.0 .
+docker build -f deploy/docker/Dockerfile.explorer --target runtime -t tokiwa/tokiwa-explorer:0.1.0 .
 ```
 
 ## 3. Kubernetes (Helm)
@@ -75,22 +75,22 @@ Charts live under `deploy/helm/`:
 
 | Chart | Path | Purpose |
 |-------|------|---------|
-| Node | `deploy/helm/node/` | ChainForge node Deployment/Service |
+| Node | `deploy/helm/node/` | Tokiwa node Deployment/Service |
 | Explorer | `deploy/helm/explorer/` | Explorer Deployment/Service |
 
 Example (after images are available to the cluster):
 
 ```bash
-helm upgrade --install chainforge-node ./deploy/helm/node \
-  --namespace chainforge --create-namespace
+helm upgrade --install tokiwa-node ./deploy/helm/node \
+  --namespace tokiwa --create-namespace
 
-helm upgrade --install chainforge-explorer ./deploy/helm/explorer \
-  --namespace chainforge
+helm upgrade --install tokiwa-explorer ./deploy/helm/explorer \
+  --namespace tokiwa
 ```
 
 Node chart defaults (`deploy/helm/node/values.yaml`) include:
 
-- Image `chainforge/chainforge-node:0.1.0`
+- Image `tokiwa/tokiwa-node:0.1.0`
 - Service ports: RPC `8545`, metrics `8080`, P2P `30303`
 - Persistence `100Gi` (when enabled)
 - Resource requests/limits (e.g. 500m–2000m CPU, 1–4Gi memory)

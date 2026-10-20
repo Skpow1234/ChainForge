@@ -1,7 +1,7 @@
-#include "chainforge/p2p/tcp_server.hpp"
+#include "tokiwa/p2p/tcp_server.hpp"
 #include <spdlog/spdlog.h>
 
-namespace chainforge {
+namespace tokiwa {
 namespace p2p {
 
 TcpServer::TcpServer(asio::io_context& io_context)
@@ -205,5 +205,5 @@ void TcpServer::handle_accept(
 }
 
 } // namespace p2p
-} // namespace chainforge
+} // namespace tokiwa
 

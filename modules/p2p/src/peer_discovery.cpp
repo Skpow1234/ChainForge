@@ -1,11 +1,11 @@
-#include "chainforge/p2p/peer_discovery.hpp"
+#include "tokiwa/p2p/peer_discovery.hpp"
 #include <spdlog/spdlog.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <algorithm>
 #include <random>
 #include <cstring>
 
-namespace chainforge {
+namespace tokiwa {
 namespace p2p {
 
 core::ErrorInfo PeerDiscovery::make_discovery_error(DiscoveryError code, const std::string& message) {
@@ -462,5 +462,5 @@ std::vector<PeerAddress> PeerExchange::select_peers_to_share(
 }
 
 } // namespace p2p
-} // namespace chainforge
+} // namespace tokiwa
 

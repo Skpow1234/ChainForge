@@ -1,9 +1,9 @@
 #include "mempool_impl.hpp"
-#include "chainforge/core/address.hpp"
+#include "tokiwa/core/address.hpp"
 #include <algorithm>
 #include <numeric>
 
-namespace chainforge::mempool {
+namespace tokiwa::mempool {
 
 MempoolImpl::MempoolImpl(const MempoolConfig& config) : config_(config) {}
 
@@ -17,7 +17,7 @@ const MempoolConfig& MempoolImpl::get_config() const {
     return config_;
 }
 
-MempoolError MempoolImpl::add_transaction(const chainforge::core::Transaction& transaction) {
+MempoolError MempoolImpl::add_transaction(const tokiwa::core::Transaction& transaction) {
     std::unique_lock lock(mutex_);
 
     auto tx_hash = transaction.calculate_hash();
@@ -66,7 +66,7 @@ MempoolError MempoolImpl::add_transaction(const chainforge::core::Transaction& t
     return MempoolError::SUCCESS;
 }
 
-MempoolError MempoolImpl::remove_transaction(const chainforge::core::Hash& tx_hash) {
+MempoolError MempoolImpl::remove_transaction(const tokiwa::core::Hash& tx_hash) {
     std::unique_lock lock(mutex_);
 
     auto it = transactions_.find(tx_hash);
@@ -94,7 +94,7 @@ MempoolError MempoolImpl::remove_transaction(const chainforge::core::Hash& tx_ha
     return MempoolError::SUCCESS;
 }
 
-std::optional<chainforge::core::Transaction> MempoolImpl::get_transaction(const chainforge::core::Hash& tx_hash) const {
+std::optional<tokiwa::core::Transaction> MempoolImpl::get_transaction(const tokiwa::core::Hash& tx_hash) const {
     std::shared_lock lock(mutex_);
 
     auto it = transactions_.find(tx_hash);
@@ -105,12 +105,12 @@ std::optional<chainforge::core::Transaction> MempoolImpl::get_transaction(const 
     return it->second.transaction;
 }
 
-bool MempoolImpl::has_transaction(const chainforge::core::Hash& tx_hash) const {
+bool MempoolImpl::has_transaction(const tokiwa::core::Hash& tx_hash) const {
     std::shared_lock lock(mutex_);
     return transactions_.find(tx_hash) != transactions_.end();
 }
 
-MempoolError MempoolImpl::replace_transaction(const chainforge::core::Transaction& new_transaction) {
+MempoolError MempoolImpl::replace_transaction(const tokiwa::core::Transaction& new_transaction) {
     std::unique_lock lock(mutex_);
 
     auto new_hash = new_transaction.calculate_hash();
@@ -166,10 +166,10 @@ MempoolError MempoolImpl::replace_transaction(const chainforge::core::Transactio
     return MempoolError::SUCCESS;
 }
 
-std::vector<chainforge::core::Transaction> MempoolImpl::get_top_transactions(size_t count) {
+std::vector<tokiwa::core::Transaction> MempoolImpl::get_top_transactions(size_t count) {
     std::shared_lock lock(mutex_);
 
-    std::vector<chainforge::core::Transaction> result;
+    std::vector<tokiwa::core::Transaction> result;
     result.reserve(std::min(count, transactions_.size()));
 
     // Copy priority queue to avoid modifying the original
@@ -188,10 +188,10 @@ std::vector<chainforge::core::Transaction> MempoolImpl::get_top_transactions(siz
     return result;
 }
 
-std::vector<chainforge::core::Transaction> MempoolImpl::get_transactions_for_block(size_t max_count, uint64_t max_gas_limit) {
+std::vector<tokiwa::core::Transaction> MempoolImpl::get_transactions_for_block(size_t max_count, uint64_t max_gas_limit) {
     std::shared_lock lock(mutex_);
 
-    std::vector<chainforge::core::Transaction> result;
+    std::vector<tokiwa::core::Transaction> result;
     uint64_t total_gas = 0;
 
     // Copy priority queue to avoid modifying the original
@@ -216,10 +216,10 @@ std::vector<chainforge::core::Transaction> MempoolImpl::get_transactions_for_blo
     return result;
 }
 
-std::vector<chainforge::core::Hash> MempoolImpl::get_all_transaction_hashes() const {
+std::vector<tokiwa::core::Hash> MempoolImpl::get_all_transaction_hashes() const {
     std::shared_lock lock(mutex_);
 
-    std::vector<chainforge::core::Hash> hashes;
+    std::vector<tokiwa::core::Hash> hashes;
     hashes.reserve(transactions_.size());
 
     for (const auto& [hash, entry] : transactions_) {
@@ -289,7 +289,7 @@ MempoolStats MempoolImpl::get_stats() const {
     return stats;
 }
 
-bool MempoolImpl::validate_transaction(const chainforge::core::Transaction& transaction) const {
+bool MempoolImpl::validate_transaction(const tokiwa::core::Transaction& transaction) const {
     return validate_basic_properties(transaction) &&
            validate_fee(transaction) &&
            validate_nonce(transaction) &&
@@ -297,8 +297,8 @@ bool MempoolImpl::validate_transaction(const chainforge::core::Transaction& tran
            validate_size(transaction);
 }
 
-MempoolError MempoolImpl::check_replacement_policy(const chainforge::core::Transaction& old_tx,
-                                                  const chainforge::core::Transaction& new_tx) const {
+MempoolError MempoolImpl::check_replacement_policy(const tokiwa::core::Transaction& old_tx,
+                                                  const tokiwa::core::Transaction& new_tx) const {
     // Simple replacement policy: new fee must be at least 10% higher
     uint64_t old_fee_rate = old_tx.gas_price();
     uint64_t new_fee_rate = new_tx.gas_price();
@@ -329,7 +329,7 @@ uint64_t MempoolImpl::get_current_timestamp() const {
     );
 }
 
-TransactionPriority MempoolImpl::calculate_priority(const chainforge::core::Transaction& tx, uint64_t added_time) const {
+TransactionPriority MempoolImpl::calculate_priority(const tokiwa::core::Transaction& tx, uint64_t added_time) const {
     uint64_t current_time = get_current_timestamp();
     return TransactionPriority{
         static_cast<double>(tx.gas_price()),
@@ -343,11 +343,11 @@ bool MempoolImpl::is_pool_full() const {
            get_stats().total_size_bytes >= config_.max_size_bytes;
 }
 
-void MempoolImpl::update_account_nonce(const chainforge::core::Address& address, uint64_t nonce, const chainforge::core::Hash& tx_hash) {
+void MempoolImpl::update_account_nonce(const tokiwa::core::Address& address, uint64_t nonce, const tokiwa::core::Hash& tx_hash) {
     account_nonces_[address][nonce] = tx_hash;
 }
 
-void MempoolImpl::remove_account_nonce(const chainforge::core::Address& address, uint64_t nonce) {
+void MempoolImpl::remove_account_nonce(const tokiwa::core::Address& address, uint64_t nonce) {
     auto account_it = account_nonces_.find(address);
     if (account_it != account_nonces_.end()) {
         account_it->second.erase(nonce);
@@ -357,7 +357,7 @@ void MempoolImpl::remove_account_nonce(const chainforge::core::Address& address,
     }
 }
 
-std::optional<uint64_t> MempoolImpl::get_account_nonce(const chainforge::core::Address& address) const {
+std::optional<uint64_t> MempoolImpl::get_account_nonce(const tokiwa::core::Address& address) const {
     auto account_it = account_nonces_.find(address);
     if (account_it == account_nonces_.end() || account_it->second.empty()) {
         return std::nullopt;
@@ -379,16 +379,16 @@ void MempoolImpl::rebuild_priority_queue() {
     }
 }
 
-bool MempoolImpl::validate_basic_properties(const chainforge::core::Transaction& tx) const {
+bool MempoolImpl::validate_basic_properties(const tokiwa::core::Transaction& tx) const {
     return tx.is_valid();
 }
 
-bool MempoolImpl::validate_fee(const chainforge::core::Transaction& tx) const {
+bool MempoolImpl::validate_fee(const tokiwa::core::Transaction& tx) const {
     return tx.gas_price() >= config_.min_fee_per_gas &&
            tx.gas_price() <= config_.max_fee_per_gas;
 }
 
-bool MempoolImpl::validate_nonce(const chainforge::core::Transaction& tx) const {
+bool MempoolImpl::validate_nonce(const tokiwa::core::Transaction& tx) const {
     // Check if nonce conflicts with existing transactions from same sender
     auto existing_nonce = get_account_nonce(tx.from());
     if (existing_nonce && *existing_nonce >= tx.nonce()) {
@@ -397,18 +397,18 @@ bool MempoolImpl::validate_nonce(const chainforge::core::Transaction& tx) const 
     return true;
 }
 
-bool MempoolImpl::validate_dependencies(const chainforge::core::Transaction& tx) const {
+bool MempoolImpl::validate_dependencies(const tokiwa::core::Transaction& tx) const {
     // For now, no dependency validation
     return true;
 }
 
-bool MempoolImpl::validate_size(const chainforge::core::Transaction& tx) const {
+bool MempoolImpl::validate_size(const tokiwa::core::Transaction& tx) const {
     return !tx.is_too_large();
 }
 
 void MempoolImpl::evict_transactions_by_age(uint64_t max_age_seconds) {
     uint64_t current_time = get_current_timestamp();
-    std::vector<chainforge::core::Hash> to_remove;
+    std::vector<tokiwa::core::Hash> to_remove;
 
     for (const auto& [hash, entry] : transactions_) {
         if (entry.is_expired(current_time, max_age_seconds)) {
@@ -429,8 +429,8 @@ void MempoolImpl::evict_transactions_by_fee(size_t count) {
     }
 }
 
-std::vector<chainforge::core::Hash> MempoolImpl::select_transactions_to_evict(size_t count) const {
-    std::vector<std::pair<double, chainforge::core::Hash>> candidates;
+std::vector<tokiwa::core::Hash> MempoolImpl::select_transactions_to_evict(size_t count) const {
+    std::vector<std::pair<double, tokiwa::core::Hash>> candidates;
 
     for (const auto& [hash, entry] : transactions_) {
         candidates.emplace_back(entry.priority.calculate_score(), hash);
@@ -439,7 +439,7 @@ std::vector<chainforge::core::Hash> MempoolImpl::select_transactions_to_evict(si
     // Sort by score (ascending - lowest priority first)
     std::sort(candidates.begin(), candidates.end());
 
-    std::vector<chainforge::core::Hash> to_evict;
+    std::vector<tokiwa::core::Hash> to_evict;
     to_evict.reserve(std::min(count, candidates.size()));
 
     for (size_t i = 0; i < std::min(count, candidates.size()); ++i) {
@@ -471,7 +471,7 @@ std::string mempool_error_to_string(MempoolError error) {
 }
 
 // Transaction selection
-std::vector<chainforge::core::Transaction> select_transactions_for_block(
+std::vector<tokiwa::core::Transaction> select_transactions_for_block(
     const Mempool& mempool,
     SelectionStrategy strategy,
     size_t max_count,
@@ -489,4 +489,4 @@ std::vector<chainforge::core::Transaction> select_transactions_for_block(
     }
 }
 
-} // namespace chainforge::mempool
+} // namespace tokiwa::mempool

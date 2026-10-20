@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include "chainforge/core/timestamp.hpp"
+#include "tokiwa/core/timestamp.hpp"
 #include <chrono>
 #include <thread>
 
-namespace chainforge::core::test {
+namespace tokiwa::core::test {
 
 class TimestampTest : public ::testing::Test {
 protected:
@@ -192,4 +192,4 @@ TEST_F(TimestampTest, ThreadSafety) {
     }
 }
 
-} // namespace chainforge::core::test
+} // namespace tokiwa::core::test

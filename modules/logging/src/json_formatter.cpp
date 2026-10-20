@@ -1,12 +1,12 @@
-#include "chainforge/logging/json_formatter.hpp"
+#include "tokiwa/logging/json_formatter.hpp"
 #include <iomanip>
 #include <sstream>
 
-namespace chainforge::logging {
+namespace tokiwa::logging {
 
 JsonFormatter::JsonFormatter(bool pretty_print) : pretty_print_(pretty_print) {
     // Add default global fields
-    global_fields_["service"] = "chainforge";
+    global_fields_["service"] = "tokiwa";
     global_fields_["version"] = "1.0.0"; // TODO: Get from build system
 }
 
@@ -119,4 +119,4 @@ nlohmann::json JsonFormatter::extract_structured_data(const std::string& payload
     }
 }
 
-} // namespace chainforge::logging
+} // namespace tokiwa::logging

@@ -1,10 +1,10 @@
-#include "chainforge/logging/logger.hpp"
-#include "chainforge/logging/json_formatter.hpp"
+#include "tokiwa/logging/logger.hpp"
+#include "tokiwa/logging/json_formatter.hpp"
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <fmt/format.h>
 
-namespace chainforge::logging {
+namespace tokiwa::logging {
 
 Logger::Logger(const std::string& name) : name_(name) {
     // Create a basic console logger by default
@@ -81,4 +81,4 @@ void Logger::critical(const std::string& message, const LogContext& context) {
     log(LogLevel::CRITICAL, message, context);
 }
 
-} // namespace chainforge::logging
+} // namespace tokiwa::logging
