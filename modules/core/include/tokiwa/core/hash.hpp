@@ -15,7 +15,7 @@ namespace tokiwa::core {
 class Hash {
 public:
     // Constructors
-    Hash() = default;
+    Hash() : data_{} {}
     explicit Hash(const Hash256& data);
     explicit Hash(const std::string& hex_string);
     explicit Hash(const std::vector<uint8_t>& data);

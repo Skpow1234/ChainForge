@@ -55,13 +55,14 @@ TcpResult<void> TcpServer::start(uint16_t port, const std::string& address) {
             );
         }
         
-        port_ = port;
+        // Port 0 means ephemeral — read the OS-assigned port after bind
+        port_ = acceptor_.local_endpoint().port();
         running_.store(true);
         
         // Start accepting connections
         do_accept();
         
-        spdlog::info("TCP server started on {}:{}", address, port);
+        spdlog::info("TCP server started on {}:{}", address, port_);
         return core::errors::success();
         
     } catch (const std::exception& e) {
@@ -83,12 +84,22 @@ void TcpServer::stop() {
     boost::system::error_code ec;
     acceptor_.close(ec);
     
-    // Close all connections
-    std::lock_guard<std::mutex> lock(connections_mutex_);
-    for (auto& pair : connections_) {
-        pair.second->close();
+    // Snapshot connections then release the lock before close().
+    // close() may invoke connection callbacks that call remove_connection()
+    // and would otherwise deadlock on connections_mutex_.
+    std::vector<std::shared_ptr<TcpConnection>> to_close;
+    {
+        std::lock_guard<std::mutex> lock(connections_mutex_);
+        to_close.reserve(connections_.size());
+        for (auto& pair : connections_) {
+            to_close.push_back(pair.second);
+        }
+        connections_.clear();
     }
-    connections_.clear();
+    for (auto& conn : to_close) {
+        conn->set_connection_callback(nullptr);
+        conn->close();
+    }
     
     spdlog::info("TCP server stopped");
 }
@@ -127,14 +138,20 @@ std::shared_ptr<TcpConnection> TcpServer::get_connection(uint64_t id) const {
 }
 
 void TcpServer::remove_connection(uint64_t id) {
-    std::lock_guard<std::mutex> lock(connections_mutex_);
-    
-    auto it = connections_.find(id);
-    if (it != connections_.end()) {
-        it->second->close();
+    std::shared_ptr<TcpConnection> conn;
+    {
+        std::lock_guard<std::mutex> lock(connections_mutex_);
+        auto it = connections_.find(id);
+        if (it == connections_.end()) {
+            return;
+        }
+        conn = it->second;
         connections_.erase(it);
-        spdlog::debug("Removed connection {}", id);
     }
+    // Clear callback before close to avoid re-entrant remove_connection deadlock
+    conn->set_connection_callback(nullptr);
+    conn->close();
+    spdlog::debug("Removed connection {}", id);
 }
 
 void TcpServer::set_accept_callback(AcceptCallback callback) {
@@ -194,6 +211,9 @@ void TcpServer::handle_accept(
     });
     
     spdlog::info("Accepted new connection {}", connection->id());
+
+    // Keep a receive loop so peer disconnect (EOF) is observed and tracked
+    connection->start_receive([](const std::vector<uint8_t>&) {});
     
     // Notify callback
     if (accept_callback_) {

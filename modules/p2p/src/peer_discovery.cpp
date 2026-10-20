@@ -121,8 +121,8 @@ size_t PeerDiscovery::peer_count() const {
 }
 
 bool PeerDiscovery::add_peer(const PeerAddress& addr) {
-    // Validate address
-    if (!addr.is_valid()) {
+    // Allow private/local addresses for bootstrap nodes and lab nets
+    if (!address_validation::is_valid_peer_address(addr, /*allow_private=*/true)) {
         return false;
     }
     

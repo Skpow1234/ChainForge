@@ -490,7 +490,9 @@ TEST(DnsSeedResolverTest, ResolveLocalhost) {
 }
 
 TEST(DnsSeedResolverTest, ResolveInvalidDomain) {
-    auto peers = DnsSeedResolver::resolve("invalid.domain.that.does.not.exist.xyz", 8333);
+    // Use a syntactically invalid hostname so getaddrinfo fails even when
+    // container DNS returns catch-all answers for NXDOMAIN names.
+    auto peers = DnsSeedResolver::resolve("!!!not-a-valid-hostname!!!", 8333);
     
     // Should return empty vector on failure
     EXPECT_EQ(peers.size(), 0);

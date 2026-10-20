@@ -138,15 +138,15 @@ struct PeerInfo {
     /**
      * @brief Check if peer should be attempted again
      */
-    bool should_retry(std::chrono::seconds retry_interval = std::chrono::minutes(5)) const {
+    bool should_retry(std::chrono::milliseconds retry_interval = std::chrono::minutes(5)) const {
         if (connected) return false;
         
         auto now = std::chrono::system_clock::now();
-        auto time_since_last_attempt = std::chrono::duration_cast<std::chrono::seconds>(
+        auto time_since_last_attempt = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - last_attempt
-        ).count();
+        );
         
-        return time_since_last_attempt >= retry_interval.count();
+        return time_since_last_attempt >= retry_interval;
     }
     
     /**

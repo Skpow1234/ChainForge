@@ -2,28 +2,26 @@
 
 namespace tokiwa::metrics {
 
-Histogram::Histogram(prometheus::Histogram& prometheus_histogram, const std::string& name)
-    : prometheus_histogram_(prometheus_histogram), name_(name) {
+Histogram::Histogram(std::shared_ptr<internal::SimpleHistogram> simple_histogram, const std::string& name)
+    : simple_histogram_(std::move(simple_histogram)), name_(name) {
 }
 
 void Histogram::observe(double value) {
-    prometheus_histogram_.Observe(value);
+    simple_histogram_->observe(value);
 }
 
 void Histogram::observe_duration(std::chrono::duration<double> duration) {
-    prometheus_histogram_.Observe(duration.count());
+    simple_histogram_->observe(duration.count());
 }
 
 void Histogram::observe_duration_ms(std::chrono::milliseconds duration) {
-    // Convert to seconds for Prometheus
     double seconds = duration.count() / 1000.0;
-    prometheus_histogram_.Observe(seconds);
+    simple_histogram_->observe(seconds);
 }
 
 void Histogram::observe_duration_us(std::chrono::microseconds duration) {
-    // Convert to seconds for Prometheus
     double seconds = duration.count() / 1000000.0;
-    prometheus_histogram_.Observe(seconds);
+    simple_histogram_->observe(seconds);
 }
 
 HistogramTimer::HistogramTimer(std::shared_ptr<Histogram> histogram)

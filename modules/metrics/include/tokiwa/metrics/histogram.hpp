@@ -1,10 +1,11 @@
 #pragma once
 
-#include <prometheus/histogram.h>
 #include <memory>
 #include <string>
 #include <map>
+#include <vector>
 #include <chrono>
+#include "internal/simple_metrics.hpp"
 
 namespace tokiwa::metrics {
 
@@ -13,7 +14,7 @@ namespace tokiwa::metrics {
 class Histogram {
 public:
     /// Constructor
-    explicit Histogram(prometheus::Histogram& prometheus_histogram, const std::string& name);
+    explicit Histogram(std::shared_ptr<internal::SimpleHistogram> simple_histogram, const std::string& name);
     
     /// Destructor
     ~Histogram() = default;
@@ -40,7 +41,7 @@ public:
     const std::string& name() const { return name_; }
 
 private:
-    prometheus::Histogram& prometheus_histogram_;
+    std::shared_ptr<internal::SimpleHistogram> simple_histogram_;
     std::string name_;
 };
 

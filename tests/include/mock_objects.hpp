@@ -171,10 +171,11 @@ inline auto ReturnSerializationError(
     serialization::SerializationError code,
     const std::string& message
 ) {
+    (void)code;
     return ::testing::Return(
         serialization::SerializationResult<std::vector<uint8_t>>(
             core::ErrorInfo(
-                static_cast<int>(code),
+                core::ErrorCode::INVALID_ARGUMENT,
                 message,
                 "mock_serializer",
                 __FILE__,
@@ -186,7 +187,7 @@ inline auto ReturnSerializationError(
 
 // Action to return a successful validation
 inline auto ReturnValidationSuccess() {
-    return ::testing::Return(core::success());
+    return ::testing::Return(core::errors::success());
 }
 
 // Action to return a validation error
@@ -194,10 +195,11 @@ inline auto ReturnValidationError(
     serialization::ValidationError code,
     const std::string& message
 ) {
+    (void)code;
     return ::testing::Return(
         serialization::ValidationResult(
             core::ErrorInfo(
-                static_cast<int>(code),
+                core::ErrorCode::INVALID_ARGUMENT,
                 message,
                 "mock_validator",
                 __FILE__,
@@ -326,34 +328,34 @@ public:
 class StubValidator : public serialization::Validator {
 public:
     serialization::ValidationResult validate_block(const core::Block&) override {
-        return core::success();
+        return core::errors::success();
     }
 
     serialization::ValidationResult validate_transaction(const core::Transaction&) override {
-        return core::success();
+        return core::errors::success();
     }
 
     serialization::ValidationResult validate_address(const core::Address&) override {
-        return core::success();
+        return core::errors::success();
     }
 
     serialization::ValidationResult validate_amount(const core::Amount&) override {
-        return core::success();
+        return core::errors::success();
     }
 
     serialization::ValidationResult validate_timestamp(const core::Timestamp&) override {
-        return core::success();
+        return core::errors::success();
     }
 
     serialization::ValidationResult validate_hash(const core::Hash&) override {
-        return core::success();
+        return core::errors::success();
     }
 
     serialization::ValidationResult validate_serialized_data(
         const std::vector<uint8_t>&,
         const std::string&
     ) override {
-        return core::success();
+        return core::errors::success();
     }
 };
 

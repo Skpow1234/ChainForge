@@ -1,6 +1,7 @@
 #include "tokiwa/crypto/keypair.hpp"
 #include "tokiwa/crypto/random.hpp"
 #include "tokiwa/crypto/hash.hpp"
+#include "tokiwa/crypto/curve.hpp"
 #include <openssl/ec.h>
 #include <openssl/bn.h>
 #include <openssl/obj_mac.h>
@@ -12,13 +13,18 @@
 namespace tokiwa::crypto {
 
 CryptoResult<KeyPair::Secp256k1KeyPair> KeyPair::generate_secp256k1() {
-    auto private_key_result = Random::generate_secp256k1_private_key();
-    if (!private_key_result.success()) {
-        return CryptoResult<Secp256k1KeyPair>{Secp256k1KeyPair{}, private_key_result.error};
+    // Retry until we get a valid curve scalar (random 32 bytes can be >= n or zero).
+    for (int attempt = 0; attempt < 128; ++attempt) {
+        auto private_key_result = Random::generate_secp256k1_private_key();
+        if (!private_key_result.success()) {
+            return CryptoResult<Secp256k1KeyPair>{Secp256k1KeyPair{}, private_key_result.error};
+        }
+        if (!is_valid_secp256k1_private_key(private_key_result.value)) {
+            continue;
+        }
+        return from_secp256k1_private_key(private_key_result.value);
     }
-
-    auto keypair_result = from_secp256k1_private_key(private_key_result.value);
-    return keypair_result;
+    return CryptoResult<Secp256k1KeyPair>{Secp256k1KeyPair{}, CryptoError::RANDOM_GENERATION_FAILED};
 }
 
 CryptoResult<KeyPair::Secp256k1KeyPair> KeyPair::from_secp256k1_private_key(const Secp256k1PrivateKey& private_key) {
@@ -46,17 +52,21 @@ CryptoResult<Secp256k1CompressedPublicKey> KeyPair::compress_secp256k1_public_ke
         return CryptoResult<Secp256k1CompressedPublicKey>{Secp256k1CompressedPublicKey{}, CryptoError::INVALID_KEY};
     }
 
-    secp256k1_pubkey pubkey;
-    int parse_result = secp256k1_ec_pubkey_parse(ctx, &pubkey, public_key.data(), public_key.size());
+    // Stored form is 64-byte x||y; libsecp256k1 expects 65-byte 0x04||x||y.
+    unsigned char encoded[65];
+    encoded[0] = 0x04;
+    std::copy(public_key.begin(), public_key.end(), encoded + 1);
 
-    if (parse_result != 1) {
+    secp256k1_pubkey pubkey;
+    if (secp256k1_ec_pubkey_parse(ctx, &pubkey, encoded, sizeof(encoded)) != 1) {
         secp256k1_context_destroy(ctx);
         return CryptoResult<Secp256k1CompressedPublicKey>{Secp256k1CompressedPublicKey{}, CryptoError::INVALID_KEY};
     }
 
     Secp256k1CompressedPublicKey compressed;
     size_t compressed_size = compressed.size();
-    int serialize_result = secp256k1_ec_pubkey_serialize(ctx, compressed.data(), &compressed_size, &pubkey, SECP256K1_EC_COMPRESSED);
+    int serialize_result = secp256k1_ec_pubkey_serialize(
+        ctx, compressed.data(), &compressed_size, &pubkey, SECP256K1_EC_COMPRESSED);
 
     secp256k1_context_destroy(ctx);
 
@@ -74,24 +84,24 @@ CryptoResult<Secp256k1PublicKey> KeyPair::decompress_secp256k1_public_key(const 
     }
 
     secp256k1_pubkey pubkey;
-    int parse_result = secp256k1_ec_pubkey_parse(ctx, &pubkey, compressed_key.data(), compressed_key.size());
-
-    if (parse_result != 1) {
+    if (secp256k1_ec_pubkey_parse(ctx, &pubkey, compressed_key.data(), compressed_key.size()) != 1) {
         secp256k1_context_destroy(ctx);
         return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_KEY};
     }
 
-    Secp256k1PublicKey uncompressed;
-    size_t uncompressed_size = uncompressed.size();
-    int serialize_result = secp256k1_ec_pubkey_serialize(ctx, uncompressed.data(), &uncompressed_size, &pubkey, SECP256K1_EC_UNCOMPRESSED);
-
-    secp256k1_context_destroy(ctx);
-
-    if (serialize_result != 1) {
+    unsigned char uncompressed[65];
+    size_t uncompressed_size = sizeof(uncompressed);
+    if (secp256k1_ec_pubkey_serialize(
+            ctx, uncompressed, &uncompressed_size, &pubkey, SECP256K1_EC_UNCOMPRESSED) != 1
+        || uncompressed_size != 65) {
+        secp256k1_context_destroy(ctx);
         return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_KEY};
     }
+    secp256k1_context_destroy(ctx);
 
-    return CryptoResult<Secp256k1PublicKey>{uncompressed, CryptoError::SUCCESS};
+    Secp256k1PublicKey result{};
+    std::copy(uncompressed + 1, uncompressed + 65, result.begin());
+    return CryptoResult<Secp256k1PublicKey>{result, CryptoError::SUCCESS};
 }
 
 CryptoResult<KeyPair::Ed25519KeyPair> KeyPair::generate_ed25519() {
@@ -386,40 +396,7 @@ CryptoResult<Hash256> KeyPair::derive_bitcoin_address(const Secp256k1PublicKey& 
 }
 
 CryptoResult<Secp256k1PublicKey> KeyPair::internal_derive_secp256k1_public_key(const Secp256k1PrivateKey& private_key) {
-    EC_KEY* ec_key = EC_KEY_new_by_curve_name(NID_secp256k1);
-    if (!ec_key) {
-        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_KEY};
-    }
-
-    BIGNUM* priv_bn = BN_bin2bn(private_key.data(), static_cast<int>(private_key.size()), nullptr);
-    if (!priv_bn || !EC_KEY_set_private_key(ec_key, priv_bn)) {
-        BN_free(priv_bn);
-        EC_KEY_free(ec_key);
-        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_KEY};
-    }
-    BN_free(priv_bn);
-
-    // Generate public key
-    if (!EC_KEY_generate_key(ec_key)) {
-        EC_KEY_free(ec_key);
-        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_KEY};
-    }
-
-    // Serialize public key to uncompressed format
-    const EC_POINT* pub_point = EC_KEY_get0_public_key(ec_key);
-    const EC_GROUP* group = EC_KEY_get0_group(ec_key);
-
-    Secp256k1PublicKey public_key;
-    size_t key_size = EC_POINT_point2oct(group, pub_point, POINT_CONVERSION_UNCOMPRESSED,
-                                        public_key.data(), public_key.size(), nullptr);
-
-    EC_KEY_free(ec_key);
-
-    if (key_size != public_key.size()) {
-        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_KEY};
-    }
-
-    return CryptoResult<Secp256k1PublicKey>{public_key, CryptoError::SUCCESS};
+    return Curve::Secp256k1::multiply_base(private_key);
 }
 
 CryptoResult<Ed25519PublicKey> KeyPair::internal_derive_ed25519_public_key(const Ed25519PrivateKey& private_key) {

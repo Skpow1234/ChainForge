@@ -70,10 +70,11 @@ UdpResult<void> UdpTransport::bind(uint16_t port, const std::string& address) {
             );
         }
         
-        port_ = port;
+        // Port 0 means ephemeral — read the OS-assigned port after bind
+        port_ = socket_.local_endpoint().port();
         bound_.store(true);
         
-        spdlog::info("UDP transport bound to {}:{}", address, port);
+        spdlog::info("UDP transport bound to {}:{}", address, port_);
         return core::errors::success();
         
     } catch (const std::exception& e) {

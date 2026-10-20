@@ -7,7 +7,7 @@ namespace tokiwa::core {
 
 std::string ErrorInfo::to_string() const {
     std::ostringstream oss;
-    oss << "Error " << static_cast<int>(code) << ": " << message;
+    oss << error_code_to_string(code) << ": " << message;
     
     if (!context.empty()) {
         oss << " (Context: " << context << ")";

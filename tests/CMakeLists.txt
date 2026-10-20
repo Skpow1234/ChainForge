@@ -94,6 +94,7 @@ target_link_libraries(framework_tests
         tokiwa-serialization
         GTest::gtest
         GTest::gtest_main
+        GTest::gmock
         Threads::Threads
 )
 

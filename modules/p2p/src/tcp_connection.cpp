@@ -219,7 +219,10 @@ TcpResult<std::vector<uint8_t>> TcpConnection::receive(size_t max_length) {
 
 void TcpConnection::start_receive(ReceiveCallback callback) {
     receive_callback_ = std::move(callback);
-    receiving_.store(true);
+    // Avoid overlapping async_read_some if a receive loop is already active
+    if (receiving_.exchange(true)) {
+        return;
+    }
     do_receive();
 }
 

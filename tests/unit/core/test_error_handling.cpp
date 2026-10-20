@@ -142,11 +142,11 @@ TEST_F(ErrorHandlingTest, CircuitBreaker) {
     EXPECT_FALSE(result3.has_value());
     EXPECT_EQ(result3.error().code, ErrorCode::SERVICE_UNAVAILABLE);
     
-    // Wait for timeout and try again
+    // Wait for timeout; next call probes in HALF_OPEN then fails back to OPEN
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     auto result4 = breaker.execute(failing_function);
     EXPECT_FALSE(result4.has_value());
-    EXPECT_EQ(breaker.get_state(), recovery::CircuitBreaker::State::HALF_OPEN);
+    EXPECT_EQ(breaker.get_state(), recovery::CircuitBreaker::State::OPEN);
 }
 
 // Test timeout wrapper
@@ -211,17 +211,18 @@ TEST_F(ErrorHandlingTest, ErrorMonitoring) {
 
 // Test error rate limiter
 TEST_F(ErrorHandlingTest, ErrorRateLimiter) {
-    monitoring::ErrorRateLimiter limiter(0.5, std::chrono::milliseconds(1000));
+    // max_error_rate is errors per second over the window
+    monitoring::ErrorRateLimiter limiter(5.0, std::chrono::milliseconds(1000));
     
     // Should allow operations initially
     EXPECT_TRUE(limiter.should_allow_operation());
     
-    // Record some errors
+    // Record some errors below the limit
     limiter.record_error();
     limiter.record_error();
     limiter.record_error();
     
-    // Should still allow (3 errors in 1 second = 3 errors/second, which is < 0.5 * 1000)
+    // 3 errors/sec <= 5 → still allow
     EXPECT_TRUE(limiter.should_allow_operation());
     
     // Record many more errors
@@ -229,7 +230,7 @@ TEST_F(ErrorHandlingTest, ErrorRateLimiter) {
         limiter.record_error();
     }
     
-    // Should now limit operations
+    // 13 errors/sec > 5 → limit
     EXPECT_FALSE(limiter.should_allow_operation());
 }
 

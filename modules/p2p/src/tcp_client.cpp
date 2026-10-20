@@ -47,6 +47,9 @@ TcpResult<void> TcpClient::connect(const std::string& host, uint16_t port) {
         connection_.reset();
         return result;
     }
+
+    // Observe peer close so auto-reconnect / connection callbacks fire
+    connection_->start_receive([](const std::vector<uint8_t>&) {});
     
     spdlog::info("TCP client connected to {}:{}", host, port);
     return core::errors::success();

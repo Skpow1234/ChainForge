@@ -3,24 +3,24 @@
 
 namespace tokiwa::metrics {
 
-Gauge::Gauge(prometheus::Gauge& prometheus_gauge, const std::string& name)
-    : prometheus_gauge_(prometheus_gauge), name_(name) {
+Gauge::Gauge(std::shared_ptr<internal::SimpleGauge> simple_gauge, const std::string& name)
+    : simple_gauge_(std::move(simple_gauge)), name_(name) {
 }
 
 void Gauge::set(double value) {
-    prometheus_gauge_.Set(value);
+    simple_gauge_->set(value);
 }
 
 void Gauge::increment(double value) {
-    prometheus_gauge_.Increment(value);
+    simple_gauge_->increment(value);
 }
 
 void Gauge::decrement(double value) {
-    prometheus_gauge_.Decrement(value);
+    simple_gauge_->decrement(value);
 }
 
 double Gauge::value() const {
-    return prometheus_gauge_.Value();
+    return simple_gauge_->value();
 }
 
 void Gauge::set_to_current_time() {
@@ -45,7 +45,6 @@ GaugeTracker::~GaugeTracker() {
 
 void GaugeTracker::update(double new_value) {
     if (gauge_) {
-        // Remove old value and add new value
         gauge_->decrement(tracked_value_);
         gauge_->increment(new_value);
         tracked_value_ = new_value;

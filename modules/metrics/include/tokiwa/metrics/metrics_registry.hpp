@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <string>
+#include <map>
+#include <vector>
 #include <unordered_map>
 #include <mutex>
 #include "internal/simple_metrics.hpp"

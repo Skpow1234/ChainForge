@@ -7,7 +7,9 @@ namespace tokiwa::crypto {
 namespace {
 
 secp256k1_context* secp_ctx() {
-    static secp256k1_context* ctx = secp256k1_context_create(SECP256K1_CONTEXT_NONE);
+    // CONTEXT_SIGN builds ecmult_gen (required by ec_pubkey_create on older libsecp256k1).
+    static secp256k1_context* ctx = secp256k1_context_create(
+        SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
     return ctx;
 }
 

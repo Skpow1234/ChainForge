@@ -1,10 +1,10 @@
 #pragma once
 
-#include <prometheus/gauge.h>
 #include <memory>
 #include <string>
 #include <map>
 #include <chrono>
+#include "internal/simple_metrics.hpp"
 
 namespace tokiwa::metrics {
 
@@ -13,7 +13,7 @@ namespace tokiwa::metrics {
 class Gauge {
 public:
     /// Constructor
-    explicit Gauge(prometheus::Gauge& prometheus_gauge, const std::string& name);
+    explicit Gauge(std::shared_ptr<internal::SimpleGauge> simple_gauge, const std::string& name);
     
     /// Destructor
     ~Gauge() = default;
@@ -43,7 +43,7 @@ public:
     void set_to_current_time();
 
 private:
-    prometheus::Gauge& prometheus_gauge_;
+    std::shared_ptr<internal::SimpleGauge> simple_gauge_;
     std::string name_;
 };
 
