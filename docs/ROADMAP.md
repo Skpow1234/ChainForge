@@ -282,7 +282,7 @@ Default build now includes crypto/core/serialization/p2p/logging/metrics/storage
 **Touchpoints**: P2P, networking, performance
 **Tests**: Connection management, peer scoring, limits
 
-### Milestone 19: Message Protocol [Todo]
+### Milestone 19: Message Protocol [Done]
 
 **Problem**: Need standardized message format for P2P communication
 **Solution**: Implement message protocol
@@ -296,7 +296,7 @@ Default build now includes crypto/core/serialization/p2p/logging/metrics/storage
 **Touchpoints**: P2P, protocol, compatibility
 **Tests**: Message format, validation, versioning
 
-### Milestone 20: Block Synchronization [Todo]
+### Milestone 20: Block Synchronization [Partial]
 
 **Problem**: Need to sync blockchain state with peers
 **Solution**: Implement block sync protocol
@@ -310,7 +310,7 @@ Default build now includes crypto/core/serialization/p2p/logging/metrics/storage
 **Touchpoints**: P2P, consensus, validation
 **Tests**: Sync tests, validation, fork scenarios
 
-### Milestone 21: Transaction Propagation [Todo]
+### Milestone 21: Transaction Propagation [Partial]
 
 **Problem**: Need to broadcast transactions to the network
 **Solution**: Implement transaction gossip protocol

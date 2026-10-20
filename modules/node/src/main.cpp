@@ -8,6 +8,9 @@
 #include "chainforge/rpc/rpc_server.hpp"
 #include "chainforge/rpc/chain_state.hpp"
 #include "chainforge/p2p/peer_manager.hpp"
+#include "chainforge/p2p/sync.hpp"
+#include "chainforge/core/hash.hpp"
+#include "chainforge/core/transaction.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -15,6 +18,7 @@
 #include <optional>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace {
 
@@ -25,7 +29,7 @@ void print_help(const char* argv0) {
         << "  --help              Show help\n"
         << "  --config PATH       YAML config (default: config/config.yaml)\n"
         << "  --rpc-port N        Override RPC port\n"
-        << "  --self-check        Crypto/address self-check and exit\n"
+        << "  --self-check        Crypto/address/P2P protocol self-check and exit\n"
         << "  --mine-once         Mine one block after genesis\n";
 }
 
@@ -41,8 +45,58 @@ int self_check() {
     }
     std::vector<uint8_t> fake_pub(64, 0x11);
     auto addr = chainforge::core::Address::from_public_key(fake_pub);
-    std::cout << "self-check ok address=" << addr.to_hex() << "\n";
+
+    std::string proto_err;
+    if (!chainforge::p2p::protocol_self_check(&proto_err)) {
+        std::cerr << "p2p protocol self-check failed: " << proto_err << "\n";
+        return 1;
+    }
+    std::cout << "self-check ok address=" << addr.to_hex()
+              << " p2p_protocol=ok\n";
     return 0;
+}
+
+chainforge::p2p::ChainView make_chain_view(
+    const std::shared_ptr<chainforge::rpc::ChainState>& state) {
+    chainforge::p2p::ChainView view;
+    view.chain_id = state->chain_id();
+    view.agent = "chainforge-node";
+    view.tip_height = [state] { return state->latest_height(); };
+    view.tip_hash = [state] {
+        auto tip = state->get_block_by_number(state->latest_height());
+        if (!tip) return std::vector<uint8_t>(32, 0);
+        return tip->calculate_hash().to_bytes();
+    };
+    view.header_hash_at = [state](uint64_t h) -> std::optional<std::vector<uint8_t>> {
+        auto block = state->get_block_by_number(h);
+        if (!block) return std::nullopt;
+        return block->calculate_hash().to_bytes();
+    };
+    view.block_json_at = [state](uint64_t h) -> std::optional<std::string> {
+        auto block = state->get_block_by_number(h);
+        if (!block) return std::nullopt;
+        return block->to_json();
+    };
+    view.block_json_by_hash = [state](const std::vector<uint8_t>& hash32)
+        -> std::optional<std::string> {
+        if (hash32.size() != 32) return std::nullopt;
+        chainforge::core::Hash hash(hash32);
+        auto block = state->get_block_by_hash(hash);
+        if (!block) return std::nullopt;
+        return block->to_json();
+    };
+    view.import_block_json = [state](const std::string& json) {
+        auto block = chainforge::core::Block::from_json(json);
+        if (!block) return false;
+        return state->import_block(*block);
+    };
+    view.accept_tx_json = [state](const std::string& json) {
+        auto tx = chainforge::core::Transaction::from_json(json);
+        if (!tx) return false;
+        state->submit_transaction(*tx);
+        return true;
+    };
+    return view;
 }
 
 } // namespace
@@ -145,7 +199,12 @@ int main(int argc, char** argv) {
 
     chainforge::p2p::PeerManager peers(cfg.max_peers);
     peers.add_peer(chainforge::p2p::PeerAddress("127.0.0.1", 30303));
-    std::cout << "P2P peer manager: " << peers.size() << " peer(s)\n";
+    auto sync = std::make_shared<chainforge::p2p::SyncSession>(make_chain_view(state));
+    auto hello = sync->make_hello();
+    auto hello_wire = chainforge::p2p::encode_message(hello);
+    std::cout << "P2P peer manager: " << peers.size() << " peer(s)"
+              << " protocol=v" << int(chainforge::p2p::PROTOCOL_VERSION)
+              << " hello_frame=" << hello_wire.size() << "B\n";
 
     auto consensus = chainforge::consensus::create_pow_consensus(cfg.difficulty);
     if (mine_once && consensus) {

@@ -8,6 +8,8 @@
 #include "udp_transport.hpp"
 #include "peer_manager.hpp"
 #include "peer_discovery.hpp"
+#include "message.hpp"
+#include "sync.hpp"
 
 /**
  * @file network.hpp

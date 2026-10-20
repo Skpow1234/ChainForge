@@ -9,6 +9,8 @@ set(P2P_SOURCES
     src/peer_address.cpp
     src/peer_discovery.cpp
     src/peer_manager.cpp
+    src/message.cpp
+    src/sync.cpp
 )
 
 set(P2P_HEADERS
@@ -19,6 +21,8 @@ set(P2P_HEADERS
     include/chainforge/p2p/peer_address.hpp
     include/chainforge/p2p/peer_discovery.hpp
     include/chainforge/p2p/peer_manager.hpp
+    include/chainforge/p2p/message.hpp
+    include/chainforge/p2p/sync.hpp
     include/chainforge/p2p/network.hpp
 )
 

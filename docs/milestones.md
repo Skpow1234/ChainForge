@@ -26,6 +26,7 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 | File-backed KV storage (`file`) | Done |
 | RocksDB backend (`rocksdb`, optional link) | Done |
 | PeerManager scaffolding (M18) | Partial |
+| P2P message protocol + sync/gossip session (19–21) | Partial |
 | Node YAML config subset + GET `/health` `/ready` | Done |
 | Parallel CI matrix + sanitizers/Docker/SBOM gate | Done |
 | ChainState reload from durable DB | Done |
@@ -35,9 +36,9 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 
 | Priority | Milestone | Why |
 |----------|-----------|-----|
-| 1 | Message protocol + sync (19–21) | PeerManager exists; no wire codec yet |
-| 2 | ECDSA sign path as compact r\|\|s (not DER) | Sign still OpenSSL DER-shaped |
-| 3 | Full YAML library / schema validation (9) | Best-effort line parser only |
+| 1 | ECDSA sign path as compact r\|\|s (not DER) | Sign still OpenSSL DER-shaped |
+| 2 | Full YAML library / schema validation (9) | Best-effort line parser only |
+| 3 | Live TCP dial/mux for SyncSession | Codec/session exist; not on the wire yet |
 
 ## Phase 1 — Foundation (1–15)
 
@@ -66,7 +67,10 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 | 16 | Network transport layer | Done |
 | 17 | Peer discovery | Done |
 | 18 | Peer management | Partial | `PeerManager` scaffolding |
-| 19–30 | Message protocol through load balancing | Todo | |
+| 19 | Message protocol | Done | Versioned `CFP2` frames + payload codecs |
+| 20 | Block synchronization | Partial | `SyncSession` Hello/headers/blocks; no live TCP yet |
+| 21 | Transaction propagation | Partial | `NewTx` gossip + duplicate filter |
+| 22–30 | Network security through load balancing | Todo | |
 
 ## Phases 3–4 (31–60)
 
