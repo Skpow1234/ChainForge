@@ -1,5 +1,6 @@
 #include "tokiwa/p2p/tcp_server.hpp"
 #include <spdlog/spdlog.h>
+#include <future>
 
 namespace tokiwa {
 namespace p2p {
@@ -10,6 +11,7 @@ TcpServer::TcpServer(asio::io_context& io_context)
 }
 
 TcpServer::~TcpServer() {
+    alive_->store(false);
     stop();
 }
 
@@ -82,6 +84,7 @@ void TcpServer::stop() {
     }
 
     boost::system::error_code ec;
+    acceptor_.cancel(ec);
     acceptor_.close(ec);
     
     // Snapshot connections then release the lock before close().
@@ -99,6 +102,14 @@ void TcpServer::stop() {
     for (auto& conn : to_close) {
         conn->set_connection_callback(nullptr);
         conn->close();
+    }
+
+    // Drain accept completion handlers so they do not race with ~TcpServer
+    if (!io_context_.stopped()) {
+        std::promise<void> barrier;
+        auto future = barrier.get_future();
+        asio::post(io_context_, [&barrier]() { barrier.set_value(); });
+        future.wait_for(std::chrono::seconds(2));
     }
     
     spdlog::info("TCP server stopped");
@@ -173,8 +184,12 @@ void TcpServer::do_accept() {
         return;
     }
 
+    auto alive = alive_;
     acceptor_.async_accept(
-        [this](const boost::system::error_code& ec, tcp::socket socket) {
+        [this, alive](const boost::system::error_code& ec, tcp::socket socket) {
+            if (!alive->load()) {
+                return;
+            }
             handle_accept(ec, std::move(socket));
         }
     );

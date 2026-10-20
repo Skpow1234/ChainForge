@@ -2,6 +2,7 @@
 
 #include "tcp_connection.hpp"
 #include <boost/asio.hpp>
+#include <atomic>
 #include <memory>
 #include <string>
 #include <chrono>
@@ -107,6 +108,8 @@ private:
     void do_reconnect();
     void schedule_reconnect();
 
+    // Declared first so it is destroyed last (timer handlers may run during ~timer)
+    std::shared_ptr<std::atomic<bool>> alive_{std::make_shared<std::atomic<bool>>(true)};
     asio::io_context& io_context_;
     std::shared_ptr<TcpConnection> connection_;
     

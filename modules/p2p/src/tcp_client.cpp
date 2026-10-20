@@ -10,6 +10,7 @@ TcpClient::TcpClient(asio::io_context& io_context)
 }
 
 TcpClient::~TcpClient() {
+    alive_->store(false);
     disconnect();
 }
 
@@ -193,8 +194,12 @@ void TcpClient::schedule_reconnect() {
         return;
     }
 
+    auto alive = alive_;
     reconnect_timer_->expires_after(reconnect_interval_);
-    reconnect_timer_->async_wait([this](const boost::system::error_code& ec) {
+    reconnect_timer_->async_wait([this, alive](const boost::system::error_code& ec) {
+        if (!alive->load()) {
+            return;
+        }
         if (!ec && auto_reconnect_) {
             do_reconnect();
         }

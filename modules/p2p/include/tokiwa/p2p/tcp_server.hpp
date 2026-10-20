@@ -2,6 +2,7 @@
 
 #include "tcp_connection.hpp"
 #include <boost/asio.hpp>
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
@@ -98,6 +99,8 @@ private:
         tcp::socket socket
     );
 
+    // Declared first so it is destroyed last (accept handlers may run during ~acceptor)
+    std::shared_ptr<std::atomic<bool>> alive_{std::make_shared<std::atomic<bool>>(true)};
     asio::io_context& io_context_;
     tcp::acceptor acceptor_;
     std::atomic<bool> running_{false};
