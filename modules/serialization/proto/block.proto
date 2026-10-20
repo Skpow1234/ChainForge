@@ -3,8 +3,8 @@ syntax = "proto3";
 
 package tokiwa.block;
 
-import "types.proto";
-import "transaction.proto";
+import "proto/types.proto";
+import "proto/transaction.proto";
 
 option java_package = "com.tokiwa.block";
 option java_outer_classname = "BlockProto";

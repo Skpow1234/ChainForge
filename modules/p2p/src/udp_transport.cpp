@@ -5,8 +5,24 @@ namespace tokiwa {
 namespace p2p {
 
 core::ErrorInfo UdpTransport::make_udp_error(UdpError code, const std::string& message) {
+    core::ErrorCode error_code = core::ErrorCode::P2P_ERROR;
+    switch (code) {
+        case UdpError::BIND_FAILED:
+            error_code = core::ErrorCode::NETWORK_ERROR;
+            break;
+        case UdpError::SEND_FAILED:
+        case UdpError::RECEIVE_FAILED:
+            error_code = core::ErrorCode::IO_ERROR;
+            break;
+        case UdpError::INVALID_ADDRESS:
+            error_code = core::ErrorCode::INVALID_ARGUMENT;
+            break;
+        case UdpError::NOT_BOUND:
+            error_code = core::ErrorCode::INVALID_STATE;
+            break;
+    }
     return core::ErrorInfo(
-        static_cast<int>(code),
+        error_code,
         message,
         "udp_transport",
         __FILE__,
@@ -58,7 +74,7 @@ UdpResult<void> UdpTransport::bind(uint16_t port, const std::string& address) {
         bound_.store(true);
         
         spdlog::info("UDP transport bound to {}:{}", address, port);
-        return core::success();
+        return core::errors::success();
         
     } catch (const std::exception& e) {
         return make_udp_error(
@@ -217,7 +233,7 @@ UdpResult<void> UdpTransport::join_multicast(const std::string& multicast_addres
         }
         
         spdlog::info("Joined multicast group {}", multicast_address);
-        return core::success();
+        return core::errors::success();
         
     } catch (const std::exception& e) {
         return make_udp_error(
@@ -249,7 +265,7 @@ UdpResult<void> UdpTransport::leave_multicast(const std::string& multicast_addre
         }
         
         spdlog::info("Left multicast group {}", multicast_address);
-        return core::success();
+        return core::errors::success();
         
     } catch (const std::exception& e) {
         return make_udp_error(

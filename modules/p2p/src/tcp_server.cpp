@@ -16,7 +16,7 @@ TcpServer::~TcpServer() {
 TcpResult<void> TcpServer::start(uint16_t port, const std::string& address) {
     if (running_.load()) {
         return core::ErrorInfo(
-            static_cast<int>(TcpError::ALREADY_CONNECTED),
+            core::ErrorCode::INVALID_STATE,
             "Server is already running",
             "tcp_server",
             __FILE__,
@@ -35,7 +35,7 @@ TcpResult<void> TcpServer::start(uint16_t port, const std::string& address) {
         
         if (ec) {
             return core::ErrorInfo(
-                static_cast<int>(TcpError::CONNECTION_FAILED),
+                core::ErrorCode::NETWORK_ERROR,
                 "Failed to bind to " + address + ":" + std::to_string(port) + ": " + ec.message(),
                 "tcp_server",
                 __FILE__,
@@ -47,7 +47,7 @@ TcpResult<void> TcpServer::start(uint16_t port, const std::string& address) {
         
         if (ec) {
             return core::ErrorInfo(
-                static_cast<int>(TcpError::CONNECTION_FAILED),
+                core::ErrorCode::NETWORK_ERROR,
                 "Failed to listen: " + ec.message(),
                 "tcp_server",
                 __FILE__,
@@ -62,11 +62,11 @@ TcpResult<void> TcpServer::start(uint16_t port, const std::string& address) {
         do_accept();
         
         spdlog::info("TCP server started on {}:{}", address, port);
-        return core::success();
+        return core::errors::success();
         
     } catch (const std::exception& e) {
         return core::ErrorInfo(
-            static_cast<int>(TcpError::CONNECTION_FAILED),
+            core::ErrorCode::NETWORK_ERROR,
             std::string("Server start exception: ") + e.what(),
             "tcp_server",
             __FILE__,

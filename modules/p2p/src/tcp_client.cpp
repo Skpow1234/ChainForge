@@ -16,7 +16,7 @@ TcpClient::~TcpClient() {
 TcpResult<void> TcpClient::connect(const std::string& host, uint16_t port) {
     if (is_connected()) {
         return core::ErrorInfo(
-            static_cast<int>(TcpError::ALREADY_CONNECTED),
+            core::ErrorCode::INVALID_STATE,
             "Already connected",
             "tcp_client",
             __FILE__,
@@ -49,7 +49,7 @@ TcpResult<void> TcpClient::connect(const std::string& host, uint16_t port) {
     }
     
     spdlog::info("TCP client connected to {}:{}", host, port);
-    return core::success();
+    return core::errors::success();
 }
 
 TcpResult<void> TcpClient::connect(
@@ -96,8 +96,7 @@ void TcpClient::disconnect() {
     auto_reconnect_ = false;
     
     if (reconnect_timer_) {
-        boost::system::error_code ec;
-        reconnect_timer_->cancel(ec);
+        reconnect_timer_->cancel();
     }
     
     if (connection_) {
@@ -123,15 +122,14 @@ void TcpClient::disable_auto_reconnect() {
     auto_reconnect_ = false;
     
     if (reconnect_timer_) {
-        boost::system::error_code ec;
-        reconnect_timer_->cancel(ec);
+        reconnect_timer_->cancel();
     }
 }
 
 TcpResult<size_t> TcpClient::send(const std::vector<uint8_t>& data) {
     if (!is_connected()) {
         return core::ErrorInfo(
-            static_cast<int>(TcpError::NOT_CONNECTED),
+            core::ErrorCode::INVALID_STATE,
             "Not connected",
             "tcp_client",
             __FILE__,

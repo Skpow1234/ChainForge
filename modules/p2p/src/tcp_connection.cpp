@@ -7,8 +7,31 @@ namespace p2p {
 std::atomic<uint64_t> TcpConnection::next_connection_id_{1};
 
 core::ErrorInfo TcpConnection::make_tcp_error(TcpError code, const std::string& message) {
+    core::ErrorCode error_code = core::ErrorCode::P2P_ERROR;
+    switch (code) {
+        case TcpError::CONNECTION_FAILED:
+            error_code = core::ErrorCode::NETWORK_ERROR;
+            break;
+        case TcpError::CONNECTION_CLOSED:
+            error_code = core::ErrorCode::NETWORK_ERROR;
+            break;
+        case TcpError::WRITE_FAILED:
+        case TcpError::READ_FAILED:
+            error_code = core::ErrorCode::IO_ERROR;
+            break;
+        case TcpError::TIMEOUT:
+            error_code = core::ErrorCode::CONNECTION_TIMEOUT;
+            break;
+        case TcpError::INVALID_ADDRESS:
+            error_code = core::ErrorCode::INVALID_ARGUMENT;
+            break;
+        case TcpError::ALREADY_CONNECTED:
+        case TcpError::NOT_CONNECTED:
+            error_code = core::ErrorCode::INVALID_STATE;
+            break;
+    }
     return core::ErrorInfo(
-        static_cast<int>(code),
+        error_code,
         message,
         "tcp_connection",
         __FILE__,
@@ -67,7 +90,7 @@ TcpResult<void> TcpConnection::connect(const std::string& host, uint16_t port) {
         }
         
         spdlog::info("TCP connection {} established to {}:{}", connection_id_, host, port);
-        return core::success();
+        return core::errors::success();
         
     } catch (const std::exception& e) {
         return make_tcp_error(

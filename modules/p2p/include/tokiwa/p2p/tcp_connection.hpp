@@ -68,11 +68,11 @@ public:
 
     ~TcpConnection();
 
-    // Non-copyable, movable
+    // Non-copyable, non-movable (std::atomic members)
     TcpConnection(const TcpConnection&) = delete;
     TcpConnection& operator=(const TcpConnection&) = delete;
-    TcpConnection(TcpConnection&&) = default;
-    TcpConnection& operator=(TcpConnection&&) = default;
+    TcpConnection(TcpConnection&&) = delete;
+    TcpConnection& operator=(TcpConnection&&) = delete;
 
     /**
      * @brief Connect to a remote endpoint

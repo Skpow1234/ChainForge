@@ -27,11 +27,11 @@ public:
 
     ~TcpClient();
 
-    // Non-copyable, movable
+    // Non-copyable, non-movable (holds io_context reference)
     TcpClient(const TcpClient&) = delete;
     TcpClient& operator=(const TcpClient&) = delete;
-    TcpClient(TcpClient&&) = default;
-    TcpClient& operator=(TcpClient&&) = default;
+    TcpClient(TcpClient&&) = delete;
+    TcpClient& operator=(TcpClient&&) = delete;
 
     /**
      * @brief Connect to remote server

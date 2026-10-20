@@ -9,8 +9,27 @@ namespace tokiwa {
 namespace p2p {
 
 core::ErrorInfo PeerDiscovery::make_discovery_error(DiscoveryError code, const std::string& message) {
+    core::ErrorCode error_code = core::ErrorCode::P2P_ERROR;
+    switch (code) {
+        case DiscoveryError::INVALID_ADDRESS:
+            error_code = core::ErrorCode::INVALID_ARGUMENT;
+            break;
+        case DiscoveryError::NO_PEERS_FOUND:
+            error_code = core::ErrorCode::PEER_NOT_FOUND;
+            break;
+        case DiscoveryError::DNS_RESOLUTION_FAILED:
+            error_code = core::ErrorCode::NETWORK_ERROR;
+            break;
+        case DiscoveryError::BROADCAST_FAILED:
+            error_code = core::ErrorCode::NETWORK_ERROR;
+            break;
+        case DiscoveryError::ALREADY_RUNNING:
+        case DiscoveryError::NOT_RUNNING:
+            error_code = core::ErrorCode::INVALID_STATE;
+            break;
+    }
     return core::ErrorInfo(
-        static_cast<int>(code),
+        error_code,
         message,
         "peer_discovery",
         __FILE__,
@@ -71,7 +90,7 @@ DiscoveryResult<void> PeerDiscovery::start() {
     }
     
     spdlog::info("Peer discovery started with {} initial peers", peer_count());
-    return core::success();
+    return core::errors::success();
 }
 
 void PeerDiscovery::stop() {
@@ -80,8 +99,7 @@ void PeerDiscovery::stop() {
     }
     
     if (discovery_timer_) {
-        boost::system::error_code ec;
-        discovery_timer_->cancel(ec);
+        discovery_timer_->cancel();
     }
     
     if (udp_transport_) {
@@ -207,7 +225,7 @@ DiscoveryResult<void> PeerDiscovery::broadcast_discovery() {
     }
     
     spdlog::debug("Broadcasted discovery message");
-    return core::success();
+    return core::errors::success();
 }
 
 DiscoveryResult<void> PeerDiscovery::exchange_peers(
@@ -222,7 +240,7 @@ DiscoveryResult<void> PeerDiscovery::exchange_peers(
     // Select our peers to share
     our_peers = PeerExchange::select_peers_to_share(get_peers(), 10);
     
-    return core::success();
+    return core::errors::success();
 }
 
 void PeerDiscovery::cleanup_stale_peers(std::chrono::seconds max_age) {
