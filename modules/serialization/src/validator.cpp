@@ -1,10 +1,4 @@
 #include "tokiwa/serialization/validator.hpp"
-#include "tokiwa/core/block.hpp"
-#include "tokiwa/core/transaction.hpp"
-#include "tokiwa/core/address.hpp"
-#include "tokiwa/core/amount.hpp"
-#include "tokiwa/core/timestamp.hpp"
-#include "tokiwa/core/hash.hpp"
 #include <chrono>
 #include <limits>
 
@@ -13,8 +7,34 @@ namespace serialization {
 
 // Error handling helper
 inline core::ErrorInfo make_validation_error(ValidationError code, const std::string& message) {
+    core::ErrorCode error_code = core::ErrorCode::INVALID_ARGUMENT;
+    switch (code) {
+        case ValidationError::INVALID_HASH:
+            error_code = core::ErrorCode::INVALID_HASH;
+            break;
+        case ValidationError::INVALID_SIGNATURE:
+            error_code = core::ErrorCode::INVALID_SIGNATURE;
+            break;
+        case ValidationError::INVALID_AMOUNT:
+        case ValidationError::INVALID_ADDRESS:
+        case ValidationError::INVALID_TIMESTAMP:
+            error_code = core::ErrorCode::INVALID_ARGUMENT;
+            break;
+        case ValidationError::INVALID_BLOCK:
+            error_code = core::ErrorCode::INVALID_BLOCK;
+            break;
+        case ValidationError::INVALID_TRANSACTION:
+            error_code = core::ErrorCode::INVALID_TRANSACTION;
+            break;
+        case ValidationError::DATA_TOO_LARGE:
+            error_code = core::ErrorCode::MESSAGE_TOO_LARGE;
+            break;
+        case ValidationError::MISSING_REQUIRED_FIELD:
+            error_code = core::ErrorCode::INVALID_ARGUMENT;
+            break;
+    }
     return core::ErrorInfo(
-        static_cast<int>(code),
+        error_code,
         message,
         "validation",
         __FILE__,
@@ -25,7 +45,7 @@ inline core::ErrorInfo make_validation_error(ValidationError code, const std::st
 DefaultValidator::DefaultValidator() = default;
 DefaultValidator::~DefaultValidator() = default;
 
-ValidationResult DefaultValidator::validate_block(const Block& block) {
+ValidationResult DefaultValidator::validate_block(const core::Block& block) {
     // Validate block header
     auto header_result = validate_block_header(block);
     if (!header_result.has_value()) {
@@ -46,10 +66,10 @@ ValidationResult DefaultValidator::validate_block(const Block& block) {
         return hash_result;
     }
 
-    return core::success();
+    return core::errors::success();
 }
 
-ValidationResult DefaultValidator::validate_transaction(const Transaction& tx) {
+ValidationResult DefaultValidator::validate_transaction(const core::Transaction& tx) {
     // Validate transaction structure
     auto structure_result = validate_transaction_structure(tx);
     if (!structure_result.has_value()) {
@@ -81,22 +101,22 @@ ValidationResult DefaultValidator::validate_transaction(const Transaction& tx) {
         );
     }
 
-    return core::success();
+    return core::errors::success();
 }
 
-ValidationResult DefaultValidator::validate_address(const Address& addr) {
+ValidationResult DefaultValidator::validate_address(const core::Address& addr) {
     return validate_address_format(addr);
 }
 
-ValidationResult DefaultValidator::validate_amount(const Amount& amount) {
+ValidationResult DefaultValidator::validate_amount(const core::Amount& amount) {
     return validate_amount_range(amount);
 }
 
-ValidationResult DefaultValidator::validate_timestamp(const Timestamp& ts) {
+ValidationResult DefaultValidator::validate_timestamp(const core::Timestamp& ts) {
     return validate_timestamp_range(ts);
 }
 
-ValidationResult DefaultValidator::validate_hash(const Hash& hash) {
+ValidationResult DefaultValidator::validate_hash(const core::Hash& hash) {
     return validate_hash_length(hash);
 }
 
@@ -122,11 +142,11 @@ ValidationResult DefaultValidator::validate_serialized_data(
         );
     }
 
-    return core::success();
+    return core::errors::success();
 }
 
 // Private validation methods
-ValidationResult DefaultValidator::validate_block_header(const Block& block) {
+ValidationResult DefaultValidator::validate_block_header(const core::Block& block) {
     // Validate timestamp is reasonable (not too far in future/past)
     auto ts_result = validate_timestamp(block.timestamp());
     if (!ts_result.has_value()) {
@@ -149,10 +169,10 @@ ValidationResult DefaultValidator::validate_block_header(const Block& block) {
         );
     }
 
-    return core::success();
+    return core::errors::success();
 }
 
-ValidationResult DefaultValidator::validate_transaction_structure(const Transaction& tx) {
+ValidationResult DefaultValidator::validate_transaction_structure(const core::Transaction& tx) {
     // Validate transaction has valid addresses
     if (tx.from().is_zero()) {
         return make_validation_error(
@@ -171,24 +191,24 @@ ValidationResult DefaultValidator::validate_transaction_structure(const Transact
         );
     }
 
-    return core::success();
+    return core::errors::success();
 }
 
-ValidationResult DefaultValidator::validate_address_format(const Address& addr) {
+ValidationResult DefaultValidator::validate_address_format(const core::Address& addr) {
     // TODO: Implement proper address validation
     // For now, just check basic constraints
     (void)addr; // Suppress unused parameter warning
-    return core::success();
+    return core::errors::success();
 }
 
-ValidationResult DefaultValidator::validate_amount_range(const Amount& amount) {
+ValidationResult DefaultValidator::validate_amount_range(const core::Amount& amount) {
     // TODO: Implement proper amount validation
     // Check for negative amounts, overflow, etc.
     (void)amount; // Suppress unused parameter warning
-    return core::success();
+    return core::errors::success();
 }
 
-ValidationResult DefaultValidator::validate_timestamp_range(const Timestamp& ts) {
+ValidationResult DefaultValidator::validate_timestamp_range(const core::Timestamp& ts) {
     // Get current time
     auto now = std::chrono::system_clock::now();
     auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(
@@ -202,14 +222,14 @@ ValidationResult DefaultValidator::validate_timestamp_range(const Timestamp& ts)
     (void)now_seconds; // Suppress unused variable warning
     (void)ALLOWED_DRIFT_SECONDS; // Suppress unused variable warning
 
-    return core::success();
+    return core::errors::success();
 }
 
-ValidationResult DefaultValidator::validate_hash_length(const Hash& hash) {
+ValidationResult DefaultValidator::validate_hash_length(const core::Hash& hash) {
     // TODO: Implement proper hash validation
     // Check hash length is correct for the algorithm
     (void)hash; // Suppress unused parameter warning
-    return core::success();
+    return core::errors::success();
 }
 
 // Factory function

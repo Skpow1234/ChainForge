@@ -1,27 +1,44 @@
 #include "tokiwa/serialization/serializer.hpp"
-#include "tokiwa/core/block.hpp"
-#include "tokiwa/core/transaction.hpp"
-#include "tokiwa/core/address.hpp"
-#include "tokiwa/core/amount.hpp"
-#include "tokiwa/core/timestamp.hpp"
-#include "tokiwa/core/hash.hpp"
 
-// Protobuf generated headers (will be generated from .proto files)
-#include "types.pb.h"
-#include "transaction.pb.h"
-#include "block.pb.h"
+// Protobuf generated headers
+#include "proto/types.pb.h"
+#include "proto/transaction.pb.h"
+#include "proto/block.pb.h"
 
-// Include protobuf runtime
 #include <google/protobuf/message.h>
-#include <google/protobuf/util/json_util.h>
 
 namespace tokiwa {
 namespace serialization {
 
+using core::Address;
+using core::Amount;
+using core::Block;
+using core::Hash;
+using core::Timestamp;
+using core::Transaction;
+
 // Error handling helper
 inline core::ErrorInfo make_serialization_error(SerializationError code, const std::string& message) {
+    core::ErrorCode error_code = core::ErrorCode::UNKNOWN_ERROR;
+    switch (code) {
+        case SerializationError::INVALID_DATA:
+            error_code = core::ErrorCode::INVALID_ARGUMENT;
+            break;
+        case SerializationError::BUFFER_TOO_SMALL:
+            error_code = core::ErrorCode::INVALID_ARGUMENT;
+            break;
+        case SerializationError::UNSUPPORTED_VERSION:
+            error_code = core::ErrorCode::INVALID_ARGUMENT;
+            break;
+        case SerializationError::CORRUPTED_DATA:
+            error_code = core::ErrorCode::CORRUPTED_DATA;
+            break;
+        case SerializationError::ENCODING_ERROR:
+            error_code = core::ErrorCode::IO_ERROR;
+            break;
+    }
     return core::ErrorInfo(
-        static_cast<int>(code),
+        error_code,
         message,
         "serialization",
         __FILE__,
@@ -280,8 +297,8 @@ SerializationResult<std::unique_ptr<Transaction>> ProtobufSerializer::deserializ
         proto_tx.outputs(0).recipient().data().end()
     ));
     
-    // Parse amount
-    Amount amount = Amount::from_string(proto_tx.outputs(0).amount().value());
+    // Parse amount (stored as wei decimal digits in protobuf bytes)
+    Amount amount = Amount::from_wei(std::stoull(proto_tx.outputs(0).amount().value()));
     
     // Create transaction
     auto tx = std::make_unique<Transaction>(from, to, amount);
