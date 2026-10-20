@@ -22,7 +22,7 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 | Address keccak derivation + EIP-55 `to_hex` | Done |
 | Block/tx keccak hashing; merkle/header checks | Done |
 | RLP codec + tx hash/sign/from_rlp | Done |
-| ECDSA recover (secp256k1 recovery module) | Partial |
+| ECDSA compact r\|\|s + recoverable r\|\|s\|\|v | Done |
 | File-backed KV storage (`file`) | Done |
 | RocksDB backend (`rocksdb`, optional link) | Done |
 | PeerManager scaffolding (M18) | Partial |
@@ -36,9 +36,9 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 
 | Priority | Milestone | Why |
 |----------|-----------|-----|
-| 1 | ECDSA sign path as compact r\|\|s (not DER) | Sign still OpenSSL DER-shaped |
-| 2 | Full YAML library / schema validation (9) | Best-effort line parser only |
-| 3 | Live TCP dial/mux for SyncSession | Codec/session exist; not on the wire yet |
+| 1 | Full YAML library / schema validation (9) | Best-effort line parser only |
+| 2 | Live TCP dial/mux for SyncSession | Codec/session exist; not on the wire yet |
+| 3 | Network security / rate limits (22) | PeerManager bans exist; no rate limiting |
 
 ## Phase 1 — Foundation (1–15)
 
@@ -46,7 +46,7 @@ Default build now enables: `crypto`, `core`, `serialization`, `p2p`, `logging`, 
 |----|--------|--------|-------|
 | 1 | Project setup & build system | Done | CMake, Conan, parallel CI gate |
 | 2 | Core domain models | Partial | Hashes/addresses/RLP; JSON round-trip for reload |
-| 3 | Cryptographic foundation | Partial | Keccak + secp256k1 curves; BLS/recovery open |
+| 3 | Cryptographic foundation | Partial | Keccak + compact ECDSA/recover; BLS still stub |
 | 4 | Database abstraction layer | Partial | memory + file-KV + optional RocksDB; batch API still thin |
 | 5 | Basic block structure | Partial | Keccak header hash + merkle check |
 | 6 | Transaction pool (mempool) | Partial | Enabled; used by ChainState |

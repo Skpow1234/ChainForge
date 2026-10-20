@@ -1,9 +1,5 @@
 #include "chainforge/crypto/signature.hpp"
 #include "chainforge/crypto/hash.hpp"
-#include <openssl/ec.h>
-#include <openssl/ecdsa.h>
-#include <openssl/obj_mac.h>
-#include <openssl/sha.h>
 #include <secp256k1.h>
 #if __has_include(<secp256k1_recovery.h>)
 #include <secp256k1_recovery.h>
@@ -14,8 +10,35 @@
 #include <sstream>
 #include <memory>
 #include <cstring>
+#include <algorithm>
 
 namespace chainforge::crypto {
+namespace {
+
+secp256k1_context* secp_sign_ctx() {
+    return secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+}
+
+bool parse_uncompressed_pubkey(const secp256k1_context* ctx,
+                               secp256k1_pubkey* out,
+                               const Secp256k1PublicKey& public_key) {
+    uint8_t encoded[65];
+    encoded[0] = 0x04;
+    std::memcpy(encoded + 1, public_key.data(), public_key.size());
+    return secp256k1_ec_pubkey_parse(ctx, out, encoded, sizeof(encoded)) == 1;
+}
+
+} // namespace
+
+CryptoResult<Hash256> Signature::digest_for_ecdsa(const byte_t* message, size_t message_len) {
+    Hash256 digest{};
+    if (message_len == HASH256_SIZE) {
+        std::memcpy(digest.data(), message, HASH256_SIZE);
+        return CryptoResult<Hash256>{digest, CryptoError::SUCCESS};
+    }
+    Message msg(message, message + message_len);
+    return Hash::keccak256(msg);
+}
 
 CryptoResult<Secp256k1Signature> Signature::ecdsa_secp256k1_sign(
     const Message& message,
@@ -32,6 +55,81 @@ CryptoResult<bool> Signature::ecdsa_secp256k1_verify(
     return internal_ecdsa_verify(message.data(), message.size(), signature, public_key);
 }
 
+CryptoResult<std::array<byte_t, 65>> Signature::ecdsa_secp256k1_sign_recoverable(
+    const Message& message,
+    const Secp256k1PrivateKey& private_key
+) {
+    auto digest = digest_for_ecdsa(message.data(), message.size());
+    if (!digest.success()) {
+        return CryptoResult<std::array<byte_t, 65>>{{}, digest.error};
+    }
+
+    secp256k1_context* ctx = secp_sign_ctx();
+    if (!ctx) {
+        return CryptoResult<std::array<byte_t, 65>>{{}, CryptoError::SIGNATURE_FAILED};
+    }
+    if (secp256k1_ec_seckey_verify(ctx, private_key.data()) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<std::array<byte_t, 65>>{{}, CryptoError::INVALID_KEY};
+    }
+
+#if defined(CHAINFORGE_HAS_SECP_RECOVERY)
+    secp256k1_ecdsa_recoverable_signature rsig;
+    if (secp256k1_ecdsa_sign_recoverable(ctx, &rsig, digest.value.data(), private_key.data(),
+                                         nullptr, nullptr) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<std::array<byte_t, 65>>{{}, CryptoError::SIGNATURE_FAILED};
+    }
+
+    std::array<byte_t, 65> out{};
+    int recid = 0;
+    if (secp256k1_ecdsa_recoverable_signature_serialize_compact(
+            ctx, out.data(), &recid, &rsig) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<std::array<byte_t, 65>>{{}, CryptoError::SIGNATURE_FAILED};
+    }
+    secp256k1_context_destroy(ctx);
+    out[64] = static_cast<byte_t>(recid & 0xff);
+    return CryptoResult<std::array<byte_t, 65>>{out, CryptoError::SUCCESS};
+#else
+    secp256k1_ecdsa_signature sig;
+    if (secp256k1_ecdsa_sign(ctx, &sig, digest.value.data(), private_key.data(),
+                             nullptr, nullptr) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<std::array<byte_t, 65>>{{}, CryptoError::SIGNATURE_FAILED};
+    }
+    secp256k1_ecdsa_signature_normalize(ctx, &sig, &sig);
+
+    std::array<byte_t, 65> out{};
+    if (secp256k1_ecdsa_signature_serialize_compact(ctx, out.data(), &sig) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<std::array<byte_t, 65>>{{}, CryptoError::SIGNATURE_FAILED};
+    }
+
+    secp256k1_pubkey expected;
+    if (secp256k1_ec_pubkey_create(ctx, &expected, private_key.data()) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<std::array<byte_t, 65>>{{}, CryptoError::SIGNATURE_FAILED};
+    }
+    uint8_t expected_bytes[65];
+    size_t elen = sizeof(expected_bytes);
+    secp256k1_ec_pubkey_serialize(ctx, expected_bytes, &elen, &expected, SECP256K1_EC_UNCOMPRESSED);
+    secp256k1_context_destroy(ctx);
+
+    Secp256k1PublicKey pubkey{};
+    std::memcpy(pubkey.data(), expected_bytes + 1, 64);
+    Secp256k1Signature compact{};
+    std::memcpy(compact.data(), out.data(), 64);
+    auto recid = ecdsa_get_recovery_id(Message(digest.value.begin(), digest.value.end()),
+                                       compact, pubkey);
+    if (!recid.success()) {
+        return CryptoResult<std::array<byte_t, 65>>{{}, recid.error};
+    }
+    out[64] = recid.value;
+    return CryptoResult<std::array<byte_t, 65>>{out, CryptoError::SUCCESS};
+#endif
+}
+
 CryptoResult<Secp256k1PublicKey> Signature::ecdsa_secp256k1_recover_public_key(
     const Message& message,
     const Secp256k1Signature& signature,
@@ -46,16 +144,11 @@ CryptoResult<Secp256k1PublicKey> Signature::ecdsa_secp256k1_recover_public_key(
         return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, CryptoError::INVALID_SIGNATURE};
     }
 
-    Hash256 digest{};
-    if (message.size() == HASH256_SIZE) {
-        std::copy(message.begin(), message.end(), digest.begin());
-    } else {
-        auto hashed = Hash::keccak256(message);
-        if (!hashed.success()) {
-            return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, hashed.error};
-        }
-        digest = hashed.value;
+    auto dig = digest_for_ecdsa(message.data(), message.size());
+    if (!dig.success()) {
+        return CryptoResult<Secp256k1PublicKey>{Secp256k1PublicKey{}, dig.error};
     }
+    const Hash256& digest = dig.value;
 
     secp256k1_context* ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY);
     if (!ctx) {
@@ -220,60 +313,49 @@ CryptoResult<uint8_t> Signature::ecdsa_get_recovery_id(
     const Secp256k1Signature& signature,
     const Secp256k1PublicKey& public_key
 ) {
-    // TODO: Implement recovery ID calculation
-    (void)message; (void)signature; (void)public_key; // Suppress unused parameter warnings
-    return CryptoResult<uint8_t>{0, CryptoError::UNSUPPORTED_ALGORITHM};
+    for (uint8_t recid = 0; recid < 4; ++recid) {
+        auto recovered = ecdsa_secp256k1_recover_public_key(message, signature, recid, false);
+        if (recovered.success() && recovered.value == public_key) {
+            return CryptoResult<uint8_t>{recid, CryptoError::SUCCESS};
+        }
+    }
+    return CryptoResult<uint8_t>{0, CryptoError::VERIFICATION_FAILED};
 }
 
 CryptoResult<Secp256k1Signature> Signature::internal_ecdsa_sign(
     const byte_t* message, size_t message_len,
     const Secp256k1PrivateKey& private_key
 ) {
-    // Hash the message first (Ethereum standard)
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256(message, message_len, hash);
-
-    // Create EC key from private key
-    EC_KEY* ec_key = EC_KEY_new_by_curve_name(NID_secp256k1);
-    if (!ec_key) {
-        return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, CryptoError::SIGNATURE_FAILED};
+    auto digest = digest_for_ecdsa(message, message_len);
+    if (!digest.success()) {
+        return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, digest.error};
     }
 
-    BIGNUM* priv_bn = BN_bin2bn(private_key.data(), static_cast<int>(private_key.size()), nullptr);
-    if (!priv_bn || !EC_KEY_set_private_key(ec_key, priv_bn)) {
-        BN_free(priv_bn);
-        EC_KEY_free(ec_key);
+    secp256k1_context* ctx = secp_sign_ctx();
+    if (!ctx) {
         return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, CryptoError::SIGNATURE_FAILED};
     }
-    BN_free(priv_bn);
-
-    // Sign the hash
-    ECDSA_SIG* sig = ECDSA_do_sign(hash, SHA256_DIGEST_LENGTH, ec_key);
-    if (!sig) {
-        EC_KEY_free(ec_key);
-        return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, CryptoError::SIGNATURE_FAILED};
+    if (secp256k1_ec_seckey_verify(ctx, private_key.data()) != 1) {
+        secp256k1_context_destroy(ctx);
+        return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, CryptoError::INVALID_KEY};
     }
 
-    // Convert to DER format
-    int der_len = i2d_ECDSA_SIG(sig, nullptr);
-    if (der_len <= 0 || der_len > static_cast<int>(SECP256K1_SIGNATURE_SIZE)) {
-        ECDSA_SIG_free(sig);
-        EC_KEY_free(ec_key);
+    secp256k1_ecdsa_signature sig;
+    if (secp256k1_ecdsa_sign(ctx, &sig, digest.value.data(), private_key.data(),
+                             nullptr, nullptr) != 1) {
+        secp256k1_context_destroy(ctx);
         return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, CryptoError::SIGNATURE_FAILED};
     }
+    // Ethereum / Bitcoin convention: low-S
+    secp256k1_ecdsa_signature_normalize(ctx, &sig, &sig);
 
-    Secp256k1Signature result_sig;
-    unsigned char* der_data = result_sig.data();
-    int final_len = i2d_ECDSA_SIG(sig, &der_data);
-
-    ECDSA_SIG_free(sig);
-    EC_KEY_free(ec_key);
-
-    if (final_len != der_len) {
+    Secp256k1Signature out{};
+    if (secp256k1_ecdsa_signature_serialize_compact(ctx, out.data(), &sig) != 1) {
+        secp256k1_context_destroy(ctx);
         return CryptoResult<Secp256k1Signature>{Secp256k1Signature{}, CryptoError::SIGNATURE_FAILED};
     }
-
-    return CryptoResult<Secp256k1Signature>{result_sig, CryptoError::SUCCESS};
+    secp256k1_context_destroy(ctx);
+    return CryptoResult<Secp256k1Signature>{out, CryptoError::SUCCESS};
 }
 
 CryptoResult<bool> Signature::internal_ecdsa_verify(
@@ -281,38 +363,33 @@ CryptoResult<bool> Signature::internal_ecdsa_verify(
     const Secp256k1Signature& signature,
     const Secp256k1PublicKey& public_key
 ) {
-    // Hash the message first (Ethereum standard)
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256(message, message_len, hash);
+    auto digest = digest_for_ecdsa(message, message_len);
+    if (!digest.success()) {
+        return CryptoResult<bool>{false, digest.error};
+    }
 
-    // Create EC key from public key
-    EC_KEY* ec_key = EC_KEY_new_by_curve_name(NID_secp256k1);
-    if (!ec_key) {
+    secp256k1_context* ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY);
+    if (!ctx) {
         return CryptoResult<bool>{false, CryptoError::VERIFICATION_FAILED};
     }
 
-    // Set the public key
-    const unsigned char* pub_key_data = public_key.data();
-    if (!o2i_ECPublicKey(&ec_key, &pub_key_data, static_cast<long>(public_key.size()))) {
-        EC_KEY_free(ec_key);
+    secp256k1_pubkey pubkey;
+    if (!parse_uncompressed_pubkey(ctx, &pubkey, public_key)) {
+        secp256k1_context_destroy(ctx);
         return CryptoResult<bool>{false, CryptoError::INVALID_KEY};
     }
 
-    // Parse DER signature
-    const unsigned char* sig_data = signature.data();
-    ECDSA_SIG* sig = d2i_ECDSA_SIG(nullptr, &sig_data, static_cast<long>(signature.size()));
-    if (!sig) {
-        EC_KEY_free(ec_key);
+    secp256k1_ecdsa_signature sig;
+    if (secp256k1_ecdsa_signature_parse_compact(ctx, &sig, signature.data()) != 1) {
+        secp256k1_context_destroy(ctx);
         return CryptoResult<bool>{false, CryptoError::INVALID_SIGNATURE};
     }
+    // Accept high-S by normalizing before verify
+    secp256k1_ecdsa_signature_normalize(ctx, &sig, &sig);
 
-    // Verify the signature
-    int verify_result = ECDSA_do_verify(hash, SHA256_DIGEST_LENGTH, sig, ec_key);
-
-    ECDSA_SIG_free(sig);
-    EC_KEY_free(ec_key);
-
-    return CryptoResult<bool>{verify_result == 1, CryptoError::SUCCESS};
+    const int ok = secp256k1_ecdsa_verify(ctx, &sig, digest.value.data(), &pubkey);
+    secp256k1_context_destroy(ctx);
+    return CryptoResult<bool>{ok == 1, CryptoError::SUCCESS};
 }
 
 CryptoResult<Ed25519Signature> Signature::internal_ed25519_sign(

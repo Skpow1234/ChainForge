@@ -1,7 +1,10 @@
 #include "chainforge/node/config.hpp"
 #include "chainforge/crypto/hash.hpp"
+#include "chainforge/crypto/signature.hpp"
+#include "chainforge/crypto/keypair.hpp"
 #include "chainforge/core/block.hpp"
 #include "chainforge/core/address.hpp"
+#include "chainforge/core/amount.hpp"
 #include "chainforge/storage/database.hpp"
 #include "chainforge/consensus/consensus.hpp"
 #include "chainforge/mempool/mempool.hpp"
@@ -12,6 +15,7 @@
 #include "chainforge/core/hash.hpp"
 #include "chainforge/core/transaction.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -51,8 +55,56 @@ int self_check() {
         std::cerr << "p2p protocol self-check failed: " << proto_err << "\n";
         return 1;
     }
+
+    // Compact ECDSA r||s (+ recoverable r||s||v) round-trip
+    {
+        auto kp = chainforge::crypto::KeyPair::generate_secp256k1();
+        if (!kp.success()) {
+            std::cerr << "ecdsa keygen self-check failed\n";
+            return 1;
+        }
+        const std::vector<uint8_t> msg = {'c', 'f', 'g'};
+        auto sig = chainforge::crypto::Signature::ecdsa_secp256k1_sign(msg, kp.value.private_key);
+        if (!sig.success() || sig.value.size() != 64) {
+            std::cerr << "ecdsa compact sign self-check failed\n";
+            return 1;
+        }
+        auto ver = chainforge::crypto::Signature::ecdsa_secp256k1_verify(
+            msg, sig.value, kp.value.public_key);
+        if (!ver.success() || !ver.value) {
+            std::cerr << "ecdsa compact verify self-check failed\n";
+            return 1;
+        }
+        auto sig65 = chainforge::crypto::Signature::ecdsa_secp256k1_sign_recoverable(
+            msg, kp.value.private_key);
+        if (!sig65.success()) {
+            std::cerr << "ecdsa recoverable sign self-check failed\n";
+            return 1;
+        }
+        chainforge::crypto::Secp256k1Signature compact{};
+        std::copy(sig65.value.begin(), sig65.value.begin() + 64, compact.begin());
+        auto rec = chainforge::crypto::Signature::ecdsa_secp256k1_recover_public_key(
+            msg, compact, sig65.value[64]);
+        if (!rec.success() || rec.value != kp.value.public_key) {
+            std::cerr << "ecdsa recover self-check failed\n";
+            return 1;
+        }
+
+        chainforge::core::Address to("0x742d35cc6634c0532925a3b844bc454e4438f44e");
+        chainforge::core::Transaction tx(
+            chainforge::core::Address::zero(), to,
+            chainforge::core::Amount::from_wei(1));
+        tx.set_chain_id(1337);
+        tx.set_nonce(0);
+        std::vector<uint8_t> sk(kp.value.private_key.begin(), kp.value.private_key.end());
+        if (!tx.sign(sk) || tx.signature().size() != 65) {
+            std::cerr << "tx sign self-check failed\n";
+            return 1;
+        }
+    }
+
     std::cout << "self-check ok address=" << addr.to_hex()
-              << " p2p_protocol=ok\n";
+              << " p2p_protocol=ok ecdsa_compact=ok\n";
     return 0;
 }
 

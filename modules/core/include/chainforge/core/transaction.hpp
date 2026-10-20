@@ -57,6 +57,10 @@ public:
     uint64_t chain_id() const noexcept { return data_.chain_id; }
     const std::vector<uint8_t>& signature() const noexcept { return data_.signature; }
 
+    /// Sign with secp256k1 private key (32 bytes). Stores compact r||s||v (65 bytes)
+    /// and sets `from` from the recovered address when successful.
+    bool sign(const std::vector<uint8_t>& private_key);
+
     // Transaction operations
     Hash calculate_hash() const;
     /// keccak256(rlp(unsigned legacy or EIP-155 signing payload))

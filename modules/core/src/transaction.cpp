@@ -59,6 +59,33 @@ void Transaction::set_chain_id(uint64_t chain_id) {
     invalidate_cache();
 }
 
+bool Transaction::sign(const std::vector<uint8_t>& private_key) {
+    if (private_key.size() != chainforge::crypto::SECP256K1_PRIVATE_KEY_SIZE) {
+        return false;
+    }
+    chainforge::crypto::Secp256k1PrivateKey sk{};
+    std::copy(private_key.begin(), private_key.end(), sk.begin());
+
+    const auto digest = signing_hash().to_bytes();
+    auto signed65 = chainforge::crypto::Signature::ecdsa_secp256k1_sign_recoverable(digest, sk);
+    if (!signed65.success()) {
+        return false;
+    }
+
+    std::vector<uint8_t> sig(signed65.value.begin(), signed65.value.end());
+    set_signature(sig);
+
+    chainforge::crypto::Secp256k1Signature compact{};
+    std::copy(sig.begin(), sig.begin() + 64, compact.begin());
+    auto recovered = chainforge::crypto::Signature::ecdsa_secp256k1_recover_public_key(
+        digest, compact, sig[64]);
+    if (recovered.success()) {
+        std::vector<uint8_t> pub(recovered.value.begin(), recovered.value.end());
+        set_from(Address::from_public_key(pub));
+    }
+    return validate_signature();
+}
+
 std::vector<uint8_t> Transaction::rlp_encode_unsigned() const {
     std::vector<rlp::Bytes> fields;
     fields.push_back(rlp::encode_uint(data_.nonce));

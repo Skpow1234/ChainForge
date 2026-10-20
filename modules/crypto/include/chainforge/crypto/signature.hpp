@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.hpp"
+#include <array>
 #include <optional>
 
 namespace chainforge::crypto {
@@ -23,7 +24,7 @@ public:
     // Destructor
     ~Signature() = default;
 
-    // ECDSA secp256k1 signatures
+    // ECDSA secp256k1 signatures — compact 64-byte r||s (not DER)
     static CryptoResult<Secp256k1Signature> ecdsa_secp256k1_sign(
         const Message& message,
         const Secp256k1PrivateKey& private_key
@@ -35,7 +36,13 @@ public:
         const Secp256k1PublicKey& public_key
     );
 
-    /// Recover uncompressed pubkey (64 bytes, no 0x04). `recovery_id` is 0 or 1.
+    /// Compact r||s||v (65 bytes). `v` is recovery id 0 or 1 (low-S normalized).
+    static CryptoResult<std::array<byte_t, 65>> ecdsa_secp256k1_sign_recoverable(
+        const Message& message,
+        const Secp256k1PrivateKey& private_key
+    );
+
+    /// Recover uncompressed pubkey (64 bytes, no 0x04). `recovery_id` is 0..3.
     static CryptoResult<Secp256k1PublicKey> ecdsa_secp256k1_recover_public_key(
         const Message& message,
         const Secp256k1Signature& signature,
@@ -99,6 +106,9 @@ public:
     );
 
 private:
+    /// If message is already 32 bytes, use as digest; else keccak256(message).
+    static CryptoResult<Hash256> digest_for_ecdsa(const byte_t* message, size_t message_len);
+
     // Internal signature implementations
     static CryptoResult<Secp256k1Signature> internal_ecdsa_sign(
         const byte_t* message, size_t message_len,
