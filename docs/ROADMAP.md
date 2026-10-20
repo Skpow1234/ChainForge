@@ -4,9 +4,22 @@
 
 This roadmap outlines the development milestones for ChainForge, a production-grade crypto/blockchain client skeleton in modern C++ (C++20/23). The roadmap is organized into phases with specific milestones, each containing problem statements, solutions, features, acceptance criteria, touchpoints, and tests.
 
-## Phase 1: Foundation & Core Infrastructure (Milestones 1-15) ✅
 
-### Milestone 1: Project Setup & Build System ✅
+### Status tracking
+
+Status marks below reflect the **codebase**, not aspirational planning. Summary and next-up queue: [milestones.md](./milestones.md).
+
+| Mark | Meaning |
+|------|---------|
+| Done | Meets acceptance well enough to build on |
+| Partial | Scaffolding / stubs / mocks / not in default CMake build |
+| Todo | Not started in a meaningful way |
+
+Default build: `core`, `crypto`, `serialization`, `p2p`. No `node` / `explorer` / `execution` packages yet.
+
+## Phase 1: Foundation & Core Infrastructure (Milestones 1-15) [Partial]
+
+### Milestone 1: Project Setup & Build System [Done]
 
 **Problem**: Need a robust, modern C++ build system with dependency management
 **Solution**: Implement CMake + Conan v2 build system with proper module structure
@@ -20,7 +33,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Build system, CI/CD, development environment
 **Tests**: Build verification, dependency resolution, cross-platform compilation
 
-### Milestone 2: Core Domain Models ✅
+### Milestone 2: Core Domain Models [Partial]
 
 **Problem**: Need fundamental blockchain data structures
 **Solution**: Implement core domain models for blocks, transactions, addresses
@@ -34,7 +47,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Core module, domain modeling, type safety
 **Tests**: Unit tests for all core types, serialization tests
 
-### Milestone 3: Cryptographic Foundation ✅
+### Milestone 3: Cryptographic Foundation [Partial]
 
 **Problem**: Need secure cryptographic primitives for blockchain operations
 **Solution**: Implement crypto module wrapping vetted libraries
@@ -48,7 +61,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Crypto module, security, performance
 **Tests**: Cryptographic validation, performance benchmarks, fuzzing
 
-### Milestone 4: Database Abstraction Layer ✅
+### Milestone 4: Database Abstraction Layer [Partial]
 
 **Problem**: Need flexible storage backend for blockchain data
 **Solution**: Implement storage abstraction with RocksDB backend
@@ -62,7 +75,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Storage module, database, performance
 **Tests**: Storage operations, performance benchmarks, data integrity
 
-### Milestone 5: Basic Block Structure ✅
+### Milestone 5: Basic Block Structure [Partial]
 
 **Problem**: Need to represent blockchain blocks with proper linking
 **Solution**: Implement block structure with parent hash linking
@@ -76,7 +89,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Core module, storage, validation
 **Tests**: Block creation, validation, linking tests
 
-### Milestone 6: Transaction Pool (Mempool) ✅
+### Milestone 6: Transaction Pool (Mempool) [Partial]
 
 **Problem**: Need to manage pending transactions before inclusion in blocks
 **Solution**: Implement transaction mempool with validation
@@ -90,7 +103,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Mempool module, validation, performance
 **Tests**: Transaction management, validation, performance tests
 
-### Milestone 7: Simple Proof of Work ✅
+### Milestone 7: Simple Proof of Work [Partial]
 
 **Problem**: Need basic consensus mechanism for block creation
 **Solution**: Implement simple PoW consensus
@@ -104,7 +117,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Consensus module, mining, validation
 **Tests**: Mining tests, difficulty adjustment, validation
 
-### Milestone 8: Basic RPC Server ✅
+### Milestone 8: Basic RPC Server [Partial]
 
 **Problem**: Need interface for external communication
 **Solution**: Implement JSON-RPC server
@@ -118,7 +131,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: RPC module, networking, API
 **Tests**: RPC endpoint tests, error handling, performance
 
-### Milestone 9: Configuration Management ✅
+### Milestone 9: Configuration Management [Partial]
 
 **Problem**: Need flexible configuration for different environments
 **Solution**: Implement configuration system
@@ -132,7 +145,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Configuration, deployment, flexibility
 **Tests**: Configuration loading, validation, environment tests
 
-### Milestone 10: Logging System ✅
+### Milestone 10: Logging System [Partial]
 
 **Problem**: Need structured logging for debugging and monitoring
 **Solution**: Implement logging with spdlog
@@ -146,7 +159,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Logging, debugging, monitoring
 **Tests**: Log output validation, performance impact tests
 
-### Milestone 11: Metrics Collection ✅
+### Milestone 11: Metrics Collection [Partial]
 
 **Problem**: Need observability into system performance
 **Solution**: Implement Prometheus metrics
@@ -160,7 +173,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Monitoring, observability, performance
 **Tests**: Metrics collection, endpoint tests, data accuracy
 
-### Milestone 12: Health Check System ✅
+### Milestone 12: Health Check System [Todo]
 
 **Problem**: Need to monitor system health and readiness
 **Solution**: Implement health check endpoints
@@ -174,7 +187,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Monitoring, deployment, reliability
 **Tests**: Health check validation, failure scenarios
 
-### Milestone 13: Basic Error Handling ✅
+### Milestone 13: Basic Error Handling [Partial]
 
 **Problem**: Need robust error handling across the system
 **Solution**: Implement std::expected error handling
@@ -188,7 +201,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Error handling, user experience, reliability
 **Tests**: Error scenario tests, recovery tests
 
-### Milestone 14: Serialization Framework ✅
+### Milestone 14: Serialization Framework [Partial]
 
 **Problem**: Need to serialize/deserialize blockchain data
 **Solution**: Implement protobuf-based serialization
@@ -202,7 +215,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Data handling, compatibility, performance
 **Tests**: Serialization tests, compatibility tests, performance
 
-### Milestone 15: Basic Testing Framework ✅
+### Milestone 15: Basic Testing Framework [Partial]
 
 **Problem**: Need comprehensive testing infrastructure
 **Solution**: Implement testing with Google Test
@@ -216,9 +229,9 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Testing, quality assurance, development
 **Tests**: Framework functionality, coverage reporting
 
-## Phase 2: Networking & P2P (Milestones 16-30)
+## Phase 2: Networking & P2P (Milestones 16-30) [Early: 16-17 Done]
 
-### Milestone 16: Network Transport Layer ✅
+### Milestone 16: Network Transport Layer [Done]
 
 **Problem**: Need reliable network communication
 **Solution**: Implement TCP/UDP transport with Boost.Asio
@@ -232,7 +245,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Networking, P2P, reliability
 **Tests**: Network tests, connection tests, error scenarios
 
-### Milestone 17: Peer Discovery ✅
+### Milestone 17: Peer Discovery [Done]
 
 **Problem**: Need to find other nodes on the network
 **Solution**: Implement peer discovery mechanisms
@@ -246,7 +259,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: P2P, networking, discovery
 **Tests**: Discovery tests, peer exchange, validation
 
-### Milestone 18: Peer Management
+### Milestone 18: Peer Management [Todo]
 
 **Problem**: Need to manage connections to other nodes
 **Solution**: Implement peer connection management
@@ -260,7 +273,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: P2P, networking, performance
 **Tests**: Connection management, peer scoring, limits
 
-### Milestone 19: Message Protocol
+### Milestone 19: Message Protocol [Todo]
 
 **Problem**: Need standardized message format for P2P communication
 **Solution**: Implement message protocol
@@ -274,7 +287,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: P2P, protocol, compatibility
 **Tests**: Message format, validation, versioning
 
-### Milestone 20: Block Synchronization
+### Milestone 20: Block Synchronization [Todo]
 
 **Problem**: Need to sync blockchain state with peers
 **Solution**: Implement block sync protocol
@@ -288,7 +301,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: P2P, consensus, validation
 **Tests**: Sync tests, validation, fork scenarios
 
-### Milestone 21: Transaction Propagation
+### Milestone 21: Transaction Propagation [Todo]
 
 **Problem**: Need to broadcast transactions to the network
 **Solution**: Implement transaction gossip protocol
@@ -302,7 +315,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: P2P, mempool, performance
 **Tests**: Propagation tests, duplicate handling, performance
 
-### Milestone 22: Network Security
+### Milestone 22: Network Security [Todo]
 
 **Problem**: Need to protect against network attacks
 **Solution**: Implement network security measures
@@ -316,7 +329,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Security, networking, reliability
 **Tests**: Security tests, attack scenarios, protection
 
-### Milestone 23: NAT Traversal
+### Milestone 23: NAT Traversal [Todo]
 
 **Problem**: Need to handle NAT and firewall scenarios
 **Solution**: Implement NAT traversal techniques
@@ -330,7 +343,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Networking, deployment, connectivity
 **Tests**: NAT scenarios, firewall tests, connectivity
 
-### Milestone 24: Peer Scoring System
+### Milestone 24: Peer Scoring System [Todo]
 
 **Problem**: Need to identify and manage misbehaving peers
 **Solution**: Implement peer reputation system
@@ -344,7 +357,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: P2P, security, reliability
 **Tests**: Scoring tests, penalty tests, recovery
 
-### Milestone 25: Network Monitoring
+### Milestone 25: Network Monitoring [Todo]
 
 **Problem**: Need visibility into network behavior
 **Solution**: Implement network monitoring
@@ -358,7 +371,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Monitoring, networking, observability
 **Tests**: Monitoring tests, metrics accuracy, performance
 
-### Milestone 26: Connection Pooling
+### Milestone 26: Connection Pooling [Todo]
 
 **Problem**: Need efficient connection management
 **Solution**: Implement connection pooling
@@ -372,7 +385,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Performance, networking, resource management
 **Tests**: Pooling tests, performance, resource usage
 
-### Milestone 27: Message Queuing
+### Milestone 27: Message Queuing [Todo]
 
 **Problem**: Need reliable message delivery
 **Solution**: Implement message queuing system
@@ -386,7 +399,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Reliability, networking, performance
 **Tests**: Queue tests, delivery tests, failure scenarios
 
-### Milestone 28: Protocol Versioning
+### Milestone 28: Protocol Versioning [Todo]
 
 **Problem**: Need to handle protocol evolution
 **Solution**: Implement protocol versioning
@@ -400,7 +413,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Compatibility, protocol, evolution
 **Tests**: Version tests, compatibility, migration
 
-### Milestone 29: Network Topology
+### Milestone 29: Network Topology [Todo]
 
 **Problem**: Need to understand network structure
 **Solution**: Implement network topology analysis
@@ -414,7 +427,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Analysis, networking, monitoring
 **Tests**: Topology tests, analysis accuracy, visualization
 
-### Milestone 30: P2P Load Balancing
+### Milestone 30: P2P Load Balancing [Todo]
 
 **Problem**: Need to distribute load across peers
 **Solution**: Implement P2P load balancing
@@ -428,9 +441,9 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Performance, networking, optimization
 **Tests**: Load balancing tests, performance, distribution
 
-## Phase 3: Consensus & Execution (Milestones 31-45)
+## Phase 3: Consensus & Execution (Milestones 31-45) [Todo]
 
-### Milestone 31: Advanced Consensus Engine
+### Milestone 31: Advanced Consensus Engine [Todo]
 
 **Problem**: Need flexible consensus mechanism
 **Solution**: Implement pluggable consensus engine
@@ -444,7 +457,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Consensus, flexibility, performance
 **Tests**: Consensus tests, engine switching, performance
 
-### Milestone 32: State Management
+### Milestone 32: State Management [Todo]
 
 **Problem**: Need to manage blockchain state
 **Solution**: Implement state management system
@@ -458,7 +471,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: State, performance, validation
 **Tests**: State tests, transitions, rollback, validation
 
-### Milestone 33: Smart Contract Engine
+### Milestone 33: Smart Contract Engine [Todo]
 
 **Problem**: Need to execute smart contracts
 **Solution**: Implement basic smart contract engine
@@ -472,7 +485,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Execution, smart contracts, gas
 **Tests**: Contract execution, gas metering, state changes
 
-### Milestone 34: Gas Model
+### Milestone 34: Gas Model [Todo]
 
 **Problem**: Need to meter computational resources
 **Solution**: Implement gas model
@@ -486,7 +499,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Gas, performance, economics
 **Tests**: Gas calculation, limits, pricing, tracking
 
-### Milestone 35: Transaction Execution
+### Milestone 35: Transaction Execution [Todo]
 
 **Problem**: Need to execute transactions
 **Solution**: Implement transaction execution engine
@@ -500,7 +513,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Execution, transactions, state
 **Tests**: Execution tests, state updates, gas consumption
 
-### Milestone 36: Block Execution
+### Milestone 36: Block Execution [Todo]
 
 **Problem**: Need to execute blocks of transactions
 **Solution**: Implement block execution engine
@@ -514,7 +527,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Execution, blocks, validation
 **Tests**: Block execution, ordering, validation
 
-### Milestone 37: Fork Choice Algorithm
+### Milestone 37: Fork Choice Algorithm [Todo]
 
 **Problem**: Need to handle blockchain forks
 **Solution**: Implement fork choice algorithm
@@ -528,7 +541,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Consensus, forks, finality
 **Tests**: Fork tests, selection, reorganization
 
-### Milestone 38: Finality Mechanism
+### Milestone 38: Finality Mechanism [Todo]
 
 **Problem**: Need transaction finality
 **Solution**: Implement finality mechanism
@@ -542,7 +555,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Consensus, finality, security
 **Tests**: Finality tests, slashing, recovery
 
-### Milestone 39: Validator Management
+### Milestone 39: Validator Management [Todo]
 
 **Problem**: Need to manage validators
 **Solution**: Implement validator management
@@ -556,7 +569,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Consensus, validators, staking
 **Tests**: Validator tests, staking, penalties
 
-### Milestone 40: Slashing Conditions
+### Milestone 40: Slashing Conditions [Todo]
 
 **Problem**: Need to penalize misbehaving validators
 **Solution**: Implement slashing conditions
@@ -570,7 +583,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Security, consensus, penalties
 **Tests**: Slashing tests, detection, penalties
 
-### Milestone 41: Checkpoint System
+### Milestone 41: Checkpoint System [Todo]
 
 **Problem**: Need to establish checkpoints
 **Solution**: Implement checkpoint system
@@ -584,7 +597,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Consensus, checkpoints, finality
 **Tests**: Checkpoint tests, validation, recovery
 
-### Milestone 42: Light Client Support
+### Milestone 42: Light Client Support [Todo]
 
 **Problem**: Need light client functionality
 **Solution**: Implement light client support
@@ -598,7 +611,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Light clients, verification, performance
 **Tests**: Light client tests, verification, performance
 
-### Milestone 43: Snapshot System
+### Milestone 43: Snapshot System [Todo]
 
 **Problem**: Need fast blockchain sync
 **Solution**: Implement snapshot system
@@ -612,7 +625,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Performance, sync, storage
 **Tests**: Snapshot tests, verification, sync speed
 
-### Milestone 44: State Pruning
+### Milestone 44: State Pruning [Todo]
 
 **Problem**: Need to manage storage growth
 **Solution**: Implement state pruning
@@ -626,7 +639,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Storage, performance, optimization
 **Tests**: Pruning tests, storage optimization, performance
 
-### Milestone 45: Execution Optimization
+### Milestone 45: Execution Optimization [Todo]
 
 **Problem**: Need to optimize execution performance
 **Solution**: Implement execution optimizations
@@ -640,9 +653,9 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Performance, execution, optimization
 **Tests**: Performance tests, optimization, monitoring
 
-## Phase 4: Advanced Features & Production (Milestones 46-60)
+## Phase 4: Advanced Features & Production (Milestones 46-60) [Todo]
 
-### Milestone 46: Advanced RPC APIs
+### Milestone 46: Advanced RPC APIs [Todo]
 
 **Problem**: Need comprehensive API coverage
 **Solution**: Implement advanced RPC APIs
@@ -656,7 +669,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: API, usability, performance
 **Tests**: API tests, WebSocket, subscriptions
 
-### Milestone 47: GraphQL Support
+### Milestone 47: GraphQL Support [Todo]
 
 **Problem**: Need flexible data querying
 **Solution**: Implement GraphQL API
@@ -670,7 +683,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: API, GraphQL, performance
 **Tests**: GraphQL tests, queries, subscriptions
 
-### Milestone 48: Advanced Indexing
+### Milestone 48: Advanced Indexing [Todo]
 
 **Problem**: Need efficient data querying
 **Solution**: Implement advanced indexing
@@ -684,7 +697,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Performance, indexing, queries
 **Tests**: Index tests, query performance, optimization
 
-### Milestone 49: Analytics Engine
+### Milestone 49: Analytics Engine [Todo]
 
 **Problem**: Need blockchain analytics
 **Solution**: Implement analytics engine
@@ -698,7 +711,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Analytics, insights, reporting
 **Tests**: Analytics tests, accuracy, performance
 
-### Milestone 50: Privacy Features
+### Milestone 50: Privacy Features [Todo]
 
 **Problem**: Need transaction privacy
 **Solution**: Implement privacy features
@@ -712,7 +725,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Privacy, security, performance
 **Tests**: Privacy tests, security, performance
 
-### Milestone 51: Cross-Chain Bridge
+### Milestone 51: Cross-Chain Bridge [Todo]
 
 **Problem**: Need interoperability with other chains
 **Solution**: Implement cross-chain bridge
@@ -726,7 +739,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Interoperability, security, monitoring
 **Tests**: Bridge tests, security, monitoring
 
-### Milestone 52: Layer 2 Support
+### Milestone 52: Layer 2 Support [Todo]
 
 **Problem**: Need scaling solutions
 **Solution**: Implement Layer 2 support
@@ -740,7 +753,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Scaling, performance, integration
 **Tests**: Layer 2 tests, performance, integration
 
-### Milestone 53: Advanced Wallet
+### Milestone 53: Advanced Wallet [Todo]
 
 **Problem**: Need comprehensive wallet functionality
 **Solution**: Implement advanced wallet
@@ -754,7 +767,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Wallet, security, usability
 **Tests**: Wallet tests, security, functionality
 
-### Milestone 54: Governance System
+### Milestone 54: Governance System [Todo]
 
 **Problem**: Need on-chain governance
 **Solution**: Implement governance system
@@ -768,7 +781,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Governance, voting, execution
 **Tests**: Governance tests, voting, execution
 
-### Milestone 55: Advanced Security
+### Milestone 55: Advanced Security [Todo]
 
 **Problem**: Need comprehensive security measures
 **Solution**: Implement advanced security
@@ -782,7 +795,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Security, auditing, monitoring
 **Tests**: Security tests, audits, penetration tests
 
-### Milestone 56: Performance Optimization
+### Milestone 56: Performance Optimization [Todo]
 
 **Problem**: Need maximum performance
 **Solution**: Implement performance optimizations
@@ -796,7 +809,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Performance, optimization, monitoring
 **Tests**: Performance tests, benchmarks, monitoring
 
-### Milestone 57: Advanced Monitoring
+### Milestone 57: Advanced Monitoring [Todo]
 
 **Problem**: Need comprehensive monitoring
 **Solution**: Implement advanced monitoring
@@ -810,7 +823,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Monitoring, observability, alerting
 **Tests**: Monitoring tests, alerting, dashboards
 
-### Milestone 58: Disaster Recovery
+### Milestone 58: Disaster Recovery [Todo]
 
 **Problem**: Need recovery mechanisms
 **Solution**: Implement disaster recovery
@@ -824,7 +837,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Recovery, backup, continuity
 **Tests**: Recovery tests, backup, procedures
 
-### Milestone 59: Production Deployment
+### Milestone 59: Production Deployment [Todo]
 
 **Problem**: Need production-ready deployment
 **Solution**: Implement production deployment
@@ -838,7 +851,7 @@ This roadmap outlines the development milestones for ChainForge, a production-gr
 **Touchpoints**: Deployment, production, monitoring
 **Tests**: Deployment tests, production, monitoring
 
-### Milestone 60: Documentation & Training
+### Milestone 60: Documentation & Training [Todo]
 
 **Problem**: Need comprehensive documentation
 **Solution**: Implement documentation system

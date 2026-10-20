@@ -1,83 +1,89 @@
 # Milestones
 
-High-level view of the development plan. Full detail (problem, solution, acceptance, tests) is in [ROADMAP.md](./ROADMAP.md). Use [MILESTONE_TEMPLATE.md](./MILESTONE_TEMPLATE.md) when adding or tracking a milestone.
+High-level plan and **honest status vs the codebase**. Full specs (problem, solution, acceptance, tests) live in [ROADMAP.md](./ROADMAP.md). Use [MILESTONE_TEMPLATE.md](./MILESTONE_TEMPLATE.md) when adding work.
 
-> Status marks in the roadmap are aspirational relative to the current codebase: only `core`, `crypto`, `serialization`, and `p2p` are in the default build; node/explorer/execution packages are not present yet.
+## Status legend
 
-## Phases
+| Mark | Meaning |
+|------|---------|
+| Done | Meets acceptance well enough to build on |
+| Partial | Scaffolding or incomplete; stubs, mocks, or not in default CMake build |
+| Todo | Not started in a meaningful way |
 
-| Phase | Milestones | Theme |
-|-------|------------|--------|
-| 1 — Foundation | 1–15 | Build system, core models, crypto, storage, mempool, PoW, RPC, config, logging, metrics, health, errors, serialization, testing |
-| 2 — Networking | 16–30 | Transport, discovery, peers, sync, propagation, NAT, scoring, topology |
-| 3 — Consensus & execution | 31–45 | Consensus, state, contracts, gas, execution, finality, validators, light client, pruning |
-| 4 — Production | 46–60 | Advanced RPC, GraphQL, indexing, analytics, security, K8s deploy, docs |
+Default build today: `core`, `crypto`, `serialization`, `p2p` only. No `modules/node`, `explorer`, or `execution` packages yet.
 
-## Snapshot checklist
+## Where we are
 
-### Phase 1 — Foundation
+Roughly **mid Phase 1** (foundation incomplete) plus **early Phase 2** (transport + discovery). Roadmap checkmarks previously overstated completion; they are aligned with this file.
 
-| ID | Title |
-|----|--------|
-| 1 | Project setup & build system |
-| 2 | Core domain models |
-| 3 | Cryptographic foundation |
-| 4 | Database abstraction layer |
-| 5 | Basic block structure |
-| 6 | Transaction pool (mempool) |
-| 7 | Simple Proof of Work |
-| 8 | Basic RPC server |
-| 9 | Configuration management |
-| 10 | Logging system |
-| 11 | Metrics collection |
-| 12 | Health check system |
-| 13 | Basic error handling |
-| 14 | Serialization framework |
-| 15 | Basic testing framework |
+## Next up (recommended order)
 
-### Phase 2 — Networking
+| Priority | Milestone | Why |
+|----------|-----------|-----|
+| 1 | **3** Cryptographic foundation | Finish real SHA/Keccak/secp256k1; remove XOR/curve stubs |
+| 2 | **2 / 5** Core models + blocks | Wire hashing through crypto; real block/tx hash & linking |
+| 3 | **4** Storage | Enable in CMake; working KV (in-memory OK first, then RocksDB) |
+| 4 | **7** Simple PoW | Enable consensus; mine/validate against real hashes |
+| 5 | **6** Mempool | Enable; validate & queue txs for block building |
+| 6 | **8** RPC | Enable; replace mocks with storage-backed reads where possible |
+| 7 | **Node binary** (prep **59**) | Thin `modules/node` composing the above for Compose/Helm |
+| 8 | **18 → 19** Peer management → message protocol | Natural Phase 2 follow-on after discovery |
 
-| ID | Title |
-|----|--------|
-| 16 | Network transport layer |
-| 17 | Peer discovery |
-| 18 | Peer management |
-| 19 | Message protocol |
-| 20 | Block synchronization |
-| 21 | Transaction propagation |
-| 22 | Network security |
-| 23 | NAT traversal |
-| 24 | Peer scoring system |
-| 25 | Network monitoring |
-| 26 | Connection pooling |
-| 27 | Message queuing |
-| 28 | Protocol versioning |
-| 29 | Network topology |
-| 30 | P2P load balancing |
+Then: sync/propagation (**20–21**), harden **9–12** / **15** as the node becomes runnable.
 
-### Phase 3 — Consensus & execution
+## Phase 1 — Foundation (1–15)
 
-| ID | Title |
-|----|--------|
-| 31–36 | Advanced consensus, state, contracts, gas, tx/block execution |
-| 37–42 | Fork choice, finality, validators, slashing, checkpoints, light client |
-| 43–45 | Snapshots, pruning, execution optimization |
+| ID | Title | Status | Notes |
+|----|--------|--------|-------|
+| 1 | Project setup & build system | Done | CMake, Conan, CI |
+| 2 | Core domain models | Partial | Types exist; hash/address/tx TODOs |
+| 3 | Cryptographic foundation | Partial | In build; Keccak/curve stubs remain |
+| 4 | Database abstraction layer | Partial | Source present; **not in default build** |
+| 5 | Basic block structure | Partial | Structure yes; header hashing incomplete |
+| 6 | Transaction pool (mempool) | Partial | Source only; disabled in CMake |
+| 7 | Simple Proof of Work | Partial | Source only; disabled |
+| 8 | Basic RPC server | Partial | Mock RPC; disabled |
+| 9 | Configuration management | Partial | `config/config.yaml` exists; C++ load/compose incomplete |
+| 10 | Logging system | Partial | Module present; not in default build |
+| 11 | Metrics collection | Partial | Stub metrics server; not in default build |
+| 12 | Health check system | Todo | No real health/readiness surface |
+| 13 | Basic error handling | Partial | `std::expected` in core; not system-wide |
+| 14 | Serialization framework | Partial | Protobuf in build; validators incomplete |
+| 15 | Basic testing framework | Partial | GTest tree exists; many targets off / `BUILD_TESTING` default OFF |
 
-### Phase 4 — Advanced & production
+## Phase 2 — Networking (16–30)
 
-| ID | Title |
-|----|--------|
-| 46–49 | Advanced RPC, GraphQL, indexing, analytics |
-| 50–54 | Privacy, bridges, L2, wallet, governance |
-| 55–60 | Security, performance, monitoring, DR, **production deployment**, documentation |
+| ID | Title | Status | Notes |
+|----|--------|--------|-------|
+| 16 | Network transport layer | Done | TCP/UDP in default build |
+| 17 | Peer discovery | Done | In default build |
+| 18 | Peer management | Todo | **Next after foundation vertical slice** |
+| 19 | Message protocol | Todo | |
+| 20 | Block synchronization | Todo | |
+| 21 | Transaction propagation | Todo | |
+| 22 | Network security | Todo | |
+| 23 | NAT traversal | Todo | |
+| 24 | Peer scoring system | Todo | |
+| 25 | Network monitoring | Todo | |
+| 26 | Connection pooling | Todo | |
+| 27 | Message queuing | Todo | |
+| 28 | Protocol versioning | Todo | |
+| 29 | Network topology | Todo | |
+| 30 | P2P load balancing | Todo | |
 
-## Suggested near-term focus (realistic vs code)
+## Phase 3 — Consensus & execution (31–45)
 
-1. Finish crypto hashing/signatures (no stubs) — Milestone 3
-2. Enable storage + PoW + RPC in the build — Milestones 4, 7, 8
-3. Thin `node` binary composing those modules — Milestone 59 prep
-4. Peer management & message protocol on top of existing transport/discovery — Milestones 18–19
+All **Todo**. Requires storage, PoW/mempool, and a node process first. Includes advanced consensus, state, contracts, gas, execution, finality, validators, light client, snapshots, pruning.
 
-## README phase overview (compact)
+## Phase 4 — Advanced & production (46–60)
 
-Same four phases as historically listed in the root README: Foundation → Networking → Consensus & Execution → Production. Prefer this file and [ROADMAP.md](./ROADMAP.md) as the source of truth going forward.
+All **Todo** (deploy scaffolding exists early). Includes advanced RPC, GraphQL, indexing, analytics, privacy/bridges/L2, wallet, governance, hardening, and:
+
+- **59** Production deployment — Compose/Helm/CI exist; deploy job is a placeholder; no production-ready node image yet
+- **60** Documentation & training — `docs/` reorganized; keep status honest as code moves
+
+## Related docs
+
+- [ROADMAP.md](./ROADMAP.md) — full milestone write-ups
+- [deployment.md](./deployment.md) — how to run what exists today
+- [architecture.md](./architecture.md) — module map
