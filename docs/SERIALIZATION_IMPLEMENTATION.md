@@ -325,14 +325,14 @@ Potential improvements for future milestones:
 - `modules/serialization/proto/transaction.proto` - Transaction schemas
 - `modules/serialization/proto/block.proto` - Block schemas
 - `tests/unit/test_serialization.cpp` - Comprehensive test suite
-- `documentation/SERIALIZATION_IMPLEMENTATION.md` - This document
+- `docs/SERIALIZATION_IMPLEMENTATION.md` - This document
 
 ### Modified Files
 - `modules/serialization/src/serializer.cpp` - Complete implementation
 - `modules/serialization/src/validator.cpp` - Complete implementation
 - `modules/serialization/CMakeLists.txt` - Protobuf integration
 - `tests/CMakeLists.txt` - Test integration
-- `documentation/ROADMAP.md` - Marked milestone as complete
+- `docs/ROADMAP.md` - Marked milestone as complete
 
 ## Conclusion
 

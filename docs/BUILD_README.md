@@ -344,7 +344,7 @@ ChainForge is licensed under the MIT License. See LICENSE file for details.
 
 - **Issues**: GitHub Issues
 - **Discussions**: GitHub Discussions
-- **Documentation**: See `documentation/` directory
+- **Documentation**: See the [`docs/`](./README.md) directory
 - **Wiki**: Project Wiki
 
 ---

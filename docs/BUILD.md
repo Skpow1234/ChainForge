@@ -358,4 +358,4 @@ After successfully building ChainForge:
 3. **Run Examples**: Build and run example applications
 4. **Contribute**: Check the [Contributing Guide](CONTRIBUTING.md)
 
-For more information, see the main [README.md](README.md) and [ROADMAP.md](documentation/ROADMAP.md).
+For more information, see the main [README.md](../README.md) and [ROADMAP.md](./ROADMAP.md).

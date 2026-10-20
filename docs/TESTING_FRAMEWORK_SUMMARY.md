@@ -423,13 +423,13 @@ Potential improvements for future milestones:
 - `tests/include/mock_objects.hpp` - Mock implementations
 - `tests/unit/test_framework_demo.cpp` - Framework demonstration
 - `cmake/TestCoverage.cmake` - Coverage configuration
-- `documentation/TESTING_FRAMEWORK.md` - User guide
-- `documentation/TESTING_FRAMEWORK_SUMMARY.md` - This document
+- `docs/TESTING_FRAMEWORK.md` - User guide
+- `docs/TESTING_FRAMEWORK_SUMMARY.md` - This document
 
 ### Modified Files
 - `CMakeLists.txt` - Added TestCoverage.cmake include
 - `tests/CMakeLists.txt` - Added framework_tests target
-- `documentation/ROADMAP.md` - Marked milestone as complete
+- `docs/ROADMAP.md` - Marked milestone as complete
 
 ## Conclusion
 
